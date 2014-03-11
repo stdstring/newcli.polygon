@@ -1,4 +1,4 @@
-%% common definitions
+%% common definitions:
 
 -record(user, {uid = -1 :: integer(),
                username = "" :: string(),

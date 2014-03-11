@@ -24,7 +24,8 @@ authenticate(Username, Password) ->
 
 init(Filename) ->
     %% {Uid, Username, Password, AccessLevel}
-    AuthData = load_auth_data(Filename),
+    AbsFilename = filename:absname(Filename),
+    AuthData = load_auth_data(AbsFilename),
     register(?SERVICE_NAME, self()),
     {ok, AuthData}.
 
