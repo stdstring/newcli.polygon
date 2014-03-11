@@ -1,6 +1,4 @@
 %% @author std-string
-%% @doc @todo Add description to erlang_term_utils.
-
 
 -module(erlang_term_utils).
 
