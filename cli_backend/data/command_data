@@ -9,7 +9,7 @@
 %% interface
 {interface, interface_command},
 %% interface range
-{irange, interface_range_command},
+{interface_range, interface_range_command},
 %% vlan
 {vlan, vlan_command},
 %% no vlan
@@ -29,5 +29,5 @@
 %% exit
 {exit, exit_command},
 %% show vlan
-{show vlan, show_vlan_command}
+{show_vlan, show_vlan_command}
 ].
