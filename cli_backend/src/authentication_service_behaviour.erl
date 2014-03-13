@@ -1,6 +1,6 @@
 %% @author stdstring
 
--module(auth_service_behaviour).
+-module(authentication_service_behaviour).
 
 -include("common_defs.hrl").
 

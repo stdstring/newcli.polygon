@@ -1,12 +1,12 @@
 %% @author std-string
 
--module(auth_service).
+-module(authentication_service).
 
--behaviour(auth_service_behaviour).
+-behaviour(authentication_service_behaviour).
 -behaviour(gen_server).
 
 -include("common_defs.hrl").
--include("auth_service_defs.hrl").
+-include("authentication_service_defs.hrl").
 
 %% ====================================================================
 %% API functions
