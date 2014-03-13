@@ -5,4 +5,4 @@
 -define(HASH_TYPE, sha512).
 -define(SERVICE_NAME, authentication_service).
 
--record(auth_service_state, {source = "" :: string(), auth_data = [] :: [{Uid :: integer(), Username :: string(), Password :: binary(), AccessLevel :: integer()}]}).
+-record(authentication_service_state, {source = "" :: string(), auth_data = [] :: [{Uid :: integer(), Username :: string(), Password :: binary(), AccessLevel :: integer()}]}).

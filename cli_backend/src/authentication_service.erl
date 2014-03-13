@@ -11,6 +11,7 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
+
 -export([start/1, authenticate/2]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -29,13 +30,13 @@ init(Filename) ->
     register(?SERVICE_NAME, self()),
     {ok, AuthData}.
 
-handle_call({Username, Password}, _From, AuthState) ->
-    AuthData = AuthState#auth_service_state.auth_data,
+handle_call({Username, Password}, _From, State) ->
+    AuthData = State#authentication_service_state.auth_data,
     case lists:keyfind(Username, 2, AuthData) of
         {Uid, Username, Hash, AccessLevel} ->
             ProcessResult = process_auth_data({Uid, Username, Hash, AccessLevel}, Password),
-            {reply, ProcessResult, AuthState};
-        false -> {reply, {auth_fail, unknown_username}, AuthState}
+            {reply, ProcessResult, State};
+        false -> {reply, {auth_fail, unknown_username}, State}
     end.
 
 handle_cast(_Request, State) -> {stop, not_supported, State}.
@@ -64,7 +65,7 @@ start_service(Filename) ->
 
 load_auth_data(Filename) ->
     AuthData = erlang_term_utils:read_from_file(Filename),
-    #auth_service_state{source = Filename, auth_data = AuthData}.
+    #authentication_service_state{source = Filename, auth_data = AuthData}.
 
 process_auth_data({Uid, Username, Hash, AccessLevel}, Password) ->
     PasswordHash = crypto_utils:hash(?HASH_TYPE, Password, ?HASH_SALT),
