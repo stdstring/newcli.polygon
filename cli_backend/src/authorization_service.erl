@@ -6,7 +6,7 @@
 -behaviour(gen_server).
 
 -include("common_defs.hrl").
-
+-include("authorization_service_defs.hrl").
 
 %% ====================================================================
 %% API functions
@@ -16,13 +16,27 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-start(_Config) -> error(not_implemented).
+start(Config) ->
+    {Filename} = parse_config(Config),
+    start_service(Filename).
 
-authorize(_User, _CommandName) -> false.
 
-init(_Args) -> error(not_implemented).
+authorize(User, CommandName) when is_record(User, user) ->
+    gen_server:call(?SERVICE_NAME, {User, CommandName}).
 
-handle_call(_request, _From, _State) -> error(not_implemented).
+init(Filename) ->
+    %% {CommandName, AccessLevel}
+    AbsFilename = filename:absname(Filename),
+    State = load_data(AbsFilename),
+    register(?SERVICE_NAME, self()),
+    {ok, State}.
+
+handle_call({User, CommandName}, _From, State) when is_record(User, user) ->
+    Data = State#authorization_service_state.data,
+    case lists:keyfind(CommandName, 1, Data) of
+        {CommandName, AccessLevel} -> {reply, authorize_impl(User, AccessLevel), State};
+        false -> {reply, {authorization_fail, unknown_command}, State}
+    end.
 
 handle_cast(_Request, State) -> {stop, not_supported, State}.
 
@@ -37,3 +51,24 @@ code_change(_OldVsn, _State, _Extra) -> {error, not_supported}.
 %% Internal functions
 %% ====================================================================
 
+parse_config(Config) ->
+    case lists:keyfind(?DATA_SOURCE, 1, Config) of
+        {?DATA_SOURCE, Filename} -> {Filename};
+        false -> error({authorization_service, bad_init_args})
+    end.
+
+start_service(Filename) ->
+    case gen_server:start_link(?MODULE, Filename, []) of
+        {ok, Pid} -> Pid;
+        {error, Error} -> error({authorization_service, Error})
+    end.
+
+load_data(Filename) ->
+    Data = erlang_term_utils:read_from_file(Filename),
+    #authorization_service_state{source = Filename, data = Data}.
+
+authorize_impl(#user{access_level = UserAccessLevel}, CommandAccessLevel) ->
+    if
+        UserAccessLevel < CommandAccessLevel -> {authorization_result, access_denied};
+        true -> {authorization_result, access_allowed}
+    end.

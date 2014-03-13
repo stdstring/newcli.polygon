@@ -31,7 +31,7 @@ init(Filename) ->
     {ok, AuthData}.
 
 handle_call({Username, Password}, _From, State) ->
-    AuthData = State#authentication_service_state.auth_data,
+    AuthData = State#authentication_service_state.data,
     case lists:keyfind(Username, 2, AuthData) of
         {Uid, Username, Hash, AccessLevel} ->
             ProcessResult = process_auth_data({Uid, Username, Hash, AccessLevel}, Password),
@@ -65,7 +65,7 @@ start_service(Filename) ->
 
 load_auth_data(Filename) ->
     AuthData = erlang_term_utils:read_from_file(Filename),
-    #authentication_service_state{source = Filename, auth_data = AuthData}.
+    #authentication_service_state{source = Filename, data = AuthData}.
 
 process_auth_data({Uid, Username, Hash, AccessLevel}, Password) ->
     PasswordHash = crypto_utils:hash(?HASH_TYPE, Password, ?HASH_SALT),
