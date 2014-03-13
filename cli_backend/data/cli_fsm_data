@@ -1,6 +1,6 @@
 [
 %% {'states', [{statename, [allowed_command_names]}]}
-{states, [{fundamental_mode, [conf_terminal, ping, end, exit, show_vlan]},
+{states, [{fundamental_mode, [conf_terminal, ping, show_vlan]},
           {global_config_mode, [interface, interface_range, vlan, no_vlan, end, exit, show_vlan]},
           {interface_config_mode, [switchport_vlan, no_switchport_vlan, end, exit, show_vlan]},
           {interface_range_config_mode, [switchport_vlan, no_switchport_vlan, end, exit, show_vlan]},
