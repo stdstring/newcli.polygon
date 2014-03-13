@@ -51,8 +51,8 @@ code_change(_OldVsn, _State, _Extra) -> {error, not_supported}.
 %% ====================================================================
 
 parse_config(Config) ->
-    case lists:keyfind(?AUTH_DATA_SOURCE, 1, Config) of
-        {?AUTH_DATA_SOURCE, Filename} -> {Filename};
+    case lists:keyfind(?DATA_SOURCE, 1, Config) of
+        {?DATA_SOURCE, Filename} -> {Filename};
         false -> error({auth_service, bad_init_args})
     end.
 
