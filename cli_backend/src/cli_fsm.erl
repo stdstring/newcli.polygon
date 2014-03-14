@@ -16,7 +16,10 @@
 -export([processing/3]).
 -export([init/1, handle_event/3, handle_sync_event/4, handle_info/3, terminate/3, code_change/4]).
 
-start(_Config) -> error(not_implemented).
+start(Config) ->
+    DataSource = parse_config(Config),
+    SourceData = erlang_term_utils:read_from_file(DataSource),
+    start_fsm(SourceData).
 
 process_command(FsmPid, CommandName) ->
     gen_fsm:sync_send_event(FsmPid, {command, CommandName}).
@@ -24,7 +27,9 @@ process_command(FsmPid, CommandName) ->
 get_current_state(FsmPid) ->
     gen_fsm:sync_send_event(FsmPid, current_state).
 
-init(_Args) -> error(not_implemented).
+init(SourceData) ->
+    StateData = create_state(SourceData),
+    {ok, processing, StateData}.
 
 processing(current_state, _From, StateData) ->
     CurrentState = StateData#cli_fsm_state.current_state,
@@ -61,6 +66,12 @@ parse_config(Config) ->
     {?CONFIG_KEY, ServiceConfig} = config_utils:get_config(Config, ?CONFIG_KEY, 1, {cli_fsm, bad_config}),
     {?DATA_SOURCE, DataSource} = config_utils:get_config(ServiceConfig, ?DATA_SOURCE, 1, {cli_fsm, missing_source}),
     DataSource.
+
+start_fsm(SourceData) ->
+    case gen_fsm:start_link(?MODULE, SourceData, []) of
+        {ok, Pid} -> Pid;
+        {error, Error} -> error({cli_fsm, Error})
+    end.
 
 create_state(SourceData) ->
     {initial_state, InitialState} = lists:keyfind(initial_state, 1, SourceData),
