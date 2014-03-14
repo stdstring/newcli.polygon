@@ -6,6 +6,4 @@
 
 -callback process_command(CommandName :: atom()) -> {'ok', StateName :: atom()} | {'error', ErrorReason :: string()}.
 
--callback get_statename() -> StateName :: atom().
-
--callback get_available_commands() -> [CommandName :: atom()].
+-callback get_current_state() -> {StateName :: atom(), [CommandName :: atom()]}.

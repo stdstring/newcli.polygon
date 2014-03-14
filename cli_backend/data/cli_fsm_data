@@ -18,5 +18,6 @@
                {vlan_config_mode, fundamental_mode, end},
                {interface_range_config_mode, fundamental_mode, end},
                {interface_config_mode, fundamental_mode, end},
-               {global_config_mode, fundamental_mode, end}]}
+               {global_config_mode, fundamental_mode, end}]},
+{initial_state, fundamental_mode}
 ].
