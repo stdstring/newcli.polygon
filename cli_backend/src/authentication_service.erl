@@ -26,15 +26,15 @@ authenticate(Username, Password) ->
 init(Filename) ->
     %% {Uid, Username, Password, AccessLevel}
     AbsFilename = filename:absname(Filename),
-    AuthData = load_auth_data(AbsFilename),
+    State = load_data(AbsFilename),
     register(?SERVICE_NAME, self()),
-    {ok, AuthData}.
+    {ok, State}.
 
 handle_call({Username, Password}, _From, State) ->
-    AuthData = State#authentication_service_state.data,
-    case lists:keyfind(Username, 2, AuthData) of
+    Data = State#authentication_service_state.data,
+    case lists:keyfind(Username, 2, Data) of
         {Uid, Username, Hash, AccessLevel} ->
-            ProcessResult = process_auth_data({Uid, Username, Hash, AccessLevel}, Password),
+            ProcessResult = authenticate_impl({Uid, Username, Hash, AccessLevel}, Password),
             {reply, ProcessResult, State};
         false -> {reply, {auth_fail, unknown_username}, State}
     end.
@@ -59,14 +59,14 @@ parse_config(Config) ->
 start_service(Filename) ->
     case gen_server:start_link(?MODULE, Filename, []) of
         {ok, Pid} -> Pid;
-        {error, Error} -> error({auth_service, Error})
+        {error, Error} -> error({authentication_service, Error})
     end.
 
-load_auth_data(Filename) ->
-    AuthData = erlang_term_utils:read_from_file(Filename),
-    #authentication_service_state{source = Filename, data = AuthData}.
+load_data(Filename) ->
+    Data = erlang_term_utils:read_from_file(Filename),
+    #authentication_service_state{source = Filename, data = Data}.
 
-process_auth_data({Uid, Username, Hash, AccessLevel}, Password) ->
+authenticate_impl({Uid, Username, Hash, AccessLevel}, Password) ->
     PasswordHash = crypto_utils:hash(?HASH_TYPE, Password, ?HASH_SALT),
     if
         Hash == PasswordHash -> {auth_complete, #user{uid = Uid, username = Username, access_level = AccessLevel}};
