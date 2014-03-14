@@ -11,30 +11,47 @@
 %% API functions
 %% ====================================================================
 
--export([start/1, process_command/1, get_current_state/0]).
+-export([start/1, process_command/2, get_current_state/1]).
 %% gen_fsm
 -export([processing/3]).
 -export([init/1, handle_event/3, handle_sync_event/4, handle_info/3, terminate/3, code_change/4]).
 
 start(_Config) -> error(not_implemented).
 
-process_command(_CommandName) -> error(not_implemented).
+process_command(FsmPid, CommandName) ->
+    gen_fsm:sync_send_event(FsmPid, {command, CommandName}).
 
-get_current_state() -> error(not_implemented).
+get_current_state(FsmPid) ->
+    gen_fsm:sync_send_event(FsmPid, current_state).
 
 init(_Args) -> error(not_implemented).
 
-processing(_Event, _From, _StateData) -> error(not_implemented).
+processing(current_state, _From, StateData) ->
+    CurrentState = StateData#cli_fsm_state.current_state,
+    FsmConfig = StateData#cli_fsm_state.config,
+    States = FsmConfig#fsm_config.states,
+    {CurrentState, Commands} = lists:keyfind(CurrentState, 1, States),
+    {reply, {CurrentState, Commands}, processing, StateData};
+processing({command, CommandName}, _From, StateData) ->
+    CurrentState = StateData#cli_fsm_state.current_state,
+    FsmConfig = StateData#cli_fsm_state.config,
+    Transitions = FsmConfig#fsm_config.transitions,
+    case lists:keyfind({CurrentState, CommandName}, 1, Transitions) of
+        {{CurrentState, CommandName}, NewState} ->
+            NewStateData = StateData#cli_fsm_state{current_state = NewState},
+            {reply, NewState, processing, NewStateData};
+        false -> {reply, CurrentState, processing, StateData}
+    end.
 
-handle_event(_Event, _StateName, _StateData) -> error(not_implemented).
+handle_event(_Event, _StateName, StateData) -> {stop, not_supported, StateData}.
 
-handle_sync_event(_Event, _From, _StateName, _StateData) -> error(not_implemented).
+handle_sync_event(_Event, _From, _StateName, StateData) -> {stop, not_supported, StateData}.
 
-handle_info(_Event, _StateName, _StateData) -> error(not_implemented).
+handle_info(_Event, _StateName, StateData) -> {stop, not_supported, StateData}.
 
 terminate(_Reason, _StateName, _StateData) -> true.
 
-code_change(_OldVsn, _StateName, _StateData, _Extra) -> error(not_implemented).
+code_change(_OldVsn, StateName, StateData, _Extra) -> {ok, StateName, StateData}.
 
 %% ====================================================================
 %% Internal functions
