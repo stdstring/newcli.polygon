@@ -1,5 +1,6 @@
 %% authentication_service definitions:
 
+-define(CONFIG_KEY, authentication_service).
 -define(DATA_SOURCE, data_source).
 -define(HASH_SALT, "polygon-cli").
 -define(HASH_TYPE, sha512).

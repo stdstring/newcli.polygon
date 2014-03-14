@@ -17,7 +17,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 start(Config) ->
-    {Filename} = parse_config(Config),
+    Filename = parse_config(Config),
     start_service(Filename).
 
 authenticate(Username, Password) ->
@@ -52,10 +52,9 @@ code_change(_OldVsn, _State, _Extra) -> {error, not_supported}.
 %% ====================================================================
 
 parse_config(Config) ->
-    case lists:keyfind(?DATA_SOURCE, 1, Config) of
-        {?DATA_SOURCE, Filename} -> {Filename};
-        false -> error({auth_service, bad_init_args})
-    end.
+    {?CONFIG_KEY, ServiceConfig} = config_utils:get_config(Config, ?CONFIG_KEY, 1, {authentication_service, bad_config}),
+    {?DATA_SOURCE, DataSource} = config_utils:get_config(ServiceConfig, ?DATA_SOURCE, 1, {authentication_service, missing_source}),
+    DataSource.
 
 start_service(Filename) ->
     case gen_server:start_link(?MODULE, Filename, []) of
