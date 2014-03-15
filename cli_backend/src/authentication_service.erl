@@ -52,9 +52,8 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% ====================================================================
 
 parse_config(Config) ->
-    {?CONFIG_KEY, ServiceConfig} = config_utils:get_config(Config, ?CONFIG_KEY, 1, {authentication_service, bad_config}),
-    {?DATA_SOURCE, DataSource} = config_utils:get_config(ServiceConfig, ?DATA_SOURCE, 1, {authentication_service, missing_source}),
-    DataSource.
+    ServiceConfig = config_utils:get_config(Config, ?CONFIG_KEY, 1, {authentication_service, bad_config}),
+    config_utils:get_config(ServiceConfig, ?DATA_SOURCE, 1, {authentication_service, missing_source}).
 
 start_service(Filename) ->
     case gen_server:start_link(?MODULE, Filename, []) of

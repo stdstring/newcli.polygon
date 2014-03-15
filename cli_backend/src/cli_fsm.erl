@@ -6,6 +6,7 @@
 -behaviour(gen_fsm).
 
 -include("cli_fsm_defs.hrl").
+-include("common_defs.hrl").
 
 %% ====================================================================
 %% API functions
@@ -17,8 +18,7 @@
 -export([init/1, handle_event/3, handle_sync_event/4, handle_info/3, terminate/3, code_change/4]).
 
 start(Config) ->
-    DataSource = parse_config(Config),
-    SourceData = erlang_term_utils:read_from_file(DataSource),
+    SourceData = Config#config.cli_fsm,
     start_fsm(SourceData).
 
 process_command(FsmPid, CommandName) ->
@@ -61,11 +61,6 @@ code_change(_OldVsn, StateName, StateData, _Extra) -> {ok, StateName, StateData}
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
-
-parse_config(Config) ->
-    {?CONFIG_KEY, ServiceConfig} = config_utils:get_config(Config, ?CONFIG_KEY, 1, {cli_fsm, bad_config}),
-    {?DATA_SOURCE, DataSource} = config_utils:get_config(ServiceConfig, ?DATA_SOURCE, 1, {cli_fsm, missing_source}),
-    DataSource.
 
 start_fsm(SourceData) ->
     case gen_fsm:start_link(?MODULE, SourceData, []) of
