@@ -12,7 +12,7 @@
 -callback get_help() -> Help :: string().
 
 %% create command's instance
--callback create(CommandLineRest :: string()) -> Command :: pid().
+-callback create(CommandLine :: string()) -> Command :: pid().
 
 %% synchronous executing
 -callback execute(Command :: pid(), Stdout :: pid(), Stderr :: pid()) -> ReturnCode :: integer().
