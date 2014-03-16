@@ -44,7 +44,7 @@ handle_info(_Info, State) -> {stop, not_supported, State}.
 
 terminate(_Reason, _State) -> true.
 
-code_change(_OldVsn, _State, _Extra) -> {error, not_supported}.
+code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 
 %% ====================================================================
