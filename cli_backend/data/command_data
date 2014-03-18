@@ -5,7 +5,7 @@
 %% logout
 {logout, logout_command},
 %% configure terminal
-{conf_terminal, config_terminal_command},
+{config_terminal, config_terminal_command},
 %% interface
 {interface, interface_command},
 %% interface range
