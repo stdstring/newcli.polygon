@@ -36,7 +36,7 @@ handle_call({Username, Password}, _From, State) ->
         {Uid, Username, Hash, AccessLevel} ->
             ProcessResult = authenticate_impl({Uid, Username, Hash, AccessLevel}, Password),
             {reply, ProcessResult, State};
-        false -> {reply, {auth_fail, unknown_username}, State}
+        false -> {reply, {authentication_fail, unknown_username}, State}
     end.
 
 handle_cast(_Request, State) -> {stop, not_supported, State}.
@@ -68,6 +68,6 @@ load_data(Filename) ->
 authenticate_impl({Uid, Username, Hash, AccessLevel}, Password) ->
     PasswordHash = crypto_utils:hash(?HASH_TYPE, Password, ?HASH_SALT),
     if
-        Hash == PasswordHash -> {auth_complete, #user{uid = Uid, username = Username, access_level = AccessLevel}};
-        true -> {auth_fail, bad_password}
+        Hash == PasswordHash -> {authentication_complete, #user{uid = Uid, username = Username, access_level = AccessLevel}};
+        true -> {authentication_fail, bad_password}
     end.
