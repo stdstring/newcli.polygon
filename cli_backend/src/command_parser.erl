@@ -16,7 +16,7 @@ parse(CommandLine, Config, ClientOutput) when is_record(Config, config) ->
     CommandLineParts = commandline_parser:parse(CommandLine),
     case find_command(CommandLineParts, Commands) of
         {_, CommandModule} -> create_commands(CommandModule, CommandLineParts, ClientOutput);
-        false -> false
+        false -> {command_parser, unknown_command}
     end.
 
 %% ====================================================================
@@ -45,8 +45,15 @@ select_best_command([FirstCommand | Commands]) ->
 
 -spec create_commands(CommandModule :: atom(), CommandLineParts :: [string()], ClientOutput :: pid()) -> [pid()].
 create_commands(CommandModule, CommandLineParts, ClientOutput) ->
-    OutputEndpointPid = output_endpoint:start(ClientOutput),
-    Stdout = OutputEndpointPid,
-    Stderr = OutputEndpointPid,
-    CommandPid = apply(CommandModule, create, [CommandLineParts, Stdout, Stderr]),
-    [CommandPid, OutputEndpointPid].
+    case output_endpoint:start(ClientOutput) of
+        {output_endpoint, Error} -> {output_endpoint, Error};
+        OutputEndpointPid ->
+            Stdout = OutputEndpointPid,
+            Stderr = OutputEndpointPid,
+            case apply(CommandModule, create, [CommandLineParts, Stdout, Stderr]) of
+                {error, Reason} ->
+                    CommandName = apply(CommandModule, get_name, []),
+                    {CommandName, {creation_error, Reason}};
+                CommandPid -> [CommandPid, OutputEndpointPid]
+            end
+    end.

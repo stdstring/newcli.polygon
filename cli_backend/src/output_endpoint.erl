@@ -49,7 +49,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 start_service(OutputPid) ->
     case gen_server:start_link(?MODULE, OutputPid, []) of
         {ok, Pid} -> Pid;
-        {error, Error} -> error({output_endpoint, Error})
+        {error, Error} -> {output_endpoint, Error}
     end.
 
 handle_command_message(CommandMessage, State) ->
