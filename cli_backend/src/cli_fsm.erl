@@ -65,7 +65,7 @@ code_change(_OldVsn, StateName, StateData, _Extra) -> {ok, StateName, StateData}
 start_fsm(SourceData) ->
     case gen_fsm:start_link(?MODULE, SourceData, []) of
         {ok, Pid} -> Pid;
-        {error, Error} -> error({cli_fsm, Error})
+        {error, Error} -> {cli_fsm, Error}
     end.
 
 create_state(SourceData) ->
