@@ -36,10 +36,12 @@ recognize_commands(CommandLineParts, Commands) ->
 select_best_command([]) -> false;
 select_best_command([Command]) -> Command;
 select_best_command([FirstCommand | Commands]) ->
-    Comparator = fun({_1, Module1}, {_2, Module2}) ->
-                         length(apply(Module1, get_command_body, [])) > length(apply(Module2, get_command_body, []))
-                 end,
-    lists:foldl(fun(Command, Acc) -> logic_utils:ternary_op(Comparator, Acc, Command) end, FirstCommand, Commands).
+    lists:foldl(fun(Command, Acc) ->
+                        CommandBody = apply(element(2, Command), get_command_body, []),
+                        AccBody = apply(element(2, Acc), get_command_body, []),
+                        Condition = length(CommandBody) > length(AccBody),
+                        logic_utils:ternary_op(Condition, Acc, Command)
+                end, FirstCommand, Commands).
 
 -spec create_commands(CommandModule :: atom(), CommandLineParts :: [string()], ClientOutput :: pid()) -> [pid()].
 create_commands(CommandModule, CommandLineParts, ClientOutput) ->
