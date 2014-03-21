@@ -34,7 +34,8 @@ init({CommandLineParts, Stdout, Stderr}) ->
     State = #command_state{command_line = CommandLineParts, stdout = Stdout, stderr = Stderr},
     {ok, State}.
 
-handle_call(_Request, _From, _State) -> error(not_implemented).
+handle_call(_Request, _From, State) ->
+    {reply, 0, State}.
 
 handle_cast(_Request, _State) -> error(not_supported).
 
@@ -52,7 +53,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 check_command(CommandLineParts) ->
     CommandLineParts == get_command_body().
 
--spec start_command(CommandLineParts :: [string()], Stdout :: pid(), Stderr  :: pid()) -> pid() | {config_terminal_command, Error :: term()}.
+-spec start_command(CommandLineParts :: [string()], Stdout :: pid(), Stderr  :: pid()) -> pid() | {'end_command', Error :: term()}.
 start_command(CommandLineParts, Stdout, Stderr) ->
     case gen_server:start_link(?MODULE, {CommandLineParts, Stdout, Stderr}, []) of
         {ok, Pid} -> Pid;

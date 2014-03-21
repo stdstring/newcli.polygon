@@ -53,7 +53,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 check_command(CommandLineParts) ->
     CommandLineParts == get_command_body().
 
--spec start_command(CommandLineParts :: [string()], Stdout :: pid(), Stderr  :: pid()) -> pid() | {config_terminal_command, Error :: term()}.
+-spec start_command(CommandLineParts :: [string()], Stdout :: pid(), Stderr  :: pid()) -> pid() | {'config_terminal_command', Error :: term()}.
 start_command(CommandLineParts, Stdout, Stderr) ->
     case gen_server:start_link(?MODULE, {CommandLineParts, Stdout, Stderr}, []) of
         {ok, Pid} -> Pid;
