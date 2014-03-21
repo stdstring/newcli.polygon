@@ -23,7 +23,7 @@ get_help() -> "end command".
 
 create(CommandLineParts, Stdout, Stderr) ->
     case check_command(CommandLineParts) of
-        false -> {config_terminal_command, bad_args};
+        false -> {end_command, bad_args};
         true -> start_command(CommandLineParts, Stdout, Stderr)
     end.
 
@@ -36,7 +36,7 @@ init({CommandLineParts, Stdout, Stderr}) ->
 
 handle_call(_Request, _From, _State) -> error(not_implemented).
 
-handle_cast(_Request, _State) -> error(not_implemented).
+handle_cast(_Request, _State) -> error(not_supported).
 
 handle_info(_Info, State) -> {noreply, State}.
 
@@ -56,5 +56,5 @@ check_command(CommandLineParts) ->
 start_command(CommandLineParts, Stdout, Stderr) ->
     case gen_server:start_link(?MODULE, {CommandLineParts, Stdout, Stderr}, []) of
         {ok, Pid} -> Pid;
-        {error, Error} -> {config_terminal_command, Error}
+        {error, Error} -> {end_command, Error}
     end.
