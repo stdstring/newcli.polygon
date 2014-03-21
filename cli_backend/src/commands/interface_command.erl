@@ -5,6 +5,8 @@
 -behaviour(command_behaviour).
 -behaviour(gen_server).
 
+-include("command_defs.hrl").
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -17,26 +19,44 @@ get_name() -> interface.
 
 get_command_body() -> ["interface"].
 
-get_help() -> "interface command".
+get_help() -> "interface {interface-id} command".
 
-create(CommandLineParts, Stdout, Stderr) -> error(not_implemented).
+create(CommandLineParts, Stdout, Stderr) ->
+    case check_command(CommandLineParts) of
+        false -> {interface_command, bad_args};
+        true -> start_command(CommandLineParts, Stdout, Stderr)
+    end.
 
-execute(Command) -> error(not_implemented).
+execute(Command) ->
+    gen_server:call(Command, execute).
 
-init(_Args) -> error(not_implemented).
+init({CommandLineParts, Stdout, Stderr}) ->
+    State = #command_state{command_line = CommandLineParts, stdout = Stdout, stderr = Stderr},
+    {ok, State}.
 
-handle_call(_Request, _From, _State) -> error(not_implemented).
+handle_call(execute, _From, State) ->
+    {reply, 0, State}.
 
-handle_cast(_Request, _State) -> error(not_implemented).
+handle_cast(_Request, _State) -> error(not_supported).
 
-handle_info(_Request, _Info) -> error(not_supported).
+handle_info(_Info, State) -> {noreply, State}.
 
 terminate(_Reason, _State) -> true.
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
-
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
+-spec check_command(CommandLineParts :: [string()]) -> boolean().
+check_command(CommandLineParts) ->
+    CommandBody = get_command_body(),
+    lists:prefix(CommandBody, CommandLineParts) andalso length(CommandLineParts) == (length(CommandBody) + 1).
+
+-spec start_command(CommandLineParts :: [string()], Stdout :: pid(), Stderr  :: pid()) -> pid() | {'config_terminal_command', Error :: term()}.
+start_command(CommandLineParts, Stdout, Stderr) ->
+    case gen_server:start_link(?MODULE, {CommandLineParts, Stdout, Stderr}, []) of
+        {ok, Pid} -> Pid;
+        {error, Error} -> {interface_command, Error}
+    end.

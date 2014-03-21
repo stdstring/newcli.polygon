@@ -5,6 +5,8 @@
 -behaviour(command_behaviour).
 -behaviour(gen_server).
 
+-include("command_defs.hrl").
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -28,7 +30,9 @@ create(CommandLineParts, Stdout, Stderr) ->
 execute(Command) ->
     gen_server:call(Command, execute).
 
-init(_Args) -> error(not_implemented).
+init({CommandLineParts, Stdout, Stderr}) ->
+    State = #command_state{command_line = CommandLineParts, stdout = Stdout, stderr = Stderr},
+    {ok, State}.
 
 handle_call(_Request, _From, State) ->
     {reply, 0, State}.
