@@ -1,6 +1,6 @@
 %% command definitions:
 
--record(command_state, {command_line = [] :: [string()],
+-record(command_state, {command_line_rest = "" :: string(),
                         stdout = undefined :: 'undefined' | pid(),
                         stderr = undefined :: 'undefined' | pid(),
                         additional_params = [] :: [{Key :: atom(), Value :: term()}]}).

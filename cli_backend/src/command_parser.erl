@@ -25,7 +25,7 @@ parse(CommandLine, Config, ClientOutput) when is_record(Config, config) ->
 -spec find_command(CommandLine :: string(), Commands :: [{CommandName :: atom(), CommandModule :: atom()}]) ->
           {CommandName :: atom(), CommandModule :: atom(), ComandLineRest :: string()} | 'false'.
 find_command(CommandLine, Commands) ->
-    {[FirstToken], Rest} = commandline_parser:get_tokens(CommandLine, 1),
+    {[FirstToken], Rest} = commandline_parser:get_tokens(string:strip(CommandLine), 1),
     case find_command(FirstToken, Rest, Commands, undefined) of
         {Name, Module, _TokensCount, OtherRest} -> {Name, Module, OtherRest};
         false -> false

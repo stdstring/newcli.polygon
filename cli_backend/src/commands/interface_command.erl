@@ -21,17 +21,17 @@ get_command_body() -> ["interface"].
 
 get_help() -> "interface {interface-id} command".
 
-create(CommandLineParts, Stdout, Stderr) ->
-    case check_command(CommandLineParts) of
+create(CommandLineRest, Stdout, Stderr) ->
+    case check_command(CommandLineRest) of
         false -> {interface_command, bad_args};
-        true -> start_command(CommandLineParts, Stdout, Stderr)
+        true -> start_command(CommandLineRest, Stdout, Stderr)
     end.
 
 execute(Command) ->
     gen_server:call(Command, execute).
 
-init({CommandLineParts, Stdout, Stderr}) ->
-    State = #command_state{command_line = CommandLineParts, stdout = Stdout, stderr = Stderr},
+init({CommandLineRest, Stdout, Stderr}) ->
+    State = #command_state{command_line_rest = CommandLineRest, stdout = Stdout, stderr = Stderr},
     {ok, State}.
 
 handle_call(execute, _From, State) ->
@@ -49,14 +49,13 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% Internal functions
 %% ====================================================================
 
--spec check_command(CommandLineParts :: [string()]) -> boolean().
-check_command(CommandLineParts) ->
-    CommandBody = get_command_body(),
-    lists:prefix(CommandBody, CommandLineParts) andalso length(CommandLineParts) == (length(CommandBody) + 1).
+-spec check_command(CommandLineRest :: string()) -> boolean().
+check_command(CommandLineRest) ->
+    CommandLineRest /= "".
 
--spec start_command(CommandLineParts :: [string()], Stdout :: pid(), Stderr  :: pid()) -> pid() | {'config_terminal_command', Error :: term()}.
-start_command(CommandLineParts, Stdout, Stderr) ->
-    case gen_server:start_link(?MODULE, {CommandLineParts, Stdout, Stderr}, []) of
+-spec start_command(CommandLineRest :: string(), Stdout :: pid(), Stderr  :: pid()) -> pid() | {'config_terminal_command', Error :: term()}.
+start_command(CommandLineRest, Stdout, Stderr) ->
+    case gen_server:start_link(?MODULE, {CommandLineRest, Stdout, Stderr}, []) of
         {ok, Pid} -> Pid;
         {error, Error} -> {interface_command, Error}
     end.

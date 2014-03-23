@@ -19,7 +19,7 @@ get_command_body() -> ["no", "vlan"].
 
 get_help() -> "no vlan command".
 
-create(CommandLineParts, Stdout, Stderr) -> error(not_implemented).
+create(CommandLineRest, Stdout, Stderr) -> error(not_implemented).
 
 execute(Command) -> error(not_implemented).
 

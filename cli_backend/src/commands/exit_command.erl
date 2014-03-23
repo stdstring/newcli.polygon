@@ -21,17 +21,17 @@ get_command_body() -> ["exit"].
 
 get_help() -> "exit command".
 
-create(CommandLineParts, Stdout, Stderr) ->
-    case check_command(CommandLineParts) of
+create(CommandLineRest, Stdout, Stderr) ->
+    case check_command(CommandLineRest) of
         false -> {exit_command, bad_args};
-        true -> start_command(CommandLineParts, Stdout, Stderr)
+        true -> start_command(Stdout, Stderr)
     end.
 
 execute(Command) ->
     gen_server:call(Command, execute).
 
-init({CommandLineParts, Stdout, Stderr}) ->
-    State = #command_state{command_line = CommandLineParts, stdout = Stdout, stderr = Stderr},
+init({Stdout, Stderr}) ->
+    State = #command_state{command_line_rest = "", stdout = Stdout, stderr = Stderr},
     {ok, State}.
 
 handle_call(_Request, _From, State) ->
@@ -49,13 +49,13 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% Internal functions
 %% ====================================================================
 
--spec check_command(CommandLineParts :: [string()]) -> boolean().
-check_command(CommandLineParts) ->
-    CommandLineParts == get_command_body().
+-spec check_command(CommandLineRest :: string()) -> boolean().
+check_command(CommandLineRest) ->
+    CommandLineRest == "".
 
--spec start_command(CommandLineParts :: [string()], Stdout :: pid(), Stderr  :: pid()) -> pid() | {'exit_command', Error :: term()}.
-start_command(CommandLineParts, Stdout, Stderr) ->
-    case gen_server:start_link(?MODULE, {CommandLineParts, Stdout, Stderr}, []) of
+-spec start_command(Stdout :: pid(), Stderr  :: pid()) -> pid() | {'exit_command', Error :: term()}.
+start_command(Stdout, Stderr) ->
+    case gen_server:start_link(?MODULE, {Stdout, Stderr}, []) of
         {ok, Pid} -> Pid;
         {error, Error} -> {exit_command, Error}
     end.

@@ -19,7 +19,7 @@ get_command_body() -> ["login"].
 
 get_help() -> "login command".
 
-create(CommandLineParts, Stdout, Stderr) -> error(not_implemented).
+create(CommandLineRest, Stdout, Stderr) -> error(not_implemented).
 
 execute(Command) -> error(not_implemented).
 

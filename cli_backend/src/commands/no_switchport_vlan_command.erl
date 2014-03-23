@@ -19,7 +19,7 @@ get_command_body() -> ["no", "switchport", "access", "vlan"].
 
 get_help() -> "no switchport access vlan command".
 
-create(CommandLineParts, Stdout, Stderr) -> error(not_implemented).
+create(CommandLineRest, Stdout, Stderr) -> error(not_implemented).
 
 execute(Command) -> error(not_implemented).
 
