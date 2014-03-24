@@ -7,6 +7,8 @@
 
 -include("command_defs.hrl").
 
+-define(COMMAND, end_command).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -23,7 +25,7 @@ get_help() -> "end command".
 
 create(CommandLineRest, Stdout, Stderr) ->
     case check_command(CommandLineRest) of
-        false -> {end_command, bad_args};
+        false -> {?COMMAND, bad_args};
         true -> start_command(Stdout, Stderr)
     end.
 
@@ -57,5 +59,5 @@ check_command(CommandLineRest) ->
 start_command(Stdout, Stderr) ->
     case gen_server:start_link(?MODULE, {Stdout, Stderr}, []) of
         {ok, Pid} -> Pid;
-        {error, Error} -> {end_command, Error}
+        {error, Error} -> {?COMMAND, Error}
     end.

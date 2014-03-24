@@ -7,6 +7,8 @@
 
 -include("command_defs.hrl").
 
+-define(COMMAND, config_terminal_command).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -23,7 +25,7 @@ get_help() -> "configure terminal command".
 
 create(CommandLineRest, Stdout, Stderr) ->
     case check_command(CommandLineRest) of
-        false -> {config_terminal_command, bad_args};
+        false -> {?COMMAND, bad_args};
         true -> start_command(Stdout, Stderr)
     end.
 
@@ -57,5 +59,5 @@ check_command(CommandLineRest) ->
 start_command(Stdout, Stderr) ->
     case gen_server:start_link(?MODULE, {Stdout, Stderr}, []) of
         {ok, Pid} -> Pid;
-        {error, Error} -> {config_terminal_command, Error}
+        {error, Error} -> {?COMMAND, Error}
     end.

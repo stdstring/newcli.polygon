@@ -7,6 +7,8 @@
 
 -include("command_defs.hrl").
 
+-define(COMMAND, interface_command).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -23,7 +25,7 @@ get_help() -> "interface {interface-id} command".
 
 create(CommandLineRest, Stdout, Stderr) ->
     case check_command(CommandLineRest) of
-        false -> {interface_command, bad_args};
+        false -> {?COMMAND, bad_args};
         true -> start_command(CommandLineRest, Stdout, Stderr)
     end.
 
@@ -53,9 +55,9 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 check_command(CommandLineRest) ->
     CommandLineRest /= "".
 
--spec start_command(CommandLineRest :: string(), Stdout :: pid(), Stderr  :: pid()) -> pid() | {'config_terminal_command', Error :: term()}.
+-spec start_command(CommandLineRest :: string(), Stdout :: pid(), Stderr  :: pid()) -> pid() | {'interface_command', Error :: term()}.
 start_command(CommandLineRest, Stdout, Stderr) ->
     case gen_server:start_link(?MODULE, {CommandLineRest, Stdout, Stderr}, []) of
         {ok, Pid} -> Pid;
-        {error, Error} -> {interface_command, Error}
+        {error, Error} -> {?COMMAND, Error}
     end.
