@@ -5,6 +5,14 @@
 -behaviour(command_behaviour).
 -behaviour(gen_server).
 
+-behaviour(command_behaviour).
+-behaviour(gen_server).
+
+-include("message_defs.hrl").
+-include("command_defs.hrl").
+
+-define(COMMAND, show_vlan_command).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
