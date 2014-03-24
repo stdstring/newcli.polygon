@@ -55,7 +55,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 check_command(CommandLineRest) ->
     CommandLineRest /= "".
 
--spec start_command(CommandLineRest :: string(), Stdout :: pid(), Stderr  :: pid()) -> pid() | {'interface_command', Error :: term()}.
+-spec start_command(CommandLineRest :: string(), Stdout :: pid(), Stderr  :: pid()) -> pid() | {'login_command', Error :: term()}.
 start_command(CommandLineRest, Stdout, Stderr) ->
     case gen_server:start_link(?MODULE, {CommandLineRest, Stdout, Stderr}, []) of
         {ok, Pid} -> Pid;
