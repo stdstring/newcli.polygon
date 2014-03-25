@@ -50,9 +50,9 @@ processing({command, CommandName}, _From, StateData) ->
 
 handle_event(_Event, _StateName, StateData) -> {stop, not_supported, StateData}.
 
-handle_sync_event(_Event, _From, _StateName, StateData) -> {stop, not_supported, StateData}.
+handle_sync_event(_Event, _From, _StateName, StateData) -> {stop, not_supported, not_supported, StateData}.
 
-handle_info(_Event, _StateName, StateData) -> {stop, not_supported, StateData}.
+handle_info(_Event, StateName, StateData) -> {next_state, StateName, StateData}.
 
 terminate(_Reason, _StateName, _StateData) -> true.
 
