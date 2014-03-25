@@ -6,7 +6,11 @@
 %% API functions
 %% ====================================================================
 
--export([get_tokens/2, get_tokens/3]).
+-export([get_first_token/1, get_tokens/2, get_tokens/3]).
+
+-spec get_first_token(Source :: string()) -> {Tokens :: [string()], Rest :: string()}.
+get_first_token(Source) ->
+        get_tokens(Source, 1).
 
 -spec get_tokens(Source :: string(), Count :: integer()) -> {Tokens :: [string()], Rest :: string()}.
 get_tokens(Source, Count) ->
