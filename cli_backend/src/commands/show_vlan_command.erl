@@ -8,8 +8,6 @@
 -include("message_defs.hrl").
 -include("command_defs.hrl").
 
--define(COMMAND, show_vlan_command).
-
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -26,7 +24,7 @@ get_help() -> "show vlan command".
 
 create(CommandLineRest, Stdout, Stderr) ->
     case check_command(CommandLineRest) of
-        false -> {?COMMAND, bad_args};
+        false -> {error, bad_args};
         true -> start_command(Stdout, Stderr)
     end.
 
@@ -64,5 +62,5 @@ check_command(CommandLineRest) ->
 start_command(Stdout, Stderr) ->
     case gen_server:start_link(?MODULE, {Stdout, Stderr}, []) of
         {ok, Pid} -> Pid;
-        {error, Error} -> {?COMMAND, Error}
+        {error, Error} -> {error, Error}
     end.

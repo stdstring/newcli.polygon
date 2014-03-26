@@ -21,7 +21,7 @@ start(KnownCommands) ->
 
 -spec process_token(ParserPid :: pid(), Token :: string()) -> term().
 process_token(ParserPid, Token) ->
-    gen_event:sync_send_event(ParserPid, Token).
+    gen_fsm:sync_send_event(ParserPid, Token).
 
 init(KnownCommands) ->
     {ok, ambiguous_parsing, #state{commands = KnownCommands}}.

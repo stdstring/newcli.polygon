@@ -25,7 +25,7 @@
 %% no name
 {no_name_vlan, no_name_vlan_command},
 %% end
-{end, end_command},
+{'end', end_command},
 %% exit
 {exit, exit_command},
 %% show vlan
