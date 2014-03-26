@@ -20,7 +20,6 @@ start(Config) ->
     Filename = parse_config(Config),
     start_service(Filename).
 
-
 authorize(User, CommandName) when is_record(User, user) ->
     gen_server:call(?SERVICE_NAME, {User, CommandName}).
 
