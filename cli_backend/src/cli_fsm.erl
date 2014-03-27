@@ -35,8 +35,11 @@ processing(current_state, _From, StateData) ->
     CurrentState = StateData#cli_fsm_state.current_state,
     FsmConfig = StateData#cli_fsm_state.config,
     States = FsmConfig#fsm_config.states,
+    TerminalStates = FsmConfig#fsm_config.terminal_states,
     {CurrentState, Commands} = lists:keyfind(CurrentState, 1, States),
-    {reply, {CurrentState, Commands}, processing, StateData};
+    IsTerminalState = lists:member(CurrentState, TerminalStates),
+    StateInfo = #cli_fsm_state_info{current_state = CurrentState, commands = Commands, is_terminal =IsTerminalState},
+    {reply, StateInfo, processing, StateData};
 processing({command, CommandName}, _From, StateData) ->
     CurrentState = StateData#cli_fsm_state.current_state,
     FsmConfig = StateData#cli_fsm_state.config,
@@ -70,8 +73,9 @@ start_fsm(SourceData) ->
 
 create_state(SourceData) ->
     {initial_state, InitialState} = lists:keyfind(initial_state, 1, SourceData),
+    {terminal_states, TerminalStates} = lists:keyfind(terminal_states, 1, SourceData),
     {states, States} = lists:keyfind(states, 1, SourceData),
     {transitions, Transitions} = lists:keyfind(transitions, 1, SourceData),
     TransitionTable = lists:map(fun({FromState, ToState, CommandName}) -> {{FromState, CommandName}, ToState} end, Transitions),
-    FsmConfig = #fsm_config{states = States, transitions = TransitionTable},
+    FsmConfig = #fsm_config{states = States, transitions = TransitionTable, terminal_states = TerminalStates},
     #cli_fsm_state{config = FsmConfig, current_state = InitialState}.

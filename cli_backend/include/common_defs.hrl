@@ -12,3 +12,7 @@
                  other = [] :: [{Key :: atom(), Value :: term()}]}).
 
 -record(command_parse_result, {command_chain = [] :: [{ModuleName :: atom, CommandPid :: pid}], endpoint = undefined :: pid() | 'undefined'}).
+
+-record(cli_fsm_state_info, {current_state = unknown :: atom(),
+                             commands = [] :: [CommandName :: atom()],
+                             is_terminal = false ::boolean()}).

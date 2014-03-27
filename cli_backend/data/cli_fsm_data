@@ -1,10 +1,11 @@
 [
 %% {'states', [{statename, [allowed_command_names]}]}
-{states, [{fundamental_mode, [conf_terminal, ping, show_vlan]},
-          {global_config_mode, [interface, interface_range, vlan, no_vlan, end, exit, show_vlan]},
-          {interface_config_mode, [switchport_vlan, no_switchport_vlan, end, exit, show_vlan]},
-          {interface_range_config_mode, [switchport_vlan, no_switchport_vlan, end, exit, show_vlan]},
-          {vlan_config_mode, [name_vlan, no_name_vlan, vlan, no_vlan, end, exit, show_vlan]}]},
+{states, [{fundamental_mode, [conf_terminal, ping, show_vlan, logout]},
+          {global_config_mode, [interface, interface_range, vlan, no_vlan, end, exit, show_vlan, logout]},
+          {interface_config_mode, [switchport_vlan, no_switchport_vlan, end, exit, show_vlan, logout]},
+          {interface_range_config_mode, [switchport_vlan, no_switchport_vlan, end, exit, show_vlan, logout]},
+          {vlan_config_mode, [name_vlan, no_name_vlan, vlan, no_vlan, end, exit, show_vlan, logout]},
+          {logout_mode, []}]},
 %% {'transitions', [{from_state, to_state, command_name}]}
 {transitions, [{fundamental_mode, global_config_mode, conf_terminal},
                {global_config_mode, interface_config_mode, interface},
@@ -18,6 +19,12 @@
                {vlan_config_mode, fundamental_mode, end},
                {interface_range_config_mode, fundamental_mode, end},
                {interface_config_mode, fundamental_mode, end},
-               {global_config_mode, fundamental_mode, end}]},
-{initial_state, fundamental_mode}
+               {global_config_mode, fundamental_mode, end},
+               {vlan_config_mode, logout_mode, logout},
+               {interface_range_config_mode, logout_mode, logout},
+               {interface_config_mode, logout_mode, logout},
+               {global_config_mode, logout_mode, logout},
+               {fundamental_mode, logout_mode, logout}]},
+{initial_state, fundamental_mode},
+{terminal_states, [logout_mode]}
 ].
