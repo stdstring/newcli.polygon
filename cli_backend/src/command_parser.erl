@@ -10,8 +10,7 @@
 
 -export([parse/3]).
 
--spec parse(CommandLine :: string(), Config :: #config{}, ClientOutput :: pid()) ->
-          [{ModuleName :: atom(), CommandPid :: pid()}] | {'command_parser', Reason :: term()}.
+-spec parse(CommandLine :: string(), Config :: #config{}, ClientOutput :: pid()) -> #command_parse_result{} | {'command_parser', Reason :: term()}.
 parse(CommandLine, Config, ClientOutput) when is_record(Config, config) ->
     Commands = Config#config.commands,
     case find_command(CommandLine, Commands) of
@@ -42,8 +41,7 @@ find_command(CommandParserFsm, Rest, _Result) ->
     Result = command_parser_fsm:process_token(CommandParserFsm, Token),
     find_command(CommandParserFsm, NewRest, Result).
 
--spec create_command_chain(CommandModule :: atom(), CommandLineRest :: string(), ClientOutput :: pid()) ->
-          [{ModuleName :: atom(), CommandPid :: pid()}].
+-spec create_command_chain(CommandModule :: atom(), CommandLineRest :: string(), ClientOutput :: pid()) -> #command_parse_result{}.
 create_command_chain(CommandModule, CommandLineRest, ClientOutput) ->
     case output_endpoint:start(ClientOutput) of
         {output_endpoint, Error} -> {command_parser, {output_endpoint, Error}};
@@ -54,6 +52,8 @@ create_command_chain(CommandModule, CommandLineRest, ClientOutput) ->
                 {error, Reason} ->
                     CommandName = apply(CommandModule, get_name, []),
                     {command_parser, {CommandName, creation_error, Reason}};
-                CommandPid -> [{CommandModule, CommandPid}, {output_endpoint, OutputEndpointPid}]
+                CommandPid ->
+                    Commands = [{CommandModule, CommandPid}],
+                    #command_parse_result{command_chain = Commands, endpoint = OutputEndpointPid}
             end
     end.

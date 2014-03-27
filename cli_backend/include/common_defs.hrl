@@ -10,3 +10,5 @@
 -record(config, {commands = [] :: [{CommandName :: atom(), CommandModule :: atom()}],
                  cli_fsm = [] :: [{Key :: atom(), Value :: term()}],
                  other = [] :: [{Key :: atom(), Value :: term()}]}).
+
+-record(command_parse_result, {command_chain = [] :: [{ModuleName :: atom, CommandPid :: pid}], endpoint = undefined :: pid() | 'undefined'}).
