@@ -38,7 +38,7 @@ processing(current_state, _From, StateData) ->
     TerminalStates = FsmConfig#fsm_config.terminal_states,
     {CurrentState, Commands} = lists:keyfind(CurrentState, 1, States),
     IsTerminalState = lists:member(CurrentState, TerminalStates),
-    StateInfo = #cli_fsm_state_info{current_state = CurrentState, commands = Commands, is_terminal =IsTerminalState},
+    StateInfo = #cli_fsm_state_info{current_state = CurrentState, commands = Commands, is_terminal = IsTerminalState},
     {reply, StateInfo, processing, StateData};
 processing({command, CommandName}, _From, StateData) ->
     CurrentState = StateData#cli_fsm_state.current_state,

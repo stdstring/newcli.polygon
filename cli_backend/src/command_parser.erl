@@ -15,7 +15,7 @@ parse(CommandLine, Config, ClientOutput) when is_record(Config, config) ->
     Commands = Config#config.commands,
     case find_command(CommandLine, Commands) of
         {_, CommandModule, CommandLineRest} -> create_command_chain(CommandModule, CommandLineRest, ClientOutput);
-        {false, Reason} -> {command_parser, Reason, CommandLine}
+        {false, Reason} -> {command_parser, Reason}
     end.
 
 %% ====================================================================
