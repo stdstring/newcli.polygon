@@ -43,7 +43,7 @@ handle_cast(_Request, State) -> {stop, not_supported, State}.
 
 handle_info(_Info, State) -> {stop, not_supported, State}.
 
-terminate(_Reason, _State) -> true.
+terminate(_Reason, _State) -> ok.
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 

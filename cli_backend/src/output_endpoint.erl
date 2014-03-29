@@ -38,7 +38,7 @@ handle_cast(#command_error{} = CommandError, State) ->
 
 handle_info(_Info, _State) -> error(not_supported).
 
-terminate(_Reason, _State) -> true.
+terminate(_Reason, _State) -> ok.
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 

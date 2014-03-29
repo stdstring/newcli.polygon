@@ -57,7 +57,7 @@ handle_sync_event(_Event, _From, _StateName, StateData) -> {stop, not_supported,
 
 handle_info(_Event, StateName, StateData) -> {next_state, StateName, StateData}.
 
-terminate(_Reason, _StateName, _StateData) -> true.
+terminate(_Reason, _StateName, _StateData) -> ok.
 
 code_change(_OldVsn, StateName, StateData, _Extra) -> {ok, StateName, StateData}.
 
