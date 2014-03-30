@@ -7,14 +7,14 @@
 
 -record(user, {uid = -1 :: integer(), username = "" :: string(), access_level = 0 :: integer()}).
 
--record(config, {commands = [] :: [{CommandName :: atom(), CommandModule :: atom()}],
-                 cli_fsm = [] :: [{Key :: atom(), Value :: term()}],
-                 other = [] :: [{Key :: atom(), Value :: term()}]}).
+-record(global_config, {commands = [] :: [{CommandName :: atom(), CommandModule :: atom()}],
+                        cli_fsm = [] :: [{Key :: atom(), Value :: term()}],
+                        other = [] :: [{Key :: atom(), Value :: term()}]}).
 
 -record(command_parse_result, {command_chain = [] :: [{ModuleName :: atom, CommandPid :: pid}], endpoint = undefined :: pid() | 'undefined'}).
 
 -record(cli_fsm_state_info, {current_state = undefined :: atom(), commands = [] :: [CommandName :: atom()], is_terminal = false :: boolean()}).
 
--record(client_state, {user = undefined :: 'undefined' | #user{},
-                       cli_fsm = undefined :: 'undefined' | pid(),
-                       output = undefined :: 'undefined' | pid()}).
+-record(client_config, {user = undefined :: 'undefined' | #user{},
+                        cli_fsm = undefined :: 'undefined' | pid(),
+                        output = undefined :: 'undefined' | pid()}).

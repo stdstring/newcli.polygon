@@ -11,12 +11,12 @@
 
 -export([execute/3]).
 
--spec execute(CommandLine :: string(), Config :: #config{}, ClientState :: #client_state{}) -> boolean().
-execute(CommandLine, Config, ClientState) ->
-    User = ClientState#client_state.user,
-    CliFsm = ClientState#client_state.cli_fsm,
-    ClientOutput = ClientState#client_state.output,
-    case command_parser:parse(CommandLine, Config, ClientOutput) of
+-spec execute(CommandLine :: string(), GlobalConfig :: #global_config{}, ClientConfig :: #client_config{}) -> boolean().
+execute(CommandLine, GlobalConfig, ClientConfig) ->
+    User = ClientConfig#client_config.user,
+    CliFsm = ClientConfig#client_config.cli_fsm,
+    ClientOutput = ClientConfig#client_config.output,
+    case command_parser:parse(CommandLine, GlobalConfig, ClientOutput) of
         {command_parser, Reason} ->
             send_error(ClientOutput, {command_parser, Reason}, CommandLine, CliFsm),
             StateInfo = cli_fsm:get_current_state(CliFsm),

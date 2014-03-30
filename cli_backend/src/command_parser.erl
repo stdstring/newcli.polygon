@@ -10,9 +10,9 @@
 
 -export([parse/3]).
 
--spec parse(CommandLine :: string(), Config :: #config{}, ClientOutput :: pid()) -> #command_parse_result{} | {'command_parser', Reason :: term()}.
-parse(CommandLine, Config, ClientOutput) when is_record(Config, config) ->
-    Commands = Config#config.commands,
+-spec parse(CommandLine :: string(), GlobalConfig :: #global_config{}, ClientOutput :: pid()) -> #command_parse_result{} | {'command_parser', Reason :: term()}.
+parse(CommandLine, GlobalConfig, ClientOutput) when is_record(GlobalConfig, global_config) ->
+    Commands = GlobalConfig#global_config.commands,
     case find_command(CommandLine, Commands) of
         {_, CommandModule, CommandLineRest} -> create_command_chain(CommandModule, CommandLineRest, ClientOutput);
         {false, Reason} -> {command_parser, Reason}

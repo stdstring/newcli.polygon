@@ -18,7 +18,7 @@
 -export([init/1, handle_event/3, handle_sync_event/4, handle_info/3, terminate/3, code_change/4]).
 
 start(Config) ->
-    SourceData = Config#config.cli_fsm,
+    SourceData = Config#global_config.cli_fsm,
     start_fsm(SourceData).
 
 process_command(FsmPid, CommandName) ->
