@@ -4,7 +4,10 @@
 
 -behaviour(gen_server).
 
--record(state, {}).
+-include("message_defs.hrl").
+-include("common_defs.hrl").
+
+-record(client_state, {global_config = #global_config{} :: #global_config{}, client_config = #client_config{} :: #client_config{}}).
 
 %% ====================================================================
 %% API functions
@@ -14,19 +17,19 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-init([]) -> {ok, #state{}}.
+init({GlobalConfig, }) -> {ok, #client_state{}}.
 
-handle_call(Request, From, State) ->
+handle_call(#command{message = CommandLine}, From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
-handle_cast(Msg, State) -> {noreply, State}.
+handle_cast(#logout{}, State) -> {noreply, State}.
 
-handle_info(Info, State) -> {noreply, State}.
+handle_info(_Info, State) -> {stop, not_supported, State}.
 
-terminate(Reason, State) -> ok.
+terminate(_Reason, _State) -> ok.
 
-code_change(OldVsn, State, Extra) -> {ok, State}.
+code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 %% ====================================================================
 %% Internal functions
