@@ -13,17 +13,45 @@
 %% API functions
 %% ====================================================================
 
--export([]).
+-export([start/3, process_command/2]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-init({GlobalConfig, }) -> {ok, #client_state{}}.
+start(GlobalConfig, User, ClientOutput) ->
+    case gen_server:start_link(?MODULE, {GlobalConfig, User, ClientOutput}, []) of
+        {ok, Pid} -> Pid;
+        {error, Error} ->
+            gen_server:cast(ClientOutput, Error),
+            {client_input_endpoint, Error}
+    end.
+
+process_command(InputEndpoint, Command) ->
+    gen_server:call(InputEndpoint, Command).
+
+init({GlobalConfig, User, ClientOutput}) ->
+    case cli_fsm:start(GlobalConfig) of
+        {cli_fsm, Error} -> {stop, {cli_fsm, Error}};
+        Pid ->
+            ClientConfig = #client_config{user = User, cli_fsm = Pid, output = ClientOutput},
+            {ok, #client_state{global_config = GlobalConfig, client_config = ClientConfig}}
+    end.
 
 handle_call(#command{message = CommandLine}, From, State) ->
-    Reply = ok,
-    {reply, Reply, State}.
+    GlobalConfig = State#client_state.global_config,
+    ClientConfig = State#client_state.client_config,
+    ClientOutput = ClientConfig#client_config.output,
+    case From of
+        {ClientOutput, _Tag} ->
+            case command_execution_context:execute(CommandLine, GlobalConfig, ClientConfig) of
+                false -> {stop, session_terminated, session_terminated, State};
+                true -> {reply, command_processed, State}
+            end;
+        _Other ->
+            gen_server:cast(ClientOutput, #command_fail{reason = bad_client}),
+            {reply, bad_client, State}
+    end.
 
-handle_cast(#logout{}, State) -> {noreply, State}.
+handle_cast(_Request, State) -> {stop, not_supported, State}.
 
 handle_info(_Info, State) -> {stop, not_supported, State}.
 
