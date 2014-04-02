@@ -7,7 +7,8 @@
 
 -record(user, {uid = -1 :: integer(), username = "" :: string(), access_level = 0 :: integer()}).
 
--record(global_config, {commands = [] :: [{CommandName :: atom(), CommandModule :: atom()}],
+-record(global_config, {main_config_dir = "." :: string(),
+                        commands = [] :: [{CommandName :: atom(), CommandModule :: atom()}],
                         cli_fsm = [] :: [{Key :: atom(), Value :: term()}],
                         other = [] :: [{Key :: atom(), Value :: term()}]}).
 
