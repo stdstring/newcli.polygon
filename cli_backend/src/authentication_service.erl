@@ -12,14 +12,17 @@
 %% API functions
 %% ====================================================================
 
--export([start/1, authenticate/2]).
+-export([start/2, authenticate/2]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-start(Config) ->
+-spec start(Config :: [{Key :: atom(), Value :: term()}], MainConfigDir :: string()) -> pid() | {'error', Error :: term()} | no_return().
+start(Config, MainConfigDir) ->
     Filename = parse_config(Config),
-    start_service(Filename).
+    start_service(filename:absname(Filename, MainConfigDir)).
 
+-spec authenticate(Username :: string(), Password :: string()) -> {'authentication_complete', #user{}} | {'authentication_fail', Reason :: atom()}.
+%% todo (std_string) : use PasswordHash instead of Password here
 authenticate(Username, Password) ->
     gen_server:call(?SERVICE_NAME, {Username, Password}).
 

@@ -12,14 +12,16 @@
 %% API functions
 %% ====================================================================
 
--export([start/1, authorize/2]).
+-export([start/2, authorize/2]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-start(Config) ->
+-spec start(Config :: [{Key :: atom(), Value :: term()}], MainConfigDir  :: string()) -> pid() | {'error', Error :: term()} | no_return().
+start(Config, MainConfigDir) ->
     Filename = parse_config(Config),
-    start_service(Filename).
+    start_service(filename:absname(Filename, MainConfigDir)).
 
+-spec authorize(User :: #user{}, CommandName :: atom()) -> {'authorization_result', 'access_allowed' | 'access_denied'} | {'authorization_fail', Reason :: atom()}.
 authorize(User, CommandName) when is_record(User, user) ->
     gen_server:call(?SERVICE_NAME, {User, CommandName}).
 

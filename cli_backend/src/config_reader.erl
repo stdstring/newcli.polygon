@@ -24,13 +24,11 @@ read(MainConfigFile) ->
 -spec process(Other :: {Key :: atom(), Value :: term()}, Config :: #global_config{}, MainConfigDir :: string()) -> #global_config{}.
 process({?COMMANDS_CONFIG_KEY, CommandsData}, Config, MainConfigDir) ->
     CommandsSource = config_utils:get_config(CommandsData, ?COMMANDS_DATA_SOURCE, 1),
-    CommandsAbsname = filename:absname(CommandsSource, MainConfigDir),
-    Commands = erlang_term_utils:read_from_file(CommandsAbsname),
+    Commands = erlang_term_utils:read_from_file(filename:absname(CommandsSource, MainConfigDir)),
     Config#global_config{commands = Commands};
 process({?CLI_FSM_CONFIG_KEY, CliFsmData}, Config, MainConfigDir) ->
     CliFsmSource = config_utils:get_config(CliFsmData, ?CLI_FSM_DATA_SOURCE, 1),
-    CliFsmAbsname = filename:absname(CliFsmSource, MainConfigDir),
-    CliFsm = erlang_term_utils:read_from_file(CliFsmAbsname),
+    CliFsm = erlang_term_utils:read_from_file(filename:absname(CliFsmSource, MainConfigDir)),
     Config#global_config{cli_fsm = CliFsm};
 process(Other, Config, _MainConfigDir) ->
     ConfigOther = Config#global_config.other,
