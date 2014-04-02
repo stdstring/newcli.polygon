@@ -22,7 +22,7 @@ start(Config, MainConfigDir) ->
     start_service(filename:absname(Filename, MainConfigDir)).
 
 -spec authenticate(Username :: string(), Password :: string()) -> {'authentication_complete', #user{}} | {'authentication_fail', Reason :: atom()}.
-%% todo (std_string) : use PasswordHash instead of Password here
+%% @todo (std_string) : use PasswordHash instead of Password here
 authenticate(Username, Password) ->
     gen_server:call(?SERVICE_NAME, {Username, Password}).
 
