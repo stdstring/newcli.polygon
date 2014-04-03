@@ -3,19 +3,32 @@
 -module(global_input_endpoint).
 -behaviour(gen_server).
 
--record(state, {}).
+-include("message_defs.hrl").
+-include("common_defs.hrl").
+
+-record(global_state, {global_config = #global_config{} :: #global_config{}}).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
--export([]).
+-export([start/1]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-init([]) -> {ok, #state{}}.
+start(MainConfigFile) -> ok.
 
-handle_call(_Request, _From, State) ->
+init([]) -> {ok, #global_state{}}.
+
+handle_call(#login{login_name = LoginName, password = PasswordHash}, _From, State) ->
+%%    case authentication_service:authenticate(LoginName, PasswordHash) of
+%%        {authentication_complete, User} ->
+%%            client_input_endpoint:start(GlobalConfig, User, ClientOutput);
+%%        {authentication_fail, Reason} ->
+%%    end
+    Reply = ok,
+    {reply, Reply, State};
+handle_call(#commands_info{}, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
