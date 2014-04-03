@@ -16,20 +16,36 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-start(MainConfigFile) -> ok.
+start(GlobalConfig) -> ok.
 
-init([]) -> {ok, #global_state{}}.
+init(GlobalConfig) -> {ok, #global_state{global_config = GlobalConfig}}.
 
-handle_call(#login{login_name = LoginName, password = PasswordHash}, _From, State) ->
-%%    case authentication_service:authenticate(LoginName, PasswordHash) of
-%%        {authentication_complete, User} ->
-%%            client_input_endpoint:start(GlobalConfig, User, ClientOutput);
-%%        {authentication_fail, Reason} ->
-%%    end
-    Reply = ok,
-    {reply, Reply, State};
+handle_call(#login{login_name = LoginName, password = PasswordHash}, From, State) ->
+    case authentication_service:authenticate(LoginName, PasswordHash) of
+        {authentication_complete, User} ->
+            GlobalConfig = State#global_state.global_config,
+            ClientOutput = From,
+            case client_input_endpoint:start(GlobalConfig, User, ClientOutput) of
+                {client_input_endpoint, Error} ->
+                    Reply = #login_fail{reason = {session_creation_error, Error}},
+                    {reply, Reply, State};
+                Pid -> 
+                    Reply = #login_success{session_pid = Pid, greeting = "some greeting message"},
+                    {reply, Reply, State}
+            end;
+        {authentication_fail, Reason} ->
+            Reply = #login_fail{reason = {authentication_fail, Reason}},
+            {reply, Reply, State}
+    end;
 handle_call(#commands_info{}, _From, State) ->
-    Reply = ok,
+    GlobalConfig = State#global_state.global_config,
+    Commands = GlobalConfig#global_config.commands,
+    CommandsInfo = lists:map(fun(Name, Module) ->
+                                     Body = apply(Module, get_command_body, []),
+                                     Help = apply(Module, get_help, []),
+                                     #command_info{command_name = Name, command_body = Body, command_help = Help}
+                             end, Commands),
+    Reply = #commands_info_result{info = CommandsInfo},
     {reply, Reply, State}.
 
 handle_cast(_Request, State) -> {noreply, State}.

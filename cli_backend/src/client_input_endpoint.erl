@@ -17,6 +17,7 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
+-spec start(GlobalConfig :: #global_config{}, User :: #user{}, ClientOutput :: pid()) -> pid() | {'client_input_endpoint', Error :: term()}.
 start(GlobalConfig, User, ClientOutput) ->
     case gen_server:start_link(?MODULE, {GlobalConfig, User, ClientOutput}, []) of
         {ok, Pid} -> Pid;
@@ -25,8 +26,9 @@ start(GlobalConfig, User, ClientOutput) ->
             {client_input_endpoint, Error}
     end.
 
-process_command(InputEndpoint, Command) ->
-    gen_server:call(InputEndpoint, Command).
+-spec process_command(InputEndpoint :: pid(), Command :: string()) -> Result :: atom().
+process_command(InputEndpoint, CommandLine) ->
+    gen_server:call(InputEndpoint, CommandLine).
 
 init({GlobalConfig, User, ClientOutput}) ->
     case cli_fsm:start(GlobalConfig) of
