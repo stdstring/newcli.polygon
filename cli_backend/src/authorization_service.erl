@@ -19,7 +19,7 @@
 -spec start(Config :: [{Key :: atom(), Value :: term()}], MainConfigDir  :: string()) -> pid() | no_return().
 start(Config, MainConfigDir) ->
     Filename = parse_config(Config),
-    start_service(filename:absname(Filename, MainConfigDir)).
+    gen_server:start_link(?MODULE, filename:absname(Filename, MainConfigDir), []).
 
 -spec authorize(User :: #user{}, CommandName :: atom()) -> {'authorization_result', 'access_allowed' | 'access_denied'} | {'authorization_fail', Reason :: atom()}.
 authorize(User, CommandName) when is_record(User, user) ->
@@ -56,13 +56,6 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 parse_config(Config) ->
     ServiceConfig = config_utils:get_config(Config, ?CONFIG_KEY, 1, {authorization_service, bad_config}),
     config_utils:get_config(ServiceConfig, ?DATA_SOURCE, 1, {authorization_service, missing_source}).
-
--spec start_service(Filename :: string()) -> pid() | no_return().
-start_service(Filename) ->
-    case gen_server:start_link(?MODULE, Filename, []) of
-        {ok, Pid} -> Pid;
-        {error, Error} -> error({authorization_service, Error})
-    end.
 
 -spec load_data(Filename :: string()) -> #authorization_service_state{}.
 load_data(Filename) ->

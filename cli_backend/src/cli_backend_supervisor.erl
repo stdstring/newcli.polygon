@@ -29,7 +29,7 @@ init(GlobalConfig) ->
     MainConfigDir = GlobalConfig#global_config.main_config_dir,
     SevicesConfig = GlobalConfig#global_config.other,
     ChildSpecification =
-        [{authentiaction_service, {authentication_service, start, [SevicesConfig, MainConfigDir]}, transient, brutal_kill, worker, [authentication_service]},
+        [{authentication_service, {authentication_service, start, [SevicesConfig, MainConfigDir]}, transient, brutal_kill, worker, [authentication_service]},
          {authorization_service, {authorization_service, start, [SevicesConfig, MainConfigDir]}, transient, brutal_kill, worker, [authorization_service]},
          {global_input_endpoint, {global_input_endpoint, start, [GlobalConfig]}, transient, brutal_kill, worker, [global_input_endpoint]}],
     {ok,{{one_for_one, 1, 60}, ChildSpecification}}.

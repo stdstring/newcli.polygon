@@ -17,12 +17,8 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--spec start(GlobalConfig :: #global_config{}) -> pid() | no_return().
-start(GlobalConfig) ->
-    case gen_server:start_link(?MODULE, GlobalConfig, []) of
-        {ok, Pid} -> Pid;
-        {error, Error} -> error({global_input_endpoint, Error})
-    end.
+-spec start(GlobalConfig :: #global_config{}) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
+start(GlobalConfig) -> gen_server:start_link(?MODULE, GlobalConfig, []).
 
 init(GlobalConfig) ->
     register(?SERVICE_NAME, self()),
@@ -48,7 +44,7 @@ handle_call(#login{login_name = LoginName, password = PasswordHash}, From, State
 handle_call(#commands_info{}, _From, State) ->
     GlobalConfig = State#global_state.global_config,
     Commands = GlobalConfig#global_config.commands,
-    CommandsInfo = lists:map(fun(Name, Module) ->
+    CommandsInfo = lists:map(fun({Name, Module}) ->
                                      Body = apply(Module, get_command_body, []),
                                      Help = apply(Module, get_help, []),
                                      #command_info{command_name = Name, command_body = Body, command_help = Help}
