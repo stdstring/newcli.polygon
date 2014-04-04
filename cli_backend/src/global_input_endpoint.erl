@@ -3,6 +3,7 @@
 -module(global_input_endpoint).
 -behaviour(gen_server).
 
+-include("global_input_endpoint_defs.hrl").
 -include("message_defs.hrl").
 -include("common_defs.hrl").
 
@@ -16,9 +17,16 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-start(GlobalConfig) -> ok.
+-spec start(GlobalConfig :: #global_config{}) -> pid() | no_return().
+start(GlobalConfig) ->
+    case gen_server:start_link(?MODULE, GlobalConfig, []) of
+        {ok, Pid} -> Pid;
+        {error, Error} -> error({global_input_endpoint, Error})
+    end.
 
-init(GlobalConfig) -> {ok, #global_state{global_config = GlobalConfig}}.
+init(GlobalConfig) ->
+    register(?SERVICE_NAME, self()),
+    {ok, #global_state{global_config = GlobalConfig}}.
 
 handle_call(#login{login_name = LoginName, password = PasswordHash}, From, State) ->
     case authentication_service:authenticate(LoginName, PasswordHash) of
@@ -48,9 +56,9 @@ handle_call(#commands_info{}, _From, State) ->
     Reply = #commands_info_result{info = CommandsInfo},
     {reply, Reply, State}.
 
-handle_cast(_Request, State) -> {noreply, State}.
+handle_cast(_Request, State) -> {stop, not_supported, State}.
 
-handle_info(_Info, State) -> {noreply, State}.
+handle_info(_Info, State) -> {stop, not_supported, State}.
 
 terminate(_Reason, _State) -> ok.
 
