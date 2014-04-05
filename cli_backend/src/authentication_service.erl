@@ -21,10 +21,9 @@ start(Config, MainConfigDir) ->
     Filename = parse_config(Config),
     gen_server:start_link(?MODULE, filename:absname(Filename, MainConfigDir), []).
 
--spec authenticate(Username :: string(), Password :: string()) -> {'authentication_complete', #user{}} | {'authentication_fail', Reason :: atom()}.
-%% @todo (std_string) : use PasswordHash instead of Password here
-authenticate(Username, Password) ->
-    gen_server:call(?SERVICE_NAME, {Username, Password}).
+-spec authenticate(Username :: string(), PasswordHash :: binary()) -> {'authentication_complete', #user{}} | {'authentication_fail', Reason :: atom()}.
+authenticate(Username, PasswordHash) ->
+    gen_server:call(?SERVICE_NAME, {Username, PasswordHash}).
 
 init(Filename) ->
     %% {Uid, Username, Password, AccessLevel}
@@ -33,11 +32,11 @@ init(Filename) ->
     register(?SERVICE_NAME, self()),
     {ok, State}.
 
-handle_call({Username, Password}, _From, State) ->
+handle_call({Username, PasswordHash}, _From, State) ->
     Data = State#authentication_service_state.data,
     case lists:keyfind(Username, 2, Data) of
         {Uid, Username, Hash, AccessLevel} ->
-            ProcessResult = authenticate_impl({Uid, Username, Hash, AccessLevel}, Password),
+            ProcessResult = authenticate_impl({Uid, Username, Hash, AccessLevel}, PasswordHash),
             {reply, ProcessResult, State};
         false -> {reply, {authentication_fail, unknown_username}, State}
     end.
@@ -64,10 +63,9 @@ load_data(Filename) ->
     Data = erlang_term_utils:read_from_file(Filename),
     #authentication_service_state{source = Filename, data = Data}.
 
--spec authenticate_impl({Uid :: integer(), Username :: string(), Hash :: binary(), AccessLevel :: integer()}, Password :: string()) ->
+-spec authenticate_impl({Uid :: integer(), Username :: string(), Hash :: binary(), AccessLevel :: integer()}, Password :: binary()) ->
           {'authentication_complete', #user{}} | {'authentication_fail', Reason :: term()}.
-authenticate_impl({Uid, Username, Hash, AccessLevel}, Password) ->
-    PasswordHash = crypto_utils:hash(?HASH_TYPE, Password, ?HASH_SALT),
+authenticate_impl({Uid, Username, Hash, AccessLevel}, PasswordHash) ->
     if
         Hash == PasswordHash -> {authentication_complete, #user{uid = Uid, username = Username, access_level = AccessLevel}};
         true -> {authentication_fail, bad_password}
