@@ -11,7 +11,9 @@
 
 show_messages() ->
     receive
-        Message -> io:format("Message: ~p~n", [Message])
+        Message ->
+            io:format("Message: ~p~n", [Message]),
+            show_messages()
     after 0 -> ok
     end.
 

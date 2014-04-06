@@ -18,10 +18,11 @@ execute(CommandLine, GlobalConfig, ClientConfig) ->
     ClientOutput = ClientConfig#client_config.output,
     case command_parser:parse(CommandLine, GlobalConfig, ClientOutput) of
         {command_parser, Reason} ->
-            send_error(ClientOutput, {command_parser, Reason}, CommandLine, CliFsm),
+            send_parser_error(ClientOutput, Reason, CommandLine, CliFsm),
             StateInfo = cli_fsm:get_current_state(CliFsm),
             not StateInfo#cli_fsm_state_info.is_terminal;
-        Commands -> execute(Commands, ClientOutput, CliFsm, User)
+        #command_parse_result{command_chain = Commands, endpoint = Endpoint} ->
+            execute(Commands, Endpoint, CliFsm, User)
     end.
 
 %% ====================================================================
@@ -69,12 +70,14 @@ send_error(Endpoint, ReturnCode, CliFsm) ->
     ok.
 
 -spec send_error(Endpoint :: pid(), Reason :: term(), CommandName :: atom(), CliFsm :: pid()) -> 'ok'.
-send_error(Endpoint, {command_parser, Reason}, CommandLine, CliFsm) ->
-    Message = lists:flatten(io_lib:format("Parsing of command line \"~s\" is failed due to the following reason: \"~s\"", [CommandLine, Reason])),
-    send_error_message(Endpoint, Message, CliFsm),
-    ok;
 send_error(Endpoint, Reason, CommandName, CliFsm) ->
-    Message = lists:flatten(io_lib:format("Command \"~s\" is failed due to the following reason: \"~s\"", [CommandName, Reason])),
+    Message = lists:flatten(io_lib:format("Command \"~p\" is failed due to the following reason: \"~p\"", [CommandName, Reason])),
+    send_error_message(Endpoint, Message, CliFsm),
+    ok.
+
+-spec send_parser_error(Endpoint :: pid(),  Reason :: term(), CommandLine :: string(), CliFsm :: pid()) -> 'ok'.
+send_parser_error(Endpoint, Reason, CommandLine, CliFsm) ->
+    Message = lists:flatten(io_lib:format("Parsing of command line \"~s\" is failed due to the following reason: \"~p\"", [CommandLine, Reason])),
     send_error_message(Endpoint, Message, CliFsm),
     ok.
 

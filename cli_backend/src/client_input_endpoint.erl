@@ -38,12 +38,12 @@ init({GlobalConfig, User, ClientOutput}) ->
             {ok, #client_state{global_config = GlobalConfig, client_config = ClientConfig}}
     end.
 
-handle_call(#command{message = CommandLine}, From, State) ->
+handle_call(#command{message = CommandLine}, {From, _Tag}, State) ->
     GlobalConfig = State#client_state.global_config,
     ClientConfig = State#client_state.client_config,
     ClientOutput = ClientConfig#client_config.output,
     case From of
-        {ClientOutput, _Tag} ->
+        ClientOutput ->
             case command_execution_context:execute(CommandLine, GlobalConfig, ClientConfig) of
                 false -> {stop, session_terminated, session_terminated, State};
                 true -> {reply, command_processed, State}

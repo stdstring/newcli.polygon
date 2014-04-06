@@ -24,7 +24,7 @@ init(GlobalConfig) ->
     register(?SERVICE_NAME, self()),
     {ok, #global_state{global_config = GlobalConfig}}.
 
-handle_call(#login{login_name = LoginName, password = PasswordHash}, From, State) ->
+handle_call(#login{login_name = LoginName, password = PasswordHash}, {From, _Tag}, State) ->
     case authentication_service:authenticate(LoginName, PasswordHash) of
         {authentication_complete, User} ->
             GlobalConfig = State#global_state.global_config,
