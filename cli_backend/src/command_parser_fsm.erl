@@ -19,13 +19,22 @@
 start(KnownCommands) ->
     start_fsm(KnownCommands).
 
--spec process_token(ParserPid :: pid(), Token :: string()) -> term().
+-spec process_token(ParserPid :: pid(), Token :: string() | 'eol') -> term().
+process_token(ParserPid, eol) ->
+    gen_fsm:sync_send_event(ParserPid, eol);
 process_token(ParserPid, Token) ->
     gen_fsm:sync_send_event(ParserPid, Token).
 
 init(KnownCommands) ->
     {ok, ambiguous_parsing, #state{commands = KnownCommands}}.
 
+ambiguous_parsing(eol, _From, #state{commands = Commands, recognized_parts = RecognizedParts} = StateData) ->
+    case lists:filter(fun({_, Module}) -> apply(Module, get_command_body, []) == RecognizedParts end, Commands) of
+        [{Name, Module}] ->
+            Reply = {successful_parsing, {Name, Module}},
+            {reply, Reply, successful_parsing, #state{commands = [{Name, Module}], recognized_parts = RecognizedParts}};
+        _Other -> {reply, ambiguous_parsing, ambiguous_parsing, StateData}
+    end;
 ambiguous_parsing(Token, _From, #state{commands = Commands, recognized_parts = RecognizedParts}) ->
     NewParts = RecognizedParts ++ [Token],
     NewCommands = lists:filter(fun({_, Module}) -> lists:prefix(NewParts, apply(Module, get_command_body, [])) end, Commands),
@@ -37,14 +46,20 @@ ambiguous_parsing(Token, _From, #state{commands = Commands, recognized_parts = R
         _Other -> {reply, ambiguous_parsing, ambiguous_parsing, #state{commands = NewCommands, recognized_parts = NewParts}}
     end.
 
+incomplete_parsing(eol, _From, StateData) ->
+    {reply, incomplete_parsing, incomplete_parsing, StateData};
 incomplete_parsing(Token, _From, #state{commands = [{Name, Module}], recognized_parts = RecognizedParts}) ->
     CommandBody = apply(Module, get_command_body, []),
     process_single_command(RecognizedParts ++ [Token], CommandBody, Name, Module).
 
+%%successful_parsing(eol, _From, StateData) ->
+%%    {stop, finished_state, finished_state, StateData}.
 successful_parsing(_Token, _From, StateData) ->
     {stop, finished_state, finished_state, StateData}.
 
-unsuccessful_parsing(_Event, _From, StateData) ->
+%%unsuccessful_parsing(eol, _From, StateData) ->
+%%    {reply, unsuccessful_parsing, unsuccessful_parsing, StateData};
+unsuccessful_parsing(_Token, _From, StateData) ->
     {stop, finished_state, finished_state, StateData}.
 
 handle_event(_Event, _StateName, StateData) -> {stop, not_supported, StateData}.

@@ -35,7 +35,11 @@ find_command(CommandLine, Commands) ->
           {CommandName :: atom(), CommandModule :: atom(), ComandLineRest :: string()} | {'false', Reason :: term()}.
 find_command(_CommandParserFsm, Rest, {successful_parsing, {Name, Module}}) -> {Name, Module, Rest};
 find_command(_CommandParserFsm, _Rest, unsuccessful_parsing) -> {false, unknown_command};
-find_command(_CommandParserFsm, "", ambiguous_parsing) -> {false, ambiguous_command};
+find_command(CommandParserFsm, "", ambiguous_parsing) ->
+    case command_parser_fsm:process_token(CommandParserFsm, eol) of
+        {successful_parsing, {Name, Module}} -> {Name, Module, ""};
+        ambiguous_parsing -> {false, ambiguous_command}
+    end;
 find_command(_CommandParserFsm, "", incomplete_parsing) -> {false, incomplete_command};
 find_command(CommandParserFsm, Rest, _Result) ->
     {Token, NewRest} = commandline_parser:get_first_token(Rest),
