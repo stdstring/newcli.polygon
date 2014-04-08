@@ -1,13 +1,13 @@
 [
 %% {'states', [{statename, [allowed_command_names]}]}
-{states, [{fundamental_mode, [conf_terminal, ping, show_vlan, logout]},
+{states, [{fundamental_mode, [config_terminal, ping, show_vlan, logout]},
           {global_config_mode, [interface, interface_range, vlan, no_vlan, 'end', exit, show_vlan, logout]},
           {interface_config_mode, [switchport_vlan, no_switchport_vlan, 'end', exit, show_vlan, logout]},
           {interface_range_config_mode, [switchport_vlan, no_switchport_vlan, 'end', exit, show_vlan, logout]},
           {vlan_config_mode, [name_vlan, no_name_vlan, vlan, no_vlan, 'end', exit, show_vlan, logout]},
           {logout_mode, []}]},
 %% {'transitions', [{from_state, to_state, command_name}]}
-{transitions, [{fundamental_mode, global_config_mode, conf_terminal},
+{transitions, [{fundamental_mode, global_config_mode, config_terminal},
                {global_config_mode, interface_config_mode, interface},
                {global_config_mode, interface_range_config_mode, interface_range},
                {global_config_mode, vlan_config_mode, vlan},

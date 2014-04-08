@@ -5,6 +5,9 @@
 -include("message_defs.hrl").
 -include("common_defs.hrl").
 
+-record(parser_fail, {command_line = "" :: string(), reason = undefined :: 'undefined' | term()}).
+-record(precondition_check_fail, {reason = undefined :: 'undefined' | term()}).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -16,29 +19,36 @@ execute(CommandLine, GlobalConfig, ClientConfig) ->
     User = ClientConfig#client_config.user,
     CliFsm = ClientConfig#client_config.cli_fsm,
     ClientOutput = ClientConfig#client_config.output,
+    Endpoint = create_output_endpoint(ClientOutput),
     case command_parser:parse(CommandLine, GlobalConfig, ClientOutput) of
         {command_parser, Reason} ->
-            send_parser_error(ClientOutput, Reason, CommandLine, CliFsm),
+            send_fail(Endpoint, #parser_fail{command_line = CommandLine, reason = Reason}),
             StateInfo = cli_fsm:get_current_state(CliFsm),
             not StateInfo#cli_fsm_state_info.is_terminal;
-        #command_parse_result{command_chain = Commands, endpoint = Endpoint} ->
-            execute(Commands, Endpoint, CliFsm, User)
+        Commands -> execute(Commands, Endpoint, CliFsm, User)
     end.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
+-spec create_output_endpoint(ClientOutput :: pid()) -> pid() | no_return().
+create_output_endpoint(ClientOutput) ->
+    case output_endpoint:start(ClientOutput) of
+        {ok, Pid} -> Pid;
+        {error, Reason} -> error({output_endpoint, Reason})
+    end.
+
 -spec execute(Commands :: [{CommandModule :: atom(), CommandPid :: pid()}], Endpoint :: pid(), CliFsm :: pid(), User :: #user{}) -> boolean().
 execute([], Endpoint, CliFsm, _User) ->
     #cli_fsm_state_info{current_state = CurrentState, is_terminal = IsTerminalState} = cli_fsm:get_current_state(CliFsm),
-    output_endpoint:send_to_client(Endpoint, 0, CurrentState),
+    output_endpoint:send_result(Endpoint, 0, CurrentState),
     not IsTerminalState;
 execute([{CommandModule, CommandPid} | Commands], Endpoint, CliFsm, User) ->
     CommandName = apply(CommandModule, get_name, []),
     case command_execution_checker:execution_precheck(CommandName, CliFsm, User) of
         {false, Reason} ->
-            send_error(Endpoint, Reason, CommandName, CliFsm),
+            send_fail(Endpoint, #precondition_check_fail{reason = Reason}),
             StateInfo = cli_fsm:get_current_state(CliFsm),
             not StateInfo#cli_fsm_state_info.is_terminal;
         true -> process_execute(CommandModule, CommandPid, Commands, Endpoint, CliFsm, User)
@@ -66,24 +76,11 @@ process_execute(CommandModule, CommandPid, OtherCommands, Endpoint, CliFsm, User
 -spec send_error(Endpoint :: pid(), ReturnCode :: integer(), CliFsm :: pid()) -> 'ok'.
 send_error(Endpoint, ReturnCode, CliFsm) ->
     #cli_fsm_state_info{current_state = CurrentState} = cli_fsm:get_current_state(CliFsm),
-    output_endpoint:send_to_client(Endpoint, ReturnCode, CurrentState),
+    output_endpoint:send_result(Endpoint, ReturnCode, CurrentState),
     ok.
 
--spec send_error(Endpoint :: pid(), Reason :: term(), CommandName :: atom(), CliFsm :: pid()) -> 'ok'.
-send_error(Endpoint, Reason, CommandName, CliFsm) ->
-    Message = lists:flatten(io_lib:format("Command \"~p\" is failed due to the following reason: \"~p\"", [CommandName, Reason])),
-    send_error_message(Endpoint, Message, CliFsm),
+-spec send_fail(Endpoint :: pid(), Message :: term()) -> 'ok'.
+send_fail(Endpoint, Message) ->
+    output_endpoint:send_fail(Endpoint, Message),
     ok.
 
--spec send_parser_error(Endpoint :: pid(),  Reason :: term(), CommandLine :: string(), CliFsm :: pid()) -> 'ok'.
-send_parser_error(Endpoint, Reason, CommandLine, CliFsm) ->
-    Message = lists:flatten(io_lib:format("Parsing of command line \"~s\" is failed due to the following reason: \"~p\"", [CommandLine, Reason])),
-    send_error_message(Endpoint, Message, CliFsm),
-    ok.
-
--spec send_error_message(Endpoint :: pid(), Message :: string(), CliFsm :: pid()) -> ok.
-send_error_message(Endpoint, Message, CliFsm) ->
-    gen_server:cast(Endpoint, #command_error{message = Message}),
-    #cli_fsm_state_info{current_state = CurrentState} = cli_fsm:get_current_state(CliFsm),
-    output_endpoint:send_to_client(Endpoint, 255, CurrentState),
-    ok.

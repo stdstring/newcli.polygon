@@ -2,7 +2,7 @@
 [
 {login, 0},
 {logout, 0},
-{conf_terminal, 15},
+{config_terminal, 15},
 {interface, 15},
 {interface_range, 15},
 {vlan, 15},

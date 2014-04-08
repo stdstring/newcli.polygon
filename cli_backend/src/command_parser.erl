@@ -10,11 +10,12 @@
 
 -export([parse/3]).
 
--spec parse(CommandLine :: string(), GlobalConfig :: #global_config{}, ClientOutput :: pid()) -> #command_parse_result{} | {'command_parser', Reason :: term()}.
-parse(CommandLine, GlobalConfig, ClientOutput) when is_record(GlobalConfig, global_config) ->
+-spec parse(CommandLine :: string(), GlobalConfig :: #global_config{}, OutputEndpoint :: pid()) ->
+          [{ModuleName :: atom, CommandPid :: pid}] | {'command_parser', Reason :: term()}.
+parse(CommandLine, GlobalConfig, OutputEndpoint) when is_record(GlobalConfig, global_config) ->
     Commands = GlobalConfig#global_config.commands,
     case find_command(CommandLine, Commands) of
-        {_, CommandModule, CommandLineRest} -> create_command_chain(CommandModule, CommandLineRest, ClientOutput);
+        {_, CommandModule, CommandLineRest} -> create_command_chain(CommandModule, CommandLineRest, OutputEndpoint);
         {false, Reason} -> {command_parser, Reason}
     end.
 
@@ -41,19 +42,13 @@ find_command(CommandParserFsm, Rest, _Result) ->
     Result = command_parser_fsm:process_token(CommandParserFsm, Token),
     find_command(CommandParserFsm, NewRest, Result).
 
--spec create_command_chain(CommandModule :: atom(), CommandLineRest :: string(), ClientOutput :: pid()) -> #command_parse_result{}.
-create_command_chain(CommandModule, CommandLineRest, ClientOutput) ->
-    case output_endpoint:start(ClientOutput) of
-        {output_endpoint, Error} -> {command_parser, {output_endpoint, Error}};
-        OutputEndpointPid ->
-            Stdout = OutputEndpointPid,
-            Stderr = OutputEndpointPid,
-            case apply(CommandModule, create, [CommandLineRest, Stdout, Stderr]) of
-                {error, Reason} ->
-                    CommandName = apply(CommandModule, get_name, []),
-                    {command_parser, {CommandName, creation_error, Reason}};
-                CommandPid ->
-                    Commands = [{CommandModule, CommandPid}],
-                    #command_parse_result{command_chain = Commands, endpoint = OutputEndpointPid}
-            end
+-spec create_command_chain(CommandModule :: atom(), CommandLineRest :: string(), OutputEndpoint :: pid()) -> [{ModuleName :: atom, CommandPid :: pid}].
+create_command_chain(CommandModule, CommandLineRest, OutputEndpoint) ->
+    Stdout = OutputEndpoint,
+    Stderr = OutputEndpoint,
+    case apply(CommandModule, create, [CommandLineRest, Stdout, Stderr]) of
+        {error, Reason} ->
+            CommandName = apply(CommandModule, get_name, []),
+            {command_parser, {CommandName, creation_error, Reason}};
+        CommandPid -> [{CommandModule, CommandPid}]
     end.
