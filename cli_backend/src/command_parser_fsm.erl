@@ -4,6 +4,8 @@
 
 -behaviour(gen_fsm).
 
+-include("common_defs.hrl").
+
 -record(state, {commands = [] :: [{CommandName :: atom(), CommandModule :: atom()}], recognized_parts = [] :: [string()]}).
 
 %% ====================================================================
@@ -16,8 +18,7 @@
 -export([init/1, handle_event/3, handle_sync_event/4, handle_info/3, terminate/3, code_change/4]).
 
 -spec start(KnownCommands :: [{CommandName :: atom(), CommandModule :: atom()}]) -> pid() | {'error', Error :: term()}.
-start(KnownCommands) ->
-    start_fsm(KnownCommands).
+start(KnownCommands) -> gen_fsm:start_link(?MODULE, KnownCommands, []).
 
 -spec process_token(ParserPid :: pid(), Token :: string() | 'eol') -> term().
 process_token(ParserPid, eol) ->
@@ -28,39 +29,63 @@ process_token(ParserPid, Token) ->
 init(KnownCommands) ->
     {ok, ambiguous_parsing, #state{commands = KnownCommands}}.
 
-ambiguous_parsing(eol, _From, #state{commands = Commands, recognized_parts = RecognizedParts} = StateData) ->
-    case lists:filter(fun({_, Module}) -> apply(Module, get_command_body, []) == RecognizedParts end, Commands) of
-        [{Name, Module}] ->
-            Reply = {successful_parsing, {Name, Module}},
-            {reply, Reply, successful_parsing, #state{commands = [{Name, Module}], recognized_parts = RecognizedParts}};
-        _Other -> {reply, ambiguous_parsing, ambiguous_parsing, StateData}
-    end;
 ambiguous_parsing(Token, _From, #state{commands = Commands, recognized_parts = RecognizedParts}) ->
     NewParts = RecognizedParts ++ [Token],
-    NewCommands = lists:filter(fun({_, Module}) -> lists:prefix(NewParts, apply(Module, get_command_body, [])) end, Commands),
-    case NewCommands of
-        [] -> {reply, unsuccessful_parsing, unsuccessful_parsing, #state{commands = NewCommands, recognized_parts = NewParts}};
-        [{Name, Module}] -> 
-            CommandBody = apply(Module, get_command_body, []),
-            process_single_command(NewParts, CommandBody, Name, Module);
-        _Other -> {reply, ambiguous_parsing, ambiguous_parsing, #state{commands = NewCommands, recognized_parts = NewParts}}
+    case filter_commands(Commands, NewParts) of
+        {[], undefined} ->
+            Reply = #parse_result{state = unsuccessful_parsing},
+            {reply, Reply, unsuccessful_parsing, #state{commands = [], recognized_parts = RecognizedParts}};
+        {[{Name, Module}], undefined} ->
+            Reply = #parse_result{state = incomplete_parsing, can_continue = true},
+            {reply, Reply, incomplete_parsing, #state{commands = [{Name, Module}], recognized_parts = NewParts}};
+        {NewCommands, undefined} ->
+            Reply = #parse_result{state = ambiguous_parsing, can_continue = true},
+            {reply, Reply, ambiguous_parsing, #state{commands = NewCommands, recognized_parts = NewParts}};
+        {NewCommands, {Name, Module}} ->
+            CanContinue = length(NewCommands) > 1,
+            Reply = #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = CanContinue},
+            {reply, Reply, successful_parsing, #state{commands = NewCommands, recognized_parts = NewParts}}
     end.
 
-incomplete_parsing(eol, _From, StateData) ->
-    {reply, incomplete_parsing, incomplete_parsing, StateData};
 incomplete_parsing(Token, _From, #state{commands = [{Name, Module}], recognized_parts = RecognizedParts}) ->
+    NewParts = RecognizedParts ++ [Token],
     CommandBody = apply(Module, get_command_body, []),
-    process_single_command(RecognizedParts ++ [Token], CommandBody, Name, Module).
+    if
+        CommandBody == NewParts ->
+            Reply = #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = false},
+            {reply, Reply, successful_parsing, #state{commands = [{Name, Module}], recognized_parts = NewParts}};
+        true ->
+            case lists:prefix(NewParts, CommandBody) of
+                true ->
+                    Reply = #parse_result{state = incomplete_parsing, can_continue = true},
+                    {reply, Reply, incomplete_parsing, #state{commands = [{Name, Module}], recognized_parts = NewParts}};
+                false ->
+                    Reply = #parse_result{state = unsuccessful_parsing},
+                    {reply, Reply, unsuccessful_parsing, #state{commands = [], recognized_parts = RecognizedParts}}
+            end
+    end.
 
-%%successful_parsing(eol, _From, StateData) ->
-%%    {stop, finished_state, finished_state, StateData}.
-successful_parsing(_Token, _From, StateData) ->
-    {stop, finished_state, finished_state, StateData}.
+successful_parsing(Token, _From, #state{commands = Commands, recognized_parts = RecognizedParts}) ->
+    NewParts = RecognizedParts ++ [Token],
+    case filter_commands(Commands, NewParts) of
+        {[], undefined} ->
+            Reply = #parse_result{state = unsuccessful_parsing},
+            {reply, Reply, unsuccessful_parsing, #state{commands = [], recognized_parts = RecognizedParts}};
+        {[{Name, Module}], undefined} ->
+            Reply = #parse_result{state = incomplete_parsing, can_continue = true},
+            {reply, Reply, incomplete_parsing, #state{commands = [{Name, Module}], recognized_parts = NewParts}};
+        {NewCommands, undefined} ->
+            Reply = #parse_result{state = ambiguous_parsing, can_continue = true},
+            {reply, Reply, ambiguous_parsing, #state{commands = NewCommands, recognized_parts = NewParts}};
+        {NewCommands, {Name, Module}} ->
+            CanContinue = length(NewCommands) > 1,
+            Reply = #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = CanContinue},
+            {reply, Reply, successful_parsing, #state{commands = NewCommands, recognized_parts = NewParts}}
+    end.
 
-%%unsuccessful_parsing(eol, _From, StateData) ->
-%%    {reply, unsuccessful_parsing, unsuccessful_parsing, StateData};
 unsuccessful_parsing(_Token, _From, StateData) ->
-    {stop, finished_state, finished_state, StateData}.
+    Reply = #parse_result{state = unsuccessful_parsing},
+    {reply, Reply, unsuccessful_parsing, StateData}.
 
 handle_event(_Event, _StateName, StateData) -> {stop, not_supported, StateData}.
 
@@ -76,24 +101,19 @@ code_change(_OldVsn, StateName, StateData, _Extra) -> {ok, StateName, StateData}
 %% Internal functions
 %% ====================================================================
 
--spec start_fsm(KnownCommands :: [{CommandName :: atom(), CommandModule :: atom()}]) -> pid() | {'error', Error :: term()}.
-start_fsm(KnownCommands) ->
-    case gen_fsm:start_link(?MODULE, KnownCommands, []) of
-        {ok, Pid} -> Pid;
-        {error, Error} -> {command_parser_fsm, Error}
-    end.
+filter_commands(Commands, Tokens) ->
+    filter_commands(Commands, Tokens, [], undefined).
 
-
--spec process_single_command(RecognizedParts :: [string()], CommandBody :: [string()], Name :: atom(), Module :: atom()) ->
-          {'reply', Reply :: term(), State :: atom(), StateData :: #state{}}.
-process_single_command(RecognizedParts, CommandBody, Name, Module) ->
-    IsPrefix = lists:prefix(RecognizedParts, CommandBody),
+filter_commands([], _Tokens, FilteredCommands, RecognizedCommand) -> {FilteredCommands, RecognizedCommand};
+filter_commands([{CommandName, CommandModule} | CommandsRest], Tokens, FilteredCommands, RecognizedCommand) ->
+    CommandBody = apply(CommandModule, get_command_body, []),
     if
-        RecognizedParts == CommandBody ->
-            Reply = {successful_parsing, {Name, Module}},
-            {reply, Reply, successful_parsing, #state{commands = [{Name, Module}], recognized_parts = RecognizedParts}};
-        IsPrefix ->
-            {reply, incomplete_parsing, incomplete_parsing, #state{commands = [{Name, Module}], recognized_parts = RecognizedParts}};
+        CommandBody == Tokens ->
+            filter_commands(CommandsRest, Tokens, [{CommandName, CommandModule}] ++ FilteredCommands, {CommandName, CommandModule});
         true ->
-            {reply, unsuccessful_parsing, unsuccessful_parsing, #state{commands = [], recognized_parts = RecognizedParts}}
+            case lists:prefix(Tokens, CommandBody) of
+                true -> filter_commands(CommandsRest, Tokens, [{CommandName, CommandModule}] ++ FilteredCommands, RecognizedCommand);
+                false -> filter_commands(CommandsRest, Tokens, FilteredCommands, RecognizedCommand)
+            end
     end.
+

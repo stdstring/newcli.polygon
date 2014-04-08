@@ -17,3 +17,7 @@
 -record(client_config, {user = undefined :: 'undefined' | #user{},
                         cli_fsm = undefined :: 'undefined' | pid(),
                         output = undefined :: 'undefined' | pid()}).
+
+-record(parse_result, {state = undefined :: 'undefined' | atom(),
+                       command = undefined :: 'undefined' | {Nane :: atom(), Module :: atom()},
+                       can_continue = false :: boolean()}).
