@@ -13,12 +13,20 @@
 %% API functions
 %% ====================================================================
 
--export([start/1]).
+-export([start/1, process_login/2, process_commands_info/0]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -spec start(GlobalConfig :: #global_config{}) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(GlobalConfig) -> gen_server:start_link(?MODULE, GlobalConfig, []).
+
+-spec process_login(LoginName :: string(), Password :: binary()) -> #login_success{} | #login_fail{}.
+process_login(LoginName, Password) ->
+    gen_server:call(?SERVICE_NAME, #login{login_name = LoginName, password = Password}).
+
+-spec process_commands_info() -> #commands_info_result{}.
+process_commands_info() ->
+    gen_server:call(?SERVICE_NAME, #commands_info{}).
 
 init(GlobalConfig) ->
     register(?SERVICE_NAME, self()),
