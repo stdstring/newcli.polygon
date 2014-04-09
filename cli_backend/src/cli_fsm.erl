@@ -19,7 +19,7 @@
 
 start(Config) ->
     SourceData = Config#global_config.cli_fsm,
-    start_fsm(SourceData).
+    gen_fsm:start_link(?MODULE, SourceData, []).
 
 process_command(FsmPid, CommandName) ->
     gen_fsm:sync_send_event(FsmPid, {command, CommandName}).
@@ -64,12 +64,6 @@ code_change(_OldVsn, StateName, StateData, _Extra) -> {ok, StateName, StateData}
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
-
-start_fsm(SourceData) ->
-    case gen_fsm:start_link(?MODULE, SourceData, []) of
-        {ok, Pid} -> Pid;
-        {error, Error} -> {cli_fsm, Error}
-    end.
 
 create_state(SourceData) ->
     {initial_state, InitialState} = lists:keyfind(initial_state, 1, SourceData),

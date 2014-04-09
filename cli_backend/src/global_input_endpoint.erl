@@ -38,10 +38,10 @@ handle_call(#login{login_name = LoginName, password = PasswordHash}, {From, _Tag
             GlobalConfig = State#global_state.global_config,
             ClientOutput = From,
             case client_input_endpoint:start(GlobalConfig, User, ClientOutput) of
-                {client_input_endpoint, Error} ->
+                {error, Error} ->
                     Reply = #login_fail{reason = {session_creation_error, Error}},
                     {reply, Reply, State};
-                Pid -> 
+                {ok, Pid} -> 
                     Reply = #login_success{session_pid = Pid, greeting = "some greeting message"},
                     {reply, Reply, State}
             end;
