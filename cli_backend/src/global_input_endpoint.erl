@@ -60,9 +60,9 @@ handle_call(#commands_info{}, _From, State) ->
     Reply = #commands_info_result{info = CommandsInfo},
     {reply, Reply, State}.
 
-handle_cast(_Request, State) -> {stop, not_supported, State}.
+handle_cast(_Request, State) -> {stop, enotsup, State}.
 
-handle_info(_Info, State) -> {stop, not_supported, State}.
+handle_info(_Info, State) -> {stop, enotsup, State}.
 
 terminate(_Reason, _State) -> ok.
 

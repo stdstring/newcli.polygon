@@ -24,7 +24,7 @@ get_help() -> "end command".
 create(CommandLineRest, Stdout, Stderr) ->
     case check_command(CommandLineRest) of
         false -> {error, bad_args};
-        true -> start_command(Stdout, Stderr)
+        true -> gen_server:start_link(?MODULE, {Stdout, Stderr}, [])
     end.
 
 execute(Command) ->
@@ -37,7 +37,7 @@ init({Stdout, Stderr}) ->
 handle_call(_Request, _From, State) ->
     {reply, 0, State}.
 
-handle_cast(_Request, _State) -> error(not_supported).
+handle_cast(_Request, State) -> {stop, enotsup, State}.
 
 handle_info(_Info, State) -> {noreply, State}.
 
@@ -53,9 +53,3 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 check_command(CommandLineRest) ->
     CommandLineRest == "".
 
--spec start_command(Stdout :: pid(), Stderr  :: pid()) -> pid() | {'end_command', Error :: term()}.
-start_command(Stdout, Stderr) ->
-    case gen_server:start_link(?MODULE, {Stdout, Stderr}, []) of
-        {ok, Pid} -> Pid;
-        {error, Error} -> {error, Error}
-    end.

@@ -24,7 +24,7 @@ get_help() -> "no vlan {vlan-list} command".
 create(CommandLineRest, Stdout, Stderr) ->
     case check_command(CommandLineRest) of
         false -> {error, bad_args};
-        true -> start_command(CommandLineRest, Stdout, Stderr)
+        true -> gen_server:start_link(?MODULE, {CommandLineRest, Stdout, Stderr}, [])
     end.
 
 execute(Command) ->
@@ -37,7 +37,7 @@ init({CommandLineRest, Stdout, Stderr}) ->
 handle_call(execute, _From, State) ->
     {reply, 0, State}.
 
-handle_cast(_Request, _State) -> error(not_supported).
+handle_cast(_Request, State) -> {stop, enotsup, State}.
 
 handle_info(_Info, State) -> {noreply, State}.
 
@@ -53,9 +53,3 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 check_command(CommandLineRest) ->
     CommandLineRest /= "".
 
--spec start_command(CommandLineRest :: string(), Stdout :: pid(), Stderr  :: pid()) -> pid() | {'no_vlan_command', Error :: term()}.
-start_command(CommandLineRest, Stdout, Stderr) ->
-    case gen_server:start_link(?MODULE, {CommandLineRest, Stdout, Stderr}, []) of
-        {ok, Pid} -> Pid;
-        {error, Error} -> {error, Error}
-    end.

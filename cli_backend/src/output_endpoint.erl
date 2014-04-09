@@ -42,7 +42,7 @@ handle_cast(#command_output{} = CommandOutput, State) ->
 handle_cast(#command_error{} = CommandError, State) ->
     {noreply, handle_command_message(CommandError, State)}.
 
-handle_info(_Info, _State) -> error(not_supported).
+handle_info(_Info, State) -> {stop, enotsup, State}.
 
 terminate(_Reason, _State) -> ok.
 

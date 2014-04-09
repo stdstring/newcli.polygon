@@ -73,5 +73,5 @@ create_command_chain(CommandModule, CommandLineRest, OutputEndpoint) ->
         {error, Reason} ->
             CommandName = apply(CommandModule, get_name, []),
             {command_parser, {CommandName, creation_error, Reason}};
-        CommandPid -> [{CommandModule, CommandPid}]
+        {ok, CommandPid} -> [{CommandModule, CommandPid}]
     end.

@@ -39,9 +39,9 @@ handle_call({User, CommandName}, _From, State) when is_record(User, user) ->
         false -> {reply, {authorization_fail, unknown_command}, State}
     end.
 
-handle_cast(_Request, State) -> {stop, not_supported, State}.
+handle_cast(_Request, State) -> {stop, enotsup, State}.
 
-handle_info(_Info, State) -> {stop, not_supported, State}.
+handle_info(_Info, State) -> {stop, enotsup, State}.
 
 terminate(_Reason, _State) -> ok.
 

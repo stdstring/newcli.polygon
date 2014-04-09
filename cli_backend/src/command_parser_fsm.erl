@@ -61,9 +61,9 @@ unsuccessful_parsing(_Token, _From, StateData) ->
     Reply = #parse_result{state = unsuccessful_parsing},
     {reply, Reply, unsuccessful_parsing, StateData}.
 
-handle_event(_Event, _StateName, StateData) -> {stop, not_supported, StateData}.
+handle_event(_Event, _StateName, StateData) -> {stop, enotsup, StateData}.
 
-handle_sync_event(_Event, _From, _StateName, StateData) -> {stop, not_supported, not_supported, StateData}.
+handle_sync_event(_Event, _From, _StateName, StateData) -> {stop, enotsup, not_supported, StateData}.
 
 handle_info(_Info, StateName, StateData) -> {next_state, StateName, StateData}.
 
