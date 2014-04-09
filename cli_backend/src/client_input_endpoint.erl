@@ -45,7 +45,7 @@ handle_call(#command{message = CommandLine}, {From, _Tag}, State) ->
     case From of
         ClientOutput ->
             case command_execution_context:execute(CommandLine, GlobalConfig, ClientConfig) of
-                false -> {stop, session_terminated, session_terminated, State};
+                false -> {stop, {shutdown, session_terminated}, session_terminated, State};
                 true -> {reply, command_processed, State}
             end;
         _Other ->
