@@ -6,7 +6,7 @@
 
 -include("common_defs.hrl").
 
--record(state, {commands = [] :: [{CommandName :: atom(), CommandModule :: atom()}], recognized_parts = [] :: [string()]}).
+-record(command_parser_state, {commands = [] :: [{CommandName :: atom(), CommandModule :: atom()}], recognized_parts = [] :: [string()]}).
 
 %% ====================================================================
 %% API functions
@@ -27,60 +27,60 @@ process_token(ParserPid, Token) ->
     gen_fsm:sync_send_event(ParserPid, Token).
 
 init(KnownCommands) ->
-    {ok, ambiguous_parsing, #state{commands = KnownCommands}}.
+    {ok, ambiguous_parsing, #command_parser_state{commands = KnownCommands}}.
 
-ambiguous_parsing(Token, _From, #state{commands = Commands, recognized_parts = RecognizedParts}) ->
+ambiguous_parsing(Token, _From, #command_parser_state{commands = Commands, recognized_parts = RecognizedParts}) ->
     NewParts = RecognizedParts ++ [Token],
     case filter_commands(Commands, NewParts) of
         {[], undefined} ->
             Reply = #parse_result{state = unsuccessful_parsing},
-            {reply, Reply, unsuccessful_parsing, #state{commands = [], recognized_parts = RecognizedParts}};
+            {reply, Reply, unsuccessful_parsing, #command_parser_state{commands = [], recognized_parts = RecognizedParts}};
         {[{Name, Module}], undefined} ->
             Reply = #parse_result{state = incomplete_parsing, can_continue = true},
-            {reply, Reply, incomplete_parsing, #state{commands = [{Name, Module}], recognized_parts = NewParts}};
+            {reply, Reply, incomplete_parsing, #command_parser_state{commands = [{Name, Module}], recognized_parts = NewParts}};
         {NewCommands, undefined} ->
             Reply = #parse_result{state = ambiguous_parsing, can_continue = true},
-            {reply, Reply, ambiguous_parsing, #state{commands = NewCommands, recognized_parts = NewParts}};
+            {reply, Reply, ambiguous_parsing, #command_parser_state{commands = NewCommands, recognized_parts = NewParts}};
         {NewCommands, {Name, Module}} ->
             CanContinue = length(NewCommands) > 1,
             Reply = #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = CanContinue},
-            {reply, Reply, successful_parsing, #state{commands = NewCommands, recognized_parts = NewParts}}
+            {reply, Reply, successful_parsing, #command_parser_state{commands = NewCommands, recognized_parts = NewParts}}
     end.
 
-incomplete_parsing(Token, _From, #state{commands = [{Name, Module}], recognized_parts = RecognizedParts}) ->
+incomplete_parsing(Token, _From, #command_parser_state{commands = [{Name, Module}], recognized_parts = RecognizedParts}) ->
     NewParts = RecognizedParts ++ [Token],
     CommandBody = apply(Module, get_command_body, []),
     if
         CommandBody == NewParts ->
             Reply = #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = false},
-            {reply, Reply, successful_parsing, #state{commands = [{Name, Module}], recognized_parts = NewParts}};
+            {reply, Reply, successful_parsing, #command_parser_state{commands = [{Name, Module}], recognized_parts = NewParts}};
         true ->
             case lists:prefix(NewParts, CommandBody) of
                 true ->
                     Reply = #parse_result{state = incomplete_parsing, can_continue = true},
-                    {reply, Reply, incomplete_parsing, #state{commands = [{Name, Module}], recognized_parts = NewParts}};
+                    {reply, Reply, incomplete_parsing, #command_parser_state{commands = [{Name, Module}], recognized_parts = NewParts}};
                 false ->
                     Reply = #parse_result{state = unsuccessful_parsing},
-                    {reply, Reply, unsuccessful_parsing, #state{commands = [], recognized_parts = RecognizedParts}}
+                    {reply, Reply, unsuccessful_parsing, #command_parser_state{commands = [], recognized_parts = RecognizedParts}}
             end
     end.
 
-successful_parsing(Token, _From, #state{commands = Commands, recognized_parts = RecognizedParts}) ->
+successful_parsing(Token, _From, #command_parser_state{commands = Commands, recognized_parts = RecognizedParts}) ->
     NewParts = RecognizedParts ++ [Token],
     case filter_commands(Commands, NewParts) of
         {[], undefined} ->
             Reply = #parse_result{state = unsuccessful_parsing},
-            {reply, Reply, unsuccessful_parsing, #state{commands = [], recognized_parts = RecognizedParts}};
+            {reply, Reply, unsuccessful_parsing, #command_parser_state{commands = [], recognized_parts = RecognizedParts}};
         {[{Name, Module}], undefined} ->
             Reply = #parse_result{state = incomplete_parsing, can_continue = true},
-            {reply, Reply, incomplete_parsing, #state{commands = [{Name, Module}], recognized_parts = NewParts}};
+            {reply, Reply, incomplete_parsing, #command_parser_state{commands = [{Name, Module}], recognized_parts = NewParts}};
         {NewCommands, undefined} ->
             Reply = #parse_result{state = ambiguous_parsing, can_continue = true},
-            {reply, Reply, ambiguous_parsing, #state{commands = NewCommands, recognized_parts = NewParts}};
+            {reply, Reply, ambiguous_parsing, #command_parser_state{commands = NewCommands, recognized_parts = NewParts}};
         {NewCommands, {Name, Module}} ->
             CanContinue = length(NewCommands) > 1,
             Reply = #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = CanContinue},
-            {reply, Reply, successful_parsing, #state{commands = NewCommands, recognized_parts = NewParts}}
+            {reply, Reply, successful_parsing, #command_parser_state{commands = NewCommands, recognized_parts = NewParts}}
     end.
 
 unsuccessful_parsing(_Token, _From, StateData) ->
