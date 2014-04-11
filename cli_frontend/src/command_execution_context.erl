@@ -21,3 +21,8 @@ execute(CommandLine, GlobalConfig, ExecutionState) ->
 %% Internal functions
 %% ====================================================================
 
+-spec execute_impl(Commands :: [{ModuleName :: atom(), CommandPid :: pid()}],
+                   GlobalConfig :: #global_config{},
+                   ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
+execute_impl([], _GlobalConfig, ExecutionState) -> {0, ExecutionState};
+execute_impl([{Module, Pid} | Rest], GlobalConfig, ExecutionState) -> false.
