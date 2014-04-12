@@ -4,4 +4,5 @@
 
 -record(execution_state, {global_handler = undefined :: 'undefined' | atom(),
                           session = undefined :: 'undefined' | pid(),
-                          commands_info = [] :: [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}]}).
+                          commands_info = [] :: [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}],
+                          current_cli_mode :: atom()}).
