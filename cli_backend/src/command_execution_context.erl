@@ -59,7 +59,7 @@ execute([{CommandModule, CommandPid} | Commands], Endpoint, CliFsm, User) ->
                       OtherCommands :: [{CommandModule :: atom(), CommandPid :: pid()}],
                       Endpoint :: pid(),
                       CliFsm :: pid(),
-                      User :: #user{}) -> boolean().
+                      User :: #user{}) -> no_return() | boolean().
 process_execute(CommandModule, CommandPid, OtherCommands, Endpoint, CliFsm, User) ->
     CommandName = apply(CommandModule, get_name, []),
     ReturnCode = apply(CommandModule, execute, [CommandPid]),
