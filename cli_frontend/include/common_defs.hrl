@@ -6,3 +6,7 @@
                           session = undefined :: 'undefined' | pid(),
                           commands_info = [] :: [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}],
                           current_cli_mode :: atom()}).
+
+-record(parse_result, {state = undefined :: 'undefined' | atom(),
+                       command = undefined :: 'undefined' | {Nane :: atom(), Module :: atom()},
+                       can_continue = false :: boolean()}).
