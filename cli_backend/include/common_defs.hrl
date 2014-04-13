@@ -19,5 +19,5 @@
                         output = undefined :: 'undefined' | pid()}).
 
 -record(parse_result, {state = undefined :: 'undefined' | atom(),
-                       command = undefined :: 'undefined' | {Nane :: atom(), Module :: atom()},
+                       command = undefined :: 'undefined' | {Name :: atom(), Module :: atom()},
                        can_continue = false :: boolean()}).
