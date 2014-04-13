@@ -5,7 +5,7 @@
 -include("common_defs.hrl").
 
 %% get command name
--callback get_name() -> Name :: atom().
+-callback get_name() -> atom().
 
 %% get command body
 -callback get_command_body() -> [string()].
