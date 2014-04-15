@@ -39,15 +39,15 @@ incomplete_parsing(Token, _From, #command_parser_state{commands = [{Name, Module
     CommandBody = apply(Module, get_command_body, []),
     if
         CommandBody == NewParts ->
-            Reply = #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = false},
+            Reply = #successful_parse_result{command = {Name, Module}, can_continue = false},
             {reply, Reply, successful_parsing, #command_parser_state{commands = [{Name, Module}], recognized_parts = NewParts}};
         true ->
             case lists:prefix(NewParts, CommandBody) of
                 true ->
-                    Reply = #parse_result{state = incomplete_parsing, can_continue = true},
+                    Reply = #incomplete_parse_result{},
                     {reply, Reply, incomplete_parsing, #command_parser_state{commands = [{Name, Module}], recognized_parts = NewParts}};
                 false ->
-                    Reply = #parse_result{state = unsuccessful_parsing},
+                    Reply = #unsuccessful_parse_result{},
                     {reply, Reply, unsuccessful_parsing, #command_parser_state{commands = [], recognized_parts = RecognizedParts}}
             end
     end.
@@ -58,7 +58,7 @@ successful_parsing(Token, _From, #command_parser_state{commands = Commands, reco
     {reply, Reply, State, StateData}.
 
 unsuccessful_parsing(_Token, _From, StateData) ->
-    Reply = #parse_result{state = unsuccessful_parsing},
+    Reply = #unsuccessful_parse_result{},
     {reply, Reply, unsuccessful_parsing, StateData}.
 
 handle_event(_Event, _StateName, StateData) -> {stop, enotsup, StateData}.
@@ -99,20 +99,22 @@ filter_commands([{CommandName, CommandModule} | CommandsRest], Tokens, FilteredC
     end.
 
 -spec process_filter(Commands :: [{CommandName :: atom(), CommandModule :: atom()}], Tokens :: [string()]) ->
-          {Result :: #parse_result{}, State :: atom(), StateData :: #command_parser_state{}}.
+          {Result :: #ambiguous_parse_result{} | #incomplete_parse_result{} | #unsuccessful_parse_result{} | #successful_parse_result{},
+           State :: atom(),
+           StateData :: #command_parser_state{}}.
 process_filter(Commands, Tokens) ->
     case filter_commands(Commands, Tokens) of
         {[], undefined} ->
-            Result = #parse_result{state = unsuccessful_parsing},
+            Result = #unsuccessful_parse_result{},
             {Result, unsuccessful_parsing, #command_parser_state{commands = []}};
         {[{Name, Module}], undefined} ->
-            Result = #parse_result{state = incomplete_parsing, can_continue = true},
+            Result = #incomplete_parse_result{},
             {Result, incomplete_parsing, #command_parser_state{commands = [{Name, Module}], recognized_parts = Tokens}};
         {NewCommands, undefined} ->
-            Result = #parse_result{state = ambiguous_parsing, can_continue = true},
+            Result = #ambiguous_parse_result{},
             {Result, ambiguous_parsing, #command_parser_state{commands = NewCommands, recognized_parts = Tokens}};
         {NewCommands, {Name, Module}} ->
             CanContinue = length(NewCommands) > 1,
-            Result = #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = CanContinue},
+            Result = #successful_parse_result{command = {Name, Module}, can_continue = CanContinue},
             {Result, successful_parsing, #command_parser_state{commands = NewCommands, recognized_parts = Tokens}}
     end.

@@ -18,6 +18,10 @@
                         cli_fsm = undefined :: 'undefined' | pid(),
                         output = undefined :: 'undefined' | pid()}).
 
--record(parse_result, {state = undefined :: 'undefined' | atom(),
-                       command = undefined :: 'undefined' | {Name :: atom(), Module :: atom()},
-                       can_continue = false :: boolean()}).
+-record(ambiguous_parse_result, {}).
+
+-record(incomplete_parse_result, {}).
+
+-record(unsuccessful_parse_result, {}).
+
+-record(successful_parse_result, {command = undefined :: 'undefined' | {Name :: atom(), Module :: atom()}, can_continue = false :: boolean()}).
