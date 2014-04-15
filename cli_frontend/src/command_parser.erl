@@ -30,40 +30,56 @@ find_command(CommandLine, Commands) ->
         {command_parser_fsm, Error} ->
             {false, {command_parser_fsm, Error}};
         {ok, CommandParserFsm} ->
-            find_command(CommandParserFsm, string:strip(CommandLine), #parse_result{state = ambiguous_parsing, can_continue = true}, undefined)
+            find_command_impl(CommandParserFsm, string:strip(CommandLine))
     end.
 
--spec find_command(CommandParserFsm :: pid(),
-                   Rest :: string(),
-                   PrevResult :: #parse_result{},
-                   RecognizedCommand :: {CommandName :: atom(), CommandModule :: atom(), CommandLineRest :: string()} | 'undefined') ->
+-spec find_command_impl(CommandParserFsm :: pid(),
+                        CommandLine :: string()) ->{CommandName :: atom(), CommandModule :: atom(), ComandLineRest :: string()} | {'false', Reason :: term()}.
+find_command_impl(CommandParserFsm, CommandLine) ->
+    %% special case for help command
+    IsHelpCommand = lists:suffix("?", CommandLine),
+    if
+        IsHelpCommand == true ->
+            HelpCommandRest = lists:sublist(CommandLine, length(CommandLine) - length("?")),
+            {help_command, help_command, HelpCommandRest};
+        IsHelpCommand == false ->
+            find_command_impl(CommandParserFsm, CommandLine, CommandLine, #parse_result{state = ambiguous_parsing, can_continue = true}, undefined)
+    end.
+
+-spec find_command_impl(CommandParserFsm :: pid(),
+                        CommandLine :: string(),
+                        Rest :: string(),
+                        PrevResult :: #parse_result{},
+                        RecognizedCommand :: {CommandName :: atom(), CommandModule :: atom(), CommandLineRest :: string()} | 'undefined') ->
           {CommandName :: atom(), CommandModule :: atom(), ComandLineRest :: string()} | {'false', Reason :: term()}.
 %% when Rest == ""
-find_command(_CommandParserFsm, "", #parse_result{state = incomplete_parsing}, undefined) -> {false, incomplete_command};
-find_command(_CommandParserFsm, "", #parse_result{state = ambiguous_parsing}, undefined) -> {false, ambiguous_command};
-find_command(_CommandParserFsm, "", #parse_result{state = successful_parsing, command = {Name, Module}}, _) -> {Name, Module, ""};
-find_command(_CommandParserFsm, "", _Result, RecognizedCommand) -> RecognizedCommand;
+find_command_impl(_CommandParserFsm, _CommandLine, "", #parse_result{state = successful_parsing, command = {Name, Module}}, _) ->
+    {Name, Module, ""};
+find_command_impl(_CommandParserFsm, CommandLine, "", _Result, undefined) -> {backend_command, backend_command, CommandLine};
+find_command_impl(_CommandParserFsm, _CommandLine, "", _Result, RecognizedCommand) -> RecognizedCommand;
 %% when Rest /= "" and PrevResult == #parse_result{state = successful_parsing}
-find_command(CommandParserFsm, Rest, #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = true}, _) ->
+find_command_impl(CommandParserFsm, CommandLine, Rest, #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = true}, _) ->
     RecognizedCommand = {Name, Module, Rest},
-    process_token_parse(CommandParserFsm, Rest, RecognizedCommand);
-find_command(_CommandParserFsm, Rest, #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = false}, _) ->
+    process_token_parse(CommandParserFsm, CommandLine, Rest, RecognizedCommand);
+find_command_impl(_CommandParserFsm, _CommandLine, Rest, #parse_result{state = successful_parsing, command = {Name, Module}, can_continue = false}, _) ->
     {Name, Module, Rest};
 %% when Rest /= "" and PrevResult == #parse_result{state = unsuccessful_parsing}
-find_command(_CommandParserFsm, _Rest, #parse_result{state = unsuccessful_parsing}, undefined) -> {false, unknown_command};
-find_command(_CommandParserFsm, _Rest, #parse_result{state = unsuccessful_parsing}, RecognizedCommand) -> RecognizedCommand;
+find_command_impl(_CommandParserFsm, CommandLine, _Rest, #parse_result{state = unsuccessful_parsing}, undefined) ->
+    {backend_command, backend_command, CommandLine};
+find_command_impl(_CommandParserFsm, _CommandLine, _Rest, #parse_result{state = unsuccessful_parsing}, RecognizedCommand) -> RecognizedCommand;
 %% common case
-find_command(CommandParserFsm, Rest, _Result, RecognizedCommand) ->
-    process_token_parse(CommandParserFsm, Rest, RecognizedCommand).
+find_command_impl(CommandParserFsm, CommandLine, Rest, _Result, RecognizedCommand) ->
+    process_token_parse(CommandParserFsm, CommandLine, Rest, RecognizedCommand).
 
 -spec process_token_parse(CommandParserFsm :: pid(),
+                          CommandLine :: string(),
                           Rest :: string(),
                           RecognizedCommand :: {CommandName :: atom(), CommandModule :: atom(), CommandLineRest :: string()} | 'undefined') ->
           no_return().
-process_token_parse(CommandParserFsm, Rest, RecognizedCommand) ->
+process_token_parse(CommandParserFsm, CommandLine, Rest, RecognizedCommand) ->
     {Token, NewRest} = commandline_parser:get_first_token(Rest),
     Result = command_parser_fsm:process_token(CommandParserFsm, Token),
-    find_command(CommandParserFsm, NewRest, Result, RecognizedCommand).
+    find_command_impl(CommandParserFsm, CommandLine, NewRest, Result, RecognizedCommand).
 
 -spec create_command_chain(CommandModule :: atom(), CommandLineRest :: string()) -> [{ModuleName :: atom, CommandPid :: pid}].
 create_command_chain(CommandModule, CommandLineRest) ->
