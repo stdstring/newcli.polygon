@@ -16,4 +16,4 @@
 -record(command_output, {message = "" :: string()}).
 -record(command_error, {message = "" :: string()}).
 -record(command_end, {completion_code = 0 :: integer(), cli_mode = "" :: string()}).
--record(command_fail, {reason = undefined :: 'undefined' | term()}).
+-record(command_fail, {reason = undefined :: 'undefined' | term(), cli_mode = "" :: string()}).

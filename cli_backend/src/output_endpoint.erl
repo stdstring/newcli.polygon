@@ -11,7 +11,7 @@
 %% API functions
 %% ====================================================================
 
--export([start/1, send_result/3, send_fail/2]).
+-export([start/1, send_result/3, send_fail/3]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -22,9 +22,9 @@ start(OutputPid) -> gen_server:start_link(?MODULE, OutputPid, []).
 send_result(EndpointPid, CompletionCode, CliMode) ->
     gen_server:call(EndpointPid, #command_end{completion_code = CompletionCode, cli_mode = CliMode}).
 
--spec send_fail(EndpointPid :: pid(), Reason::term()) -> 'output_complete'.
-send_fail(EndpointPid, Reason) ->
-    gen_server:call(EndpointPid, #command_fail{reason = Reason}).
+-spec send_fail(EndpointPid :: pid(), Reason::term(), CliMode :: string()) -> 'output_complete'.
+send_fail(EndpointPid, Reason, CliMode) ->
+    gen_server:call(EndpointPid, #command_fail{reason = Reason, cli_mode = CliMode}).
 
 init(OutputPid) ->
     State = #output_endpoint_state{output_pid = OutputPid},
@@ -56,8 +56,8 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 send_to_client(FinalMessage, State) ->
     OutputPid = State#output_endpoint_state.output_pid,
     OutputBuffer = lists:reverse(State#output_endpoint_state.output_buffer),
-    lists:foreach(fun(Message) -> gen_server:cast(OutputPid, Message) end, OutputBuffer),
-    gen_server:cast(OutputPid, FinalMessage),
+    lists:foreach(fun(Message) -> OutputPid ! Message end, OutputBuffer),
+    OutputPid ! FinalMessage,
     ok.
 
 -spec handle_command_message(CommandMessage :: #command_output{} | #command_error{}, State :: #output_endpoint_state{}) -> #output_endpoint_state{}.

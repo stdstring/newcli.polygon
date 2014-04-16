@@ -22,7 +22,7 @@ execute(CommandLine, GlobalConfig, ClientConfig) ->
     Endpoint = create_output_endpoint(ClientOutput),
     case command_parser:parse(CommandLine, GlobalConfig, ClientOutput) of
         {command_parser, Reason} ->
-            send_fail(Endpoint, #parser_fail{command_line = CommandLine, reason = Reason}),
+            send_fail(Endpoint, #parser_fail{command_line = CommandLine, reason = Reason}, CliFsm),
             StateInfo = cli_fsm:get_current_state(CliFsm),
             not StateInfo#cli_fsm_state_info.is_terminal;
         Commands -> execute(Commands, Endpoint, CliFsm, User)
@@ -48,7 +48,7 @@ execute([{CommandModule, CommandPid} | Commands], Endpoint, CliFsm, User) ->
     CommandName = apply(CommandModule, get_name, []),
     case command_execution_checker:execution_precheck(CommandName, CliFsm, User) of
         {false, Reason} ->
-            send_fail(Endpoint, #precondition_check_fail{reason = Reason}),
+            send_fail(Endpoint, #precondition_check_fail{reason = Reason}, CliFsm),
             StateInfo = cli_fsm:get_current_state(CliFsm),
             not StateInfo#cli_fsm_state_info.is_terminal;
         true -> process_execute(CommandModule, CommandPid, Commands, Endpoint, CliFsm, User)
@@ -76,11 +76,14 @@ process_execute(CommandModule, CommandPid, OtherCommands, Endpoint, CliFsm, User
 -spec send_error(Endpoint :: pid(), ReturnCode :: integer(), CliFsm :: pid()) -> 'ok'.
 send_error(Endpoint, ReturnCode, CliFsm) ->
     #cli_fsm_state_info{current_state = CurrentState} = cli_fsm:get_current_state(CliFsm),
-    output_endpoint:send_result(Endpoint, ReturnCode, CurrentState),
+    CurrentStateRepresentation = atom_to_list(CurrentState),
+    output_endpoint:send_result(Endpoint, ReturnCode, CurrentStateRepresentation),
     ok.
 
--spec send_fail(Endpoint :: pid(), Message :: term()) -> 'ok'.
-send_fail(Endpoint, Message) ->
-    output_endpoint:send_fail(Endpoint, Message),
+-spec send_fail(Endpoint :: pid(), Message :: term(), CliFsm :: pid()) -> 'ok'.
+send_fail(Endpoint, Message, CliFsm) ->
+    #cli_fsm_state_info{current_state = CurrentState} = cli_fsm:get_current_state(CliFsm),
+    CurrentStateRepresentation = atom_to_list(CurrentState),
+    output_endpoint:send_fail(Endpoint, Message, CurrentStateRepresentation),
     ok.
 
