@@ -4,6 +4,8 @@
 
 %%-behaviour(gen_client).
 
+-include("common_defs.hrl").
+
 -record(state, {}).
 
 %% ====================================================================
