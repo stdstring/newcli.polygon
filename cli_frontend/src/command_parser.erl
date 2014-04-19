@@ -11,7 +11,7 @@
 -export([parse/2]).
 
 -spec parse(CommandLine :: string(), GlobalConfig :: #global_config{}) ->
-          [{ModuleName :: atom, CommandPid :: pid}] | {'command_parser', Reason :: term()}.
+          [{ModuleName :: atom(), CommandLineRest :: string()}] | {'command_parser', Reason :: term()}.
 parse(CommandLine, GlobalConfig) when is_record(GlobalConfig, global_config) ->
     Commands = GlobalConfig#global_config.commands,
     case find_command(CommandLine, Commands) of
@@ -81,11 +81,6 @@ process_token_parse(CommandParserFsm, CommandLine, Rest, RecognizedCommand) ->
     Result = command_parser_fsm:process_token(CommandParserFsm, Token),
     find_command_impl(CommandParserFsm, CommandLine, NewRest, Result, RecognizedCommand).
 
--spec create_command_chain(CommandModule :: atom(), CommandLineRest :: string()) -> [{ModuleName :: atom, CommandPid :: pid}].
+-spec create_command_chain(CommandModule :: atom(), CommandLineRest :: string()) -> [{ModuleName :: atom(), CommandLineRest :: string()}].
 create_command_chain(CommandModule, CommandLineRest) ->
-    case apply(CommandModule, create, [CommandLineRest]) of
-        {error, Reason} ->
-            CommandName = apply(CommandModule, get_name, []),
-            {command_parser, {CommandName, creation_error, Reason}};
-        {ok, CommandPid} -> [{CommandModule, CommandPid}]
-    end.
+    [{CommandModule, CommandLineRest}].

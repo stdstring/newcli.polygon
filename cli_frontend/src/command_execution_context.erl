@@ -25,12 +25,12 @@ execute(CommandLine, GlobalConfig, ExecutionState) ->
 %% Internal functions
 %% ====================================================================
 
--spec execute_impl(Commands :: [{ModuleName :: atom(), CommandPid :: pid()}],
+-spec execute_impl(Commands :: [{ModuleName :: atom(), CommandLineRest :: string()}],
                    GlobalConfig :: #global_config{},
                    ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 execute_impl([], _GlobalConfig, ExecutionState) -> {0, ExecutionState};
-execute_impl([{Module, Pid} | Rest], GlobalConfig, ExecutionState) ->
-    {Result, NewExecutionState} = apply(Module, execute, [Pid, ExecutionState]),
+execute_impl([{Module, CommandLineRest} | Rest], GlobalConfig, ExecutionState) ->
+    {Result, NewExecutionState} = apply(Module, execute, [CommandLineRest, ExecutionState]),
     if
         Result == 0 -> execute_impl(Rest, GlobalConfig, NewExecutionState);
         Result /= 0 ->
