@@ -27,3 +27,6 @@ execute(_CommandLineRest, ExecutionState) -> {0, ExecutionState}.
 %% Internal functions
 %% ====================================================================
 
+get_command_body(CommandBodyParts) ->
+    %% separator == space
+    string:join(CommandBodyParts, " ").
