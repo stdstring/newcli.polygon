@@ -23,26 +23,34 @@ get_command_body() -> [].
 %%create(CommandLineRest) -> {error, not_implemented}.
 
 -spec execute(CommandLineRest :: string(), ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
-execute(_CommandLineRest, ExecutionState) -> {0, ExecutionState}.
+execute(CommandLineRest, ExecutionState) ->
+    case ExecutionState#execution_state.session of
+        undefined ->
+            io:format(standard_error, "Can't execute command for unauthenticated user", []),
+            {255, ExecutionState};
+        Session ->
+            {CompletionCode, CliMode} = execute_impl(Session, CommandLineRest),
+            NewExecutionState = ExecutionState#execution_state{current_cli_mode = CliMode},
+            {CompletionCode, NewExecutionState}
+    end.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
-execute_impl(ExecutionState) ->
+execute_impl(Session, CommandLineRest) ->
+    gen_server:call(Session, CommandLineRest),
     receive
         #command_output{message = Message} ->
             io:format("~s", [Message]),
-            execute_impl(ExecutionState);
+            execute_impl(Session, CommandLineRest);
         #command_error{message = Message} ->
             io:format(standard_error, "~s", [Message]),
-            execute_impl(ExecutionState);
+            execute_impl(Session, CommandLineRest);
         #command_end{completion_code = CompletionCode, cli_mode = CliMode} ->
-            NewExecutionState = ExecutionState#execution_state{current_cli_mode = CliMode},
-            {CompletionCode, NewExecutionState};
+            {CompletionCode, CliMode};
         #command_fail{reason = Reason, cli_mode = CliMode} ->
             io:format(standard_error, "Command's execution is failed due to the following: ~p~n", [Reason]),
-            NewExecutionState = ExecutionState#execution_state{current_cli_mode = CliMode},
-            {255, NewExecutionState}
+            {255, CliMode}
     end.
 
