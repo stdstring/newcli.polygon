@@ -12,7 +12,7 @@
 %% API functions
 %% ====================================================================
 
--export([start/1, process_token/2]).
+-export([start/1, process_token/2, get_parser_state/1, stop/1]).
 %% gen_fsm
 -export([ambiguous_parsing/3, incomplete_parsing/3, successful_parsing/3, unsuccessful_parsing/3]).
 -export([init/1, handle_event/3, handle_sync_event/4, handle_info/3, terminate/3, code_change/4]).
@@ -25,6 +25,14 @@ process_token(ParserPid, eol) ->
     gen_fsm:sync_send_event(ParserPid, eol);
 process_token(ParserPid, Token) ->
     gen_fsm:sync_send_event(ParserPid, Token).
+
+-spec get_parser_state(ParserPid :: pid()) ->
+          {Commands :: [{CommandName :: atom(), CommandModule :: atom()}], RecognizedParts :: [string()]}.
+get_parser_state(ParserPid) ->
+    gen_fsm:sync_send_all_state_event(ParserPid, parser_state).
+
+stop(ParserPid) ->
+    gen_fsm:send_all_state_event(ParserPid, shutdown).
 
 init(KnownCommands) ->
     {ok, ambiguous_parsing, #command_parser_state{commands = KnownCommands}}.
@@ -61,9 +69,13 @@ unsuccessful_parsing(_Token, _From, StateData) ->
     Reply = #unsuccessful_parse_result{},
     {reply, Reply, unsuccessful_parsing, StateData}.
 
-handle_event(_Event, _StateName, StateData) -> {stop, enotsup, StateData}.
+handle_event(shutdown, _StateName, StateData) ->
+    {stop, shutdown, StateData}.
 
-handle_sync_event(_Event, _From, _StateName, StateData) -> {stop, enotsup, not_supported, StateData}.
+handle_sync_event(parser_state, _From, StateName, StateData) ->
+    #command_parser_state{commands = Commands, recognized_parts = RecognizedParts} = StateData,
+    Reply = {Commands, RecognizedParts},
+    {reply, Reply, StateName, StateData}.
 
 handle_info(_Info, StateName, StateData) -> {next_state, StateName, StateData}.
 
