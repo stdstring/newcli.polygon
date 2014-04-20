@@ -42,7 +42,7 @@ handle_call(#login{login_name = LoginName, password = PasswordHash}, {From, _Tag
                     Reply = #login_fail{reason = {session_creation_error, Error}},
                     {reply, Reply, State};
                 {ok, Pid} -> 
-                    Reply = #login_success{session_pid = Pid, greeting = "some greeting message"},
+                    Reply = #login_success{session_pid = Pid, greeting = "some greeting message~n"},
                     {reply, Reply, State}
             end;
         {authentication_fail, Reason} ->
