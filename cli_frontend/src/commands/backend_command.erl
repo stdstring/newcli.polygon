@@ -29,15 +29,16 @@ execute(CommandLineRest, ExecutionState) ->
             io:format(standard_error, "Can't execute command for unauthenticated user", []),
             {255, ExecutionState};
         Session ->
-            {CompletionCode, CliMode} = execute_impl(Session, CommandLineRest),
+            {ReturnCode, CliMode} = execute_impl(Session, CommandLineRest),
             NewExecutionState = ExecutionState#execution_state{current_cli_mode = CliMode},
-            {CompletionCode, NewExecutionState}
+            {ReturnCode, NewExecutionState}
     end.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
+-spec execute_impl(Session :: pid(), CommandLineRest :: string()) -> {ReturnCode :: integer, CliMode :: string()}.
 execute_impl(Session, CommandLineRest) ->
     gen_server:call(Session, CommandLineRest),
     receive
@@ -47,8 +48,8 @@ execute_impl(Session, CommandLineRest) ->
         #command_error{message = Message} ->
             io:format(standard_error, "~s", [Message]),
             execute_impl(Session, CommandLineRest);
-        #command_end{completion_code = CompletionCode, cli_mode = CliMode} ->
-            {CompletionCode, CliMode};
+        #command_end{completion_code = ReturnCode, cli_mode = CliMode} ->
+            {ReturnCode, CliMode};
         #command_fail{reason = Reason, cli_mode = CliMode} ->
             io:format(standard_error, "Command's execution is failed due to the following: ~p~n", [Reason]),
             {255, CliMode}
