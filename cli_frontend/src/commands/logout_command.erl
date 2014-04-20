@@ -20,7 +20,10 @@ get_command_body() -> ["logout"].
 %%create(CommandLineRest) -> {error, not_implemented}.
 
 -spec execute(CommandLineRest :: string(), ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
-execute(_CommandLineRest, ExecutionState) -> {0, ExecutionState}.
+execute("", ExecutionState) ->
+    {ReturnCode, NewExecutionState} = backend_command:execute("logout", ExecutionState),
+    io:format("You are logged out.~n", []),
+    {ReturnCode, NewExecutionState#execution_state{session = undefined}}.
 
 %% ====================================================================
 %% Internal functions
