@@ -2,6 +2,7 @@
 
 -module(login_command).
 
+-include("crypto_defs.hrl").
 -include("message_defs.hrl").
 -include("common_defs.hrl").
 
@@ -22,18 +23,23 @@ get_command_body() -> ["login"].
 
 -spec execute(CommandLineRest :: string(), ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 execute("", ExecutionState) ->
-    OldOptions = io:getopts(),
-    OptionsWithoutExpand = lists:keydelete(expand_fun, 1, OldOptions),
-    EchoOnOptions = lists:keystore(echo, 1, OptionsWithoutExpand, {echo, true}),
-    EchoOffOptions = lists:keystore(echo, 1, OptionsWithoutExpand, {echo, false}),
-    io:setopts(EchoOnOptions),
-    LoginLine = io:get_line("login:"),
-    io:setopts(EchoOffOptions),
-    PwdLine = io:get_line("password:"),
-    io:setopts(OldOptions),
+    case ExecutionState#execution_state.session of
+        undefined -> execute_impl(ExecutionState);
+        _Session ->
+            io:format(standard_error, "You are already logged in.~n", []),
+            {255, ExecutionState}
+    end.
+
+%% ====================================================================
+%% Internal functions
+%% ====================================================================
+
+-spec execute_impl(ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
+execute_impl(ExecutionState) ->
+    {LoginLine, PwdLine} = interact_with_user(),
     Login = string:strip(LoginLine, right, $\n),
     PwdString = string:strip(PwdLine, right, $\n),
-    Pwd = <<>>,
+    Pwd = create_pwd_hash(PwdString),
     LoginCommand = #login{login_name = Login, password = Pwd},
     case gen_server:call(global_input_endpoint, LoginCommand) of
         #login_success{session_pid = Session, greeting = Greeting} ->
@@ -45,7 +51,19 @@ execute("", ExecutionState) ->
             {255, ExecutionState}
     end.
 
-%% ====================================================================
-%% Internal functions
-%% ====================================================================
+-spec interact_with_user() -> {LoginLine :: string(), PwdLine :: string()}.
+interact_with_user() ->
+    OldOptions = io:getopts(),
+    OptionsWithoutExpand = lists:keydelete(expand_fun, 1, OldOptions),
+    EchoOnOptions = lists:keystore(echo, 1, OptionsWithoutExpand, {echo, true}),
+    EchoOffOptions = lists:keystore(echo, 1, OptionsWithoutExpand, {echo, false}),
+    io:setopts(EchoOnOptions),
+    LoginLine = io:get_line("login:"),
+    io:setopts(EchoOffOptions),
+    PwdLine = io:get_line("password:"),
+    io:setopts(OldOptions),
+    {LoginLine, PwdLine}.
 
+-spec create_pwd_hash(PwdString :: string()) -> binary().
+create_pwd_hash(PwdString) ->
+    crypto_utils:hash(?HASH_TYPE, PwdString, ?HASH_SALT).
