@@ -2,13 +2,14 @@
 
 -define(COMMANDS_CONFIG_KEY, commands).
 -define(COMMANDS_DATA_SOURCE, data_source).
+-define(GLOBAL_HANDLER_CONFIG_KEY, global_handler).
 
 -record(global_config, {main_config_dir = "." :: string(),
                         commands = []:: [{CommandName :: atom(), CommandModule :: atom()}],
+                        global_handler = undefined :: 'undefined' | atom() | {atom(), atom()},
                         other = [] :: [{Key :: atom(), Value :: term()}]}).
 
--record(execution_state, {global_handler = undefined :: 'undefined' | atom(),
-                          session = undefined :: 'undefined' | pid(),
+-record(execution_state, {session = undefined :: 'undefined' | pid(),
                           commands_info = [] :: [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}],
                           current_cli_mode :: atom()}).
 

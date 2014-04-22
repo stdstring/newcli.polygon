@@ -25,6 +25,8 @@ process({?COMMANDS_CONFIG_KEY, CommandsData}, Config, MainConfigDir) ->
     CommandsSource = config_utils:get_config(CommandsData, ?COMMANDS_DATA_SOURCE, 1, missing_commands_def),
     Commands = erlang_term_utils:read_from_file(filename:absname(CommandsSource, MainConfigDir)),
     Config#global_config{commands = Commands};
+process({?GLOBAL_HANDLER_CONFIG_KEY, GlobalHandler}, Config, _MainConfigDir) ->
+    Config#global_config{global_handler = GlobalHandler};
 process(Other, Config, _MainConfigDir) ->
     ConfigOther = Config#global_config.other,
     Config#global_config{other = [Other] ++ ConfigOther}.
