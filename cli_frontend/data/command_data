@@ -1,0 +1,11 @@
+%% [{command_name, command_module}]
+[
+%% login
+{login, login_command},
+%% logout
+{logout, logout_command}
+%% help (special command)
+%% {help, help_command},
+%% backend (special command)
+%% {backend, backend_command}
+].

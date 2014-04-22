@@ -1,6 +1,11 @@
 %% common definitions:
 
--record(global_config, {main_config_dir = "." :: string(), commands = []:: [{CommandName :: atom(), CommandModule :: atom()}]}).
+-define(COMMANDS_CONFIG_KEY, commands).
+-define(COMMANDS_DATA_SOURCE, data_source).
+
+-record(global_config, {main_config_dir = "." :: string(),
+                        commands = []:: [{CommandName :: atom(), CommandModule :: atom()}],
+                        other = [] :: [{Key :: atom(), Value :: term()}]}).
 
 -record(execution_state, {global_handler = undefined :: 'undefined' | atom(),
                           session = undefined :: 'undefined' | pid(),
