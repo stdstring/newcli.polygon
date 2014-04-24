@@ -41,8 +41,9 @@ handle_call(#login{login_name = LoginName, password = PasswordHash}, {From, _Tag
                 {error, Error} ->
                     Reply = #login_fail{reason = {session_creation_error, Error}},
                     {reply, Reply, State};
-                {ok, Pid} -> 
-                    Reply = #login_success{session_pid = Pid, greeting = "some greeting message~n"},
+                {ok, Pid} ->
+                    IsAdmin = User#user.access_level == ?MAX_ACCESS_LEVEL,
+                    Reply = #login_success{login_name = LoginName, is_admin = IsAdmin, session_pid = Pid, greeting = "some greeting message"},
                     {reply, Reply, State}
             end;
         {authentication_fail, Reason} ->

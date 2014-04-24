@@ -4,8 +4,10 @@
 -define(COMMANDS_DATA_SOURCE, data_source).
 -define(CLI_FSM_CONFIG_KEY, cli_fsm).
 -define(CLI_FSM_DATA_SOURCE, data_source).
+-define(MIN_ACCESS_LEVEL, 0).
+-define(MAX_ACCESS_LEVEL, 15).
 
--record(user, {uid = -1 :: integer(), username = "" :: string(), access_level = 0 :: integer()}).
+-record(user, {uid = -1 :: integer(), username = "" :: string(), access_level = ?MIN_ACCESS_LEVEL :: integer()}).
 
 -record(global_config, {main_config_dir = "." :: string(),
                         commands = [] :: [{CommandName :: atom(), CommandModule :: atom()}],

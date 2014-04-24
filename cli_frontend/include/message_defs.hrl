@@ -1,7 +1,10 @@
 %% message definitions:
 
 -record(login, {login_name = "" :: string(), password = <<>> :: binary()}).
--record(login_success, {session_pid = undefined :: 'undefined' | pid(), greeting = "" :: string()}).
+-record(login_success, {login_name = "" :: string(),
+                        is_admin = false :: boolean(),
+                        session_pid = undefined :: 'undefined' | pid(),
+                        greeting = "" :: string()}).
 -record(login_fail, {reason = undefined :: 'undefined' | term()}).
 
 -record(logout, {}).
