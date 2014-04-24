@@ -2,6 +2,8 @@
 
 -module(login_command).
 
+-behaviour(command_behaviour).
+
 -include("crypto_defs.hrl").
 -include("message_defs.hrl").
 -include("common_defs.hrl").
@@ -44,7 +46,7 @@ execute_impl(ExecutionState) ->
     GlobalHandler = ExecutionState#execution_state.global_handler,
     case gen_server:call(GlobalHandler, LoginCommand) of
         #login_success{session_pid = Session, greeting = Greeting} ->
-            io:format(Greeting, []),
+            io:format("~s", [string_data_utils:add_trailing_line_feed(Greeting)]),
             NewExecutionState = ExecutionState#execution_state{session = Session},
             {0, NewExecutionState};
         #login_fail{reason = Reason} ->
@@ -63,6 +65,7 @@ interact_with_user() ->
     io:setopts(EchoOffOptions),
     PwdLine = io:get_line("password:"),
     io:setopts(OldOptions),
+    io:format("~n", []),
     {LoginLine, PwdLine}.
 
 -spec create_pwd_hash(PwdString :: string()) -> binary().

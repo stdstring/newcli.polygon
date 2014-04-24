@@ -2,6 +2,8 @@
 
 -module(logout_command).
 
+-behaviour(command_behaviour).
+
 -include("common_defs.hrl").
 
 %% ====================================================================

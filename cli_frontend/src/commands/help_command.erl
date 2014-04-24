@@ -2,6 +2,8 @@
 
 -module(help_command).
 
+-behaviour(command_behaviour).
+
 -include("common_defs.hrl").
 
 %% ====================================================================
@@ -70,7 +72,7 @@ join_command_body(CommandBodyParts) ->
 
 -spec show_commands(Commands :: [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}]) -> 'ok'.
 show_commands([]) ->
-    io:format("Commands not found~n"),
+    io:format("Commands not found.~n"),
     ok;
 show_commands(Commands) ->
     CommandBodyList = lists:map(fun({_Name, Body, _Help}) -> join_command_body(Body) end, Commands),
@@ -79,8 +81,8 @@ show_commands(Commands) ->
 
 -spec show_command(Command :: {CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()} | 'false') -> 'ok'.
 show_command(false) ->
-    io:format("Help not found~n"),
+    io:format("Help not found.~n"),
     ok;
 show_command({_Name, _Body, Help}) ->
-    io:format("~s~n", [Help]),
+    io:format("~s", [string_data_utils:add_trailing_line_feed(Help)]),
     ok.
