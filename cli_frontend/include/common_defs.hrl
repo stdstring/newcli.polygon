@@ -9,9 +9,10 @@
                         global_handler = undefined :: 'undefined' | atom() | {atom(), atom()},
                         other = [] :: [{Key :: atom(), Value :: term()}]}).
 
--record(execution_state, {session = undefined :: 'undefined' | pid(),
+-record(execution_state, {global_handler = undefined :: 'undefined' | atom() | {atom(), atom()},
+                          session = undefined :: 'undefined' | pid(),
                           commands_info = [] :: [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}],
-                          current_cli_mode :: atom()}).
+                          current_cli_mode = undefined :: 'undefined' | atom()}).
 
 -record(ambiguous_parse_result, {}).
 
