@@ -37,8 +37,8 @@ execute("", ExecutionState) ->
 -spec execute_impl(ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 execute_impl(ExecutionState) ->
     {LoginLine, PwdLine} = interact_with_user(),
-    Login = string:strip(LoginLine, right, $\n),
-    PwdString = string:strip(PwdLine, right, $\n),
+    Login = string_data_utils:remove_trailing_line_feed(LoginLine),
+    PwdString = string_data_utils:remove_trailing_line_feed(PwdLine),
     Pwd = create_pwd_hash(PwdString),
     LoginCommand = #login{login_name = Login, password = Pwd},
     case gen_server:call(global_input_endpoint, LoginCommand) of

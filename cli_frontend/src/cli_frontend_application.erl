@@ -44,4 +44,6 @@ generate_prompt(_ExecutionState) -> "frontend_test>".
 main_worker(GlobalConfig, ExecutionState) ->
     Prompt = generate_prompt(ExecutionState),
     CommandLine = io:get_line(Prompt),
-    main_worker(GlobalConfig, ExecutionState).
+    Command = string_data_utils:remove_trailing_line_feed(CommandLine),
+    NewExecutionState = command_execution_context:execute(Command, GlobalConfig, ExecutionState),
+    main_worker(GlobalConfig, NewExecutionState).
