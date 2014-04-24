@@ -41,7 +41,8 @@ execute_impl(ExecutionState) ->
     PwdString = string_data_utils:remove_trailing_line_feed(PwdLine),
     Pwd = create_pwd_hash(PwdString),
     LoginCommand = #login{login_name = Login, password = Pwd},
-    case gen_server:call(global_input_endpoint, LoginCommand) of
+    GlobalHandler = ExecutionState#execution_state.global_handler,
+    case gen_server:call(GlobalHandler, LoginCommand) of
         #login_success{session_pid = Session, greeting = Greeting} ->
             io:format(Greeting, []),
             NewExecutionState = ExecutionState#execution_state{session = Session},
