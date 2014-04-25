@@ -41,9 +41,14 @@ retrieve_commands_info(GlobalHandler) ->
 -spec generate_prompt(ExecutionState :: #execution_state{}) -> string().
 generate_prompt(ExecutionState) ->
     LoginInfo = ExecutionState#execution_state.login_info,
-    CliMode = ExecutionState#execution_state.current_cli_mode,
+    LoginPart = logic_utils:ternary_op(LoginInfo /= undefined, LoginInfo#login_info.login_name, ""),
     DeviceName = "CliDemo",
-    "frontend_test>".
+    CliMode = ExecutionState#execution_state.current_cli_mode,
+    CliModePart = logic_utils:ternary_op((CliMode /= undefined) and (CliMode /= ""), " (" ++ CliMode ++ ")", ""),
+    IsAdmin = logic_utils:ternary_op(LoginInfo /= undefined, LoginInfo#login_info.is_admin, false),
+    PromptFooter = logic_utils:ternary_op(IsAdmin, "#", ">"),
+    Prompt = io_lib:format("~s@~s~s~s", [LoginPart, DeviceName, CliModePart, PromptFooter]),
+    lists:flatten(Prompt).
 
 main_worker(GlobalConfig, ExecutionState) ->
     Prompt = generate_prompt(ExecutionState),
