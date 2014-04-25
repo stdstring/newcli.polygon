@@ -25,7 +25,7 @@ get_command_body() -> ["logout"].
 execute("", ExecutionState) ->
     {ReturnCode, NewExecutionState} = backend_command:execute("logout", ExecutionState),
     io:format("You are logged out.~n", []),
-    {ReturnCode, NewExecutionState#execution_state{session = undefined}}.
+    {ReturnCode, NewExecutionState#execution_state{session = undefined, login_info = undefined, current_cli_mode = undefined}}.
 
 %% ====================================================================
 %% Internal functions

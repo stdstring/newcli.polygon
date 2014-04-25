@@ -39,7 +39,11 @@ retrieve_commands_info(GlobalHandler) ->
     end.
 
 -spec generate_prompt(ExecutionState :: #execution_state{}) -> string().
-generate_prompt(_ExecutionState) -> "frontend_test>".
+generate_prompt(ExecutionState) ->
+    LoginInfo = ExecutionState#execution_state.login_info,
+    CliMode = ExecutionState#execution_state.current_cli_mode,
+    DeviceName = "CliDemo",
+    "frontend_test>".
 
 main_worker(GlobalConfig, ExecutionState) ->
     Prompt = generate_prompt(ExecutionState),
