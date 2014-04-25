@@ -11,7 +11,7 @@
 
 -export([main/0, main/1]).
 
-main() -> main("/tmp/frontend.conf").
+main() -> main("/tmp/frontend/frontend.conf").
 
 main(MainConfigFile) ->
     GlobalConfig = config_reader:read(MainConfigFile),
