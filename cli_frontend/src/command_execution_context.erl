@@ -12,7 +12,7 @@
 
 -spec execute(CommandLine :: string(), GlobalConfig :: #global_config{}, ExecutionState :: #execution_state{}) -> ExecutionState :: #execution_state{}.
 execute(CommandLine, GlobalConfig, ExecutionState) ->
-    case command_parser:parse(CommandLine, GlobalConfig, ExecutionState) of
+    case command_parser:parse(CommandLine, GlobalConfig) of
         {command_parser, Reason} ->
             io:format(standard_error, "Command's parsing is failed due to the following: ~p~n", [Reason]),
             ExecutionState;

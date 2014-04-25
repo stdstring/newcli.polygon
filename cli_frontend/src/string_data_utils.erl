@@ -10,7 +10,7 @@
 
 -spec add_trailing_line_feed(Source :: string()) -> string().
 add_trailing_line_feed(Source) ->
-    remove_trailing_line_feed(Source) + $\n.
+    remove_trailing_line_feed(Source) ++ "\n".
 
 -spec remove_trailing_line_feed(Source :: string()) -> string().
 remove_trailing_line_feed(Source) ->
