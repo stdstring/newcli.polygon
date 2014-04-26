@@ -41,17 +41,20 @@ execute(CommandLineRest, ExecutionState) ->
 -spec execute_impl(Session :: pid(), CommandLineRest :: string()) -> {ReturnCode :: integer, CliMode :: string()}.
 execute_impl(Session, CommandLineRest) ->
     gen_server:call(Session, #command{message = CommandLineRest}),
+    process_response().
+
+-spec process_response() -> {ReturnCode :: integer, CliMode :: string()}.
+process_response() ->
     receive
         #command_output{message = Message} ->
             io:format("~s", [Message]),
-            execute_impl(Session, CommandLineRest);
+            process_response();
         #command_error{message = Message} ->
             io:format(standard_error, "~s", [Message]),
-            execute_impl(Session, CommandLineRest);
+            process_response();
         #command_end{completion_code = ReturnCode, cli_mode = CliMode} ->
             {ReturnCode, CliMode};
         #command_fail{reason = Reason, cli_mode = CliMode} ->
             io:format(standard_error, "Command's execution is failed due to the following: ~p~n", [Reason]),
             {255, CliMode}
     end.
-
