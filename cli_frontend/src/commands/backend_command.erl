@@ -40,7 +40,7 @@ execute(CommandLineRest, ExecutionState) ->
 
 -spec execute_impl(Session :: pid(), CommandLineRest :: string()) -> {ReturnCode :: integer, CliMode :: string()}.
 execute_impl(Session, CommandLineRest) ->
-    gen_server:call(Session, CommandLineRest),
+    gen_server:call(Session, #command{message = CommandLineRest}),
     receive
         #command_output{message = Message} ->
             io:format("~s", [Message]),

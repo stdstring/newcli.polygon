@@ -45,9 +45,11 @@ execute_impl(ExecutionState) ->
     LoginCommand = #login{login_name = Login, password = Pwd},
     GlobalHandler = ExecutionState#execution_state.global_handler,
     case gen_server:call(GlobalHandler, LoginCommand) of
-        #login_success{session_pid = Session, greeting = Greeting} ->
+        #login_success{login_name = LoginName, is_admin = IsAdmin, session_pid = Session, greeting = Greeting} ->
             io:format("~s", [string_data_utils:add_trailing_line_feed(Greeting)]),
-            NewExecutionState = ExecutionState#execution_state{session = Session},
+            LoginInfo = #login_info{login_name = LoginName, is_admin = IsAdmin},
+            CliMode = "",
+            NewExecutionState = ExecutionState#execution_state{session = Session, login_info = LoginInfo, current_cli_mode = CliMode},
             {0, NewExecutionState};
         #login_fail{reason = Reason} ->
             io:format(standard_error, "Login's attempt is failed due to the following: ~p~n", [Reason]),

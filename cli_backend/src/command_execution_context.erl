@@ -20,7 +20,7 @@ execute(CommandLine, GlobalConfig, ClientConfig) ->
     CliFsm = ClientConfig#client_config.cli_fsm,
     ClientOutput = ClientConfig#client_config.output,
     Endpoint = create_output_endpoint(ClientOutput),
-    case command_parser:parse(CommandLine, GlobalConfig, ClientOutput) of
+    case command_parser:parse(CommandLine, GlobalConfig, Endpoint) of
         {command_parser, Reason} ->
             send_fail(Endpoint, #parser_fail{command_line = CommandLine, reason = Reason}, CliFsm),
             StateInfo = cli_fsm:get_current_state(CliFsm),
@@ -42,7 +42,8 @@ create_output_endpoint(ClientOutput) ->
 -spec execute(Commands :: [{CommandModule :: atom(), CommandPid :: pid()}], Endpoint :: pid(), CliFsm :: pid(), User :: #user{}) -> boolean().
 execute([], Endpoint, CliFsm, _User) ->
     #cli_fsm_state_info{current_state = CurrentState, is_terminal = IsTerminalState} = cli_fsm:get_current_state(CliFsm),
-    output_endpoint:send_result(Endpoint, 0, CurrentState),
+    CurrentStateRepresentation = atom_to_list(CurrentState),
+    output_endpoint:send_result(Endpoint, 0, CurrentStateRepresentation),
     not IsTerminalState;
 execute([{CommandModule, CommandPid} | Commands], Endpoint, CliFsm, User) ->
     CommandName = apply(CommandModule, get_name, []),
