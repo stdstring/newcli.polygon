@@ -31,6 +31,7 @@ init(GlobalConfig) ->
     ChildSpecification =
         [{authentication_service, {authentication_service, start, [SevicesConfig, MainConfigDir]}, transient, brutal_kill, worker, [authentication_service]},
          {authorization_service, {authorization_service, start, [SevicesConfig, MainConfigDir]}, transient, brutal_kill, worker, [authorization_service]},
+         {client_input_supervisor, {client_input_supervisor, start, [GlobalConfig]}, transient, brutal_kill, supervisor, [client_input_supervisor]},
          {global_input_endpoint, {global_input_endpoint, start, [GlobalConfig]}, transient, brutal_kill, worker, [global_input_endpoint]}],
     {ok,{{one_for_one, 1, 60}, ChildSpecification}}.
 
