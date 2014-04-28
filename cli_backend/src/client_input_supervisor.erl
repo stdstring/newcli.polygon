@@ -6,7 +6,7 @@
 
 -include("common_defs.hrl").
 
--define(SUPERVISOR_NAME, {local, client_input_supervisor}).
+-define(SUPERVISOR_NAME, client_input_supervisor).
 
 %% ====================================================================
 %% API functions
@@ -18,13 +18,13 @@
 
 -spec start(GlobalConfig :: #global_config{}) -> {'ok', Pid :: pid()} | {'error', Reason :: term()} | term().
 start(GlobalConfig) ->
-    supervisor:start_link(?SUPERVISOR_NAME, ?MODULE, [GlobalConfig]).
+    supervisor:start_link({local, ?SUPERVISOR_NAME}, ?MODULE, [GlobalConfig]).
 
 create_client(User, ClientOutput) ->
     supervisor:start_child(?SUPERVISOR_NAME, [User, ClientOutput]).
 
-init([GlobalConfig, User, ClientOutput]) ->
-    ChildSpecification = {client_input_endpoint, {client_input_endpoint, start, [GlobalConfig, User, ClientOutput]}, temporary, 2000, worker, [client_input_endpoint]},
+init([GlobalConfig]) ->
+    ChildSpecification = {client_input_endpoint, {client_input_endpoint, start, [GlobalConfig]}, temporary, 2000, worker, [client_input_endpoint]},
     {ok, {{simple_one_for_one, 0, 1}, [ChildSpecification]}}.
 
 %% ====================================================================
