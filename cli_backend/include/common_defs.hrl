@@ -14,7 +14,10 @@
                         cli_fsm = [] :: [{Key :: atom(), Value :: term()}],
                         other = [] :: [{Key :: atom(), Value :: term()}]}).
 
--record(cli_fsm_state_info, {current_state = undefined :: atom(), commands = [] :: [CommandName :: atom()], is_terminal = false :: boolean()}).
+-record(cli_fsm_state_info, {current_state = undefined :: atom(),
+                             current_state_representation :: atom(),
+                             commands = [] :: [CommandName :: atom()],
+                             is_terminal = false :: boolean()}).
 
 -record(client_config, {user = undefined :: 'undefined' | #user{},
                         cli_fsm = undefined :: 'undefined' | pid(),

@@ -41,9 +41,8 @@ create_output_endpoint(ClientOutput) ->
 
 -spec execute(Commands :: [{CommandModule :: atom(), CommandPid :: pid()}], Endpoint :: pid(), CliFsm :: pid(), User :: #user{}) -> boolean().
 execute([], Endpoint, CliFsm, _User) ->
-    #cli_fsm_state_info{current_state = CurrentState, is_terminal = IsTerminalState} = cli_fsm:get_current_state(CliFsm),
-    CurrentStateRepresentation = atom_to_list(CurrentState),
-    output_endpoint:send_result(Endpoint, 0, CurrentStateRepresentation),
+    #cli_fsm_state_info{current_state_representation = Representation, is_terminal = IsTerminalState} = cli_fsm:get_current_state(CliFsm),
+    output_endpoint:send_result(Endpoint, 0, Representation),
     not IsTerminalState;
 execute([{CommandModule, CommandPid} | Commands], Endpoint, CliFsm, User) ->
     CommandName = apply(CommandModule, get_name, []),
@@ -76,15 +75,13 @@ process_execute(CommandModule, CommandPid, OtherCommands, Endpoint, CliFsm, User
 
 -spec send_error(Endpoint :: pid(), ReturnCode :: integer(), CliFsm :: pid()) -> 'ok'.
 send_error(Endpoint, ReturnCode, CliFsm) ->
-    #cli_fsm_state_info{current_state = CurrentState} = cli_fsm:get_current_state(CliFsm),
-    CurrentStateRepresentation = atom_to_list(CurrentState),
-    output_endpoint:send_result(Endpoint, ReturnCode, CurrentStateRepresentation),
+    #cli_fsm_state_info{current_state_representation = Representation} = cli_fsm:get_current_state(CliFsm),
+    output_endpoint:send_result(Endpoint, ReturnCode, Representation),
     ok.
 
 -spec send_fail(Endpoint :: pid(), Message :: term(), CliFsm :: pid()) -> 'ok'.
 send_fail(Endpoint, Message, CliFsm) ->
-    #cli_fsm_state_info{current_state = CurrentState} = cli_fsm:get_current_state(CliFsm),
-    CurrentStateRepresentation = atom_to_list(CurrentState),
-    output_endpoint:send_fail(Endpoint, Message, CurrentStateRepresentation),
+    #cli_fsm_state_info{current_state_representation = Representation} = cli_fsm:get_current_state(CliFsm),
+    output_endpoint:send_fail(Endpoint, Message, Representation),
     ok.
 

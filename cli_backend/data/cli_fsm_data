@@ -1,12 +1,12 @@
 [
-%% {'states', [{statename, [allowed_command_names]}]}
-{states, [{fundamental_mode, [config_terminal, ping, show_vlan, logout]},
-          {global_config_mode, [interface, interface_range, vlan, no_vlan, 'end', exit, show_vlan, logout]},
-          {interface_config_mode, [switchport_vlan, no_switchport_vlan, 'end', exit, show_vlan, logout]},
-          {interface_range_config_mode, [switchport_vlan, no_switchport_vlan, 'end', exit, show_vlan, logout]},
-          {vlan_config_mode, [name_vlan, no_name_vlan, vlan, no_vlan, 'end', exit, show_vlan, logout]},
-          {logout_mode, []}]},
-%% {'transitions', [{from_state, to_state, command_name}]}
+%% {'states', [{Statename :: atom(), Representation :: string(), [AllowedCommands :: atom()]}]}
+{states, [{fundamental_mode, "", [config_terminal, ping, show_vlan, logout]},
+          {global_config_mode, "config", [interface, interface_range, vlan, no_vlan, 'end', exit, show_vlan, logout]},
+          {interface_config_mode, "config-if", [switchport_vlan, no_switchport_vlan, 'end', exit, show_vlan, logout]},
+          {interface_range_config_mode, "config-if-range", [switchport_vlan, no_switchport_vlan, 'end', exit, show_vlan, logout]},
+          {vlan_config_mode, "config-vlan", [name_vlan, no_name_vlan, vlan, no_vlan, 'end', exit, show_vlan, logout]},
+          {logout_mode, "", []}]},
+%% {'transitions', [{FromState :: atom(), ToState :: atom(), CommandName :: atom()}]}
 {transitions, [{fundamental_mode, global_config_mode, config_terminal},
                {global_config_mode, interface_config_mode, interface},
                {global_config_mode, interface_range_config_mode, interface_range},
@@ -25,6 +25,8 @@
                {interface_config_mode, logout_mode, logout},
                {global_config_mode, logout_mode, logout},
                {fundamental_mode, logout_mode, logout}]},
+%% {'initial_state', StateName :: atom()}
 {initial_state, fundamental_mode},
+%% {'terminal_states', [StateName :: atom()]}
 {terminal_states, [logout_mode]}
 ].
