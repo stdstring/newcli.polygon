@@ -55,11 +55,10 @@ find_command(Commands, CommandPrefix) ->
 filter_command([], _PrefixRest) -> false;
 filter_command([CommandBodyPart | _CommandBodyRest], [PartialPrefixPart]) ->
     lists:prefix(PartialPrefixPart, CommandBodyPart);
-filter_command([CommandBodyPart | CommandBodyRest], [PrefixPart | PrefixRest]) ->
-    case CommandBodyPart == PrefixPart of
-        true -> filter_command(CommandBodyRest, PrefixRest);
-        false -> false
-    end.
+filter_command([Part | CommandBodyRest], [Part | PrefixRest]) ->
+    filter_command(CommandBodyRest, PrefixRest);
+filter_command(_CommandBody, _Prefix) ->
+    false.
 
 -spec filter_commands(Commands :: [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}], CommandPrefix :: [string()]) ->
           [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}].
