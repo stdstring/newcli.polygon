@@ -65,6 +65,7 @@ filter_command(_CommandBody, _Prefix) ->
 filter_commands(Commands, CommandPrefix) ->
     lists:filter(fun({_Name, Body, _Help}) -> filter_command(Body, CommandPrefix) end, Commands).
 
+-spec join_command_body(CommandBodyParts :: [string()]) -> string().
 join_command_body(CommandBodyParts) ->
     %% separator == space
     string:join(CommandBodyParts, " ").
