@@ -2,6 +2,7 @@
 
 -module(autocomplete_factory).
 
+-include("logic_utils_defs.hrl").
 -include("common_defs.hrl").
 
 %% ====================================================================
@@ -12,44 +13,77 @@
 
 -spec create_expand_fun(ExecutionState :: #execution_state{}) -> fun((string()) -> {'yes' | 'no', string(), [string()]}).
 create_expand_fun(ExecutionState) ->
-    ok.
+    CommandsInfo = ExecutionState#execution_state.commands_info,
+    AccFun = fun({_Name, Body, _Help}, Storage) -> process_command(join_command_body(Body), Storage) end,
+    ResultStorage = lists:foldl(AccFun, dict:new(), CommandsInfo),
+    fun(Input) ->
+            PreparedInput = extra_spaces_cleanup(Input),
+            case dict:is_key(PreparedInput, ResultStorage) of
+                true ->
+                    {ok, {CommonPart, CaseList}} = dict:find(PreparedInput, ResultStorage),
+                    {yes, CommonPart, CaseList};
+                false -> {yes, "", []}
+            end
+    end.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
-%%-spec filter_command(CommandBody :: [string()], Prefix :: [string()]) -> boolean().
-%%filter_command([], _PrefixRest) -> false;
-%%filter_command([CommandBodyPart | _CommandBodyRest], [PartialPrefixPart]) ->
-%%    lists:prefix(PartialPrefixPart, CommandBodyPart);
-%%filter_command([CommandBodyPart | CommandBodyRest], [PrefixPart | PrefixRest]) ->
-%%    case CommandBodyPart == PrefixPart of
-%%        true -> filter_command(CommandBodyRest, PrefixRest);
-%%        false -> false
-%%    end.
+-spec process_command(Body :: string(), Storage :: dict()) -> dict().
+process_command(Body, Storage) ->
+    process_command(Body, "", Storage).
 
-%%-spec filter_commands(Commands :: [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}], CommandPrefix :: [string()]) ->
-%%          [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}].
-%%filter_commands(Commands, CommandPrefix) ->
-%%    lists:filter(fun({_Name, Body, _Help}) -> filter_command(Body, CommandPrefix) end, Commands).
+-spec process_command(BodyRest :: string(), Key :: string(), Storage :: dict()) -> dict().
+process_command("", _Key, Storage) -> Storage;
+process_command([Header | BodyRest], Key, Storage) ->
+    NewKey = [Header] ++ Key,
+    process_command_body(BodyRest, NewKey, Storage).
 
--spec filter_command(CommandBody :: [string()], Prefix :: [string()]) -> {Result :: boolean(), Rest :: [string()]}.
-filter_command([], _PrefixRest) -> {false, []};
-filter_command([CommandBodyPart | CommandBodyRest], [PartialPrefixPart]) ->
-    case check_prefix(CommandBodyPart, PartialPrefixPart) of
-        {true, Rest} -> {true, [Rest] ++ CommandBodyRest};
-        {false, _} -> {false, []}
-    end;
-filter_command([Part | CommandBodyRest], [Part | PrefixRest]) ->
-    filter_command(CommandBodyRest, PrefixRest);
-filter_command(_CommandBodyRest, _PrefixRest) ->
-    {false, []}.
+-spec process_command_body(BodyRest :: string(), Key :: string(), Storage :: dict()) -> dict().
+process_command_body(BodyRest, Key, Storage) ->
+    InitialValue = {BodyRest, []},
+    UpdateFun = fun({OldCommonPart, OldCaseList}) ->
+                        {CommonPart, OldRest, NewRest} = calculate_common_part(OldCommonPart, BodyRest),
+                        NewCaseList = lists:map(fun(OldCase) -> OldRest ++ OldCase end, OldCaseList),
+                        {CommonPart, [NewRest] ++ NewCaseList}
+                end,
+    dict:update(Key, UpdateFun, InitialValue, Storage).
 
--spec check_prefix(Source :: string(), Prefix :: string()) -> {Result :: boolean(), Rest :: string()}.
-check_prefix(Prefix, Prefix) -> {true, ""};
-check_prefix(Source, Prefix) when length(Source) < length(Prefix) -> {false, ""};
-check_prefix(Source, Prefix) ->
-    case lists:split(length(Prefix), Source) of
-        {Prefix, Rest} -> {true, Rest};
-        _Other -> {false, ""}
-    end.
+-spec calculate_common_part(Str1 :: string(), Str2 :: string()) -> {CommonPart :: string, Rest1 :: string(), Rest2 :: string()}.
+calculate_common_part(Str1, Str2) -> calculate_common_part(Str1, Str2, "").
+
+-spec calculate_common_part(Rest1 :: string(), Rest2 :: string(), CommonPart :: string()) ->
+          {CommonPart :: string, Rest1 :: string(), Rest2 :: string()}.
+calculate_common_part("", "", CommonPart) ->
+    {lists:reverse(CommonPart), "", ""};
+calculate_common_part(Rest1, "", CommonPart) ->
+    {lists:reverse(CommonPart), Rest1, ""};
+calculate_common_part("", Rest2, CommonPart) ->
+    {lists:reverse(CommonPart), "", Rest2};
+calculate_common_part([Char | Rest1], [Char | Rest2], CommonPart) ->
+    calculate_common_part(Rest1, Rest2, [Char] ++ CommonPart);
+calculate_common_part(Rest1, Rest2, CommonPart) ->
+    {lists:reverse(CommonPart), Rest1, Rest2}.
+
+-spec join_command_body(CommandBodyParts :: [string()]) -> string().
+join_command_body(CommandBodyParts) ->
+    %% separator == space
+    string:join(CommandBodyParts, " ").
+
+-spec extra_spaces_cleanup(Source:: string()) -> string().
+extra_spaces_cleanup(Source) ->
+    lists:reverse(extra_spaces_cleanup(Source, false, "")).
+
+-spec extra_spaces_cleanup(Source :: string(), IsPrevCharSpace :: boolean(), Result :: string()) -> string().
+extra_spaces_cleanup("", _, Result) -> "" ++ Result;
+extra_spaces_cleanup([$\s | Rest], false, Result) ->
+    extra_spaces_cleanup(Rest, true, [$\s] ++ Result);
+extra_spaces_cleanup([$\t | Rest], false, Result) ->
+    extra_spaces_cleanup(Rest, true, [$\s] ++ Result);
+extra_spaces_cleanup([$\s | Rest], true, Result) ->
+    extra_spaces_cleanup(Rest, true, Result);
+extra_spaces_cleanup([$\t | Rest], true, Result) ->
+    extra_spaces_cleanup(Rest, true, Result);
+extra_spaces_cleanup([Char | Rest], _, Result) ->
+    extra_spaces_cleanup(Rest, false, [Char] ++ Result).

@@ -17,7 +17,8 @@ main() -> main("/tmp/frontend/frontend.conf").
 main(MainConfigFile) ->
     GlobalConfig = config_reader:read(MainConfigFile),
     ExecutionState = init_execution_state(GlobalConfig),
-    main_worker(GlobalConfig, ExecutionState).
+    ConsoleOpts = create_console_opts(ExecutionState),
+    main_worker(GlobalConfig, ExecutionState, ConsoleOpts).
 
 %% ====================================================================
 %% Internal functions
@@ -39,6 +40,11 @@ retrieve_commands_info(GlobalHandler) ->
             error({commands_info, Reason})
     end.
 
+-spec create_console_opts(ExecutionState :: #execution_state{}) -> [{Key :: atom(), Option :: term()}].
+create_console_opts(ExecutionState) ->
+    ExpandFun = autocomplete_factory:create_expand_fun(ExecutionState),
+    [{expand_fun, ExpandFun}, {echo, true}, {binary, false}, {encoding, unicode}].
+
 -spec generate_prompt(ExecutionState :: #execution_state{}) -> string().
 generate_prompt(ExecutionState) ->
     LoginInfo = ExecutionState#execution_state.login_info,
@@ -51,9 +57,13 @@ generate_prompt(ExecutionState) ->
     Prompt = io_lib:format("~s@~s~s~s", [LoginPart, DeviceName, CliModePart, PromptFooter]),
     lists:flatten(Prompt).
 
-main_worker(GlobalConfig, ExecutionState) ->
+-spec main_worker(GlobalConfig :: #global_config{},
+                  ExecutionState :: #execution_state{},
+                  ConsoleOpts :: [{Key :: atom(), Option :: term()}]) -> no_return().
+main_worker(GlobalConfig, ExecutionState, ConsoleOpts) ->
+    io:setopts(ConsoleOpts),
     Prompt = generate_prompt(ExecutionState),
     CommandLine = io:get_line(Prompt),
     Command = string_data_utils:remove_trailing_line_feed(CommandLine),
     NewExecutionState = command_execution_context:execute(Command, GlobalConfig, ExecutionState),
-    main_worker(GlobalConfig, NewExecutionState).
+    main_worker(GlobalConfig, NewExecutionState, ConsoleOpts).
