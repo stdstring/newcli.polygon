@@ -20,9 +20,7 @@
 -spec start(KnownCommands :: [{CommandName :: atom(), CommandModule :: atom()}]) -> {'ok', pid()} | {'error', Error :: term()}.
 start(KnownCommands) -> gen_fsm:start_link(?MODULE, KnownCommands, []).
 
--spec process_token(ParserPid :: pid(), Token :: string() | 'eol') -> term().
-process_token(ParserPid, eol) ->
-    gen_fsm:sync_send_event(ParserPid, eol);
+-spec process_token(ParserPid :: pid(), Token :: string()) -> term().
 process_token(ParserPid, Token) ->
     gen_fsm:sync_send_event(ParserPid, Token).
 
