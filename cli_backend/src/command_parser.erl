@@ -39,6 +39,7 @@ find_command(CommandLine, Commands) ->
                    RecognizedCommand :: {CommandName :: atom(), CommandModule :: atom(), CommandLineRest :: string()} | 'undefined') ->
           {CommandName :: atom(), CommandModule :: atom(), ComandLineRest :: string()} | {'false', Reason :: term()}.
 %% when Rest == ""
+find_command(_CommandParserFsm, "", #unsuccessful_parse_result{}, undefined) -> {false, unknown_command};
 find_command(_CommandParserFsm, "", #incomplete_parse_result{}, undefined) -> {false, incomplete_command};
 find_command(_CommandParserFsm, "", #ambiguous_parse_result{}, undefined) -> {false, ambiguous_command};
 find_command(_CommandParserFsm, "", #successful_parse_result{command = {Name, Module}}, _) -> {Name, Module, ""};
