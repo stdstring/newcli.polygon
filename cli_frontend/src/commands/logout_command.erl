@@ -24,10 +24,15 @@ get_command_body() -> ["logout"].
 -spec execute(CommandLineRest :: string(), ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 execute("", ExecutionState) ->
     {ReturnCode, NewExecutionState} = backend_command:execute("logout", ExecutionState),
-    io:format("You are logged out.~n", []),
+    show_operation_result_message(ReturnCode),
     {ReturnCode, NewExecutionState#execution_state{session = undefined, login_info = undefined, current_cli_mode = undefined}}.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
+- spec show_operation_result_message(ReturnCode :: integer()) -> 'ok'.
+show_operation_result_message(0) ->
+    io:format("You are logged out.~n", []),
+    ok;
+show_operation_result_message(_ReturnCode) -> ok.
