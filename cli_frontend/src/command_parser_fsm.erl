@@ -70,7 +70,7 @@ unsuccessful_parsing(_Token, _From, StateData) ->
     {reply, Reply, unsuccessful_parsing, StateData}.
 
 handle_event(shutdown, _StateName, StateData) ->
-    {stop, shutdown, StateData}.
+    {stop, normal, StateData}.
 
 handle_sync_event(parser_state, _From, StateName, StateData) ->
     #command_parser_state{commands = Commands, recognized_parts = RecognizedParts} = StateData,

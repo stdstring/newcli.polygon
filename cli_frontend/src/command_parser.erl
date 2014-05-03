@@ -30,7 +30,9 @@ find_command(CommandLine, Commands) ->
         {command_parser_fsm, Error} ->
             {false, {command_parser_fsm, Error}};
         {ok, CommandParserFsm} ->
-            find_command_impl(CommandParserFsm, string:strip(CommandLine))
+            Result = find_command_impl(CommandParserFsm, string:strip(CommandLine)),
+            command_parser_fsm:stop(CommandParserFsm),
+            Result
     end.
 
 -spec find_command_impl(CommandParserFsm :: pid(),

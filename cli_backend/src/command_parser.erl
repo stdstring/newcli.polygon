@@ -30,7 +30,9 @@ find_command(CommandLine, Commands) ->
         {command_parser_fsm, Error} ->
             {false, {command_parser_fsm, Error}};
         {ok, CommandParserFsm} ->
-            find_command(CommandParserFsm, string:strip(CommandLine), #ambiguous_parse_result{}, undefined)
+            Result = find_command(CommandParserFsm, string:strip(CommandLine), #ambiguous_parse_result{}, undefined),
+            command_parser_fsm:stop(CommandParserFsm),
+            Result
     end.
 
 -spec find_command(CommandParserFsm :: pid(),
