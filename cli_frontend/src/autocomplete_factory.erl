@@ -16,7 +16,6 @@ create_expand_fun(ExecutionState) ->
     CommandsInfo = ExecutionState#execution_state.commands_info,
     AccFun = fun({_Name, Body, _Help}, Storage) -> process_command(join_command_body(Body), Storage) end,
     ResultStorage = post_process_commands(lists:foldl(AccFun, dict:new(), CommandsInfo)),
-    io:format("~p~n", [dict:to_list(ResultStorage)]),
     fun(Input) ->
             PreparedInput = extra_spaces_cleanup(Input),
             case dict:is_key(PreparedInput, ResultStorage) of
