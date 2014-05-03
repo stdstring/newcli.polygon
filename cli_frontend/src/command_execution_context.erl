@@ -11,6 +11,7 @@
 -export([execute/3]).
 
 -spec execute(CommandLine :: string(), GlobalConfig :: #global_config{}, ExecutionState :: #execution_state{}) -> ExecutionState :: #execution_state{}.
+execute("", _GlobalConfig, ExecutionState) -> ExecutionState;
 execute(CommandLine, GlobalConfig, ExecutionState) ->
     case command_parser:parse(CommandLine, GlobalConfig) of
         {command_parser, Reason} ->
