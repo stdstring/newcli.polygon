@@ -26,7 +26,7 @@ get_command_body() -> [].
 execute(CommandLineRest, ExecutionState) ->
     case ExecutionState#execution_state.session of
         undefined ->
-            io:format(standard_error, "Can't execute command for unauthenticated user", []),
+            io:format(standard_error, "Can't execute command for unauthenticated user.~n", []),
             {255, ExecutionState};
         Session ->
             {ReturnCode, CliMode} = execute_impl(Session, CommandLineRest),
