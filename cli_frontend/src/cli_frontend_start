@@ -1,1 +1,0 @@
-erl -noshell -sname $1 -eval "cli_frontend_application:main()"
