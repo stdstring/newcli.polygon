@@ -8,3 +8,7 @@ test:
 
 clean:
 	for directory in $(SUBDIRS); do $(MAKE) -C $$directory clean; done
+
+deploy:
+	
+
