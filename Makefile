@@ -1,11 +1,10 @@
+SUBDIRS = cli_backend cli_frontend
+
 all:
-	$(MAKE) -C cli_backend/ all
-	$(MAKE) -C cli_frontend/ all
+	for directory in $(SUBDIRS); do $(MAKE) -C $$directory; done
 
 test:
-	$(MAKE) -C cli_backend/ test
-	$(MAKE) -C cli_frontend/ test
+	for directory in $(SUBDIRS); do $(MAKE) -C $$directory test; done
 
 clean:
-	$(MAKE) -C cli_backend/ clean
-	$(MAKE) -C cli_frontend/ clean
+	for directory in $(SUBDIRS); do $(MAKE) -C $$directory clean; done
