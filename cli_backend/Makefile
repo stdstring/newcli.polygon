@@ -38,6 +38,9 @@ SOURCE=src/commands/command_behaviour.erl \
        src/logic_utils.erl \
        src/output_endpoint.erl
 
+COPY=src/cli_backend_application.app \
+     src/cli_backend_start.sh
+
 INCLUDE_FLAGS=-I include
 
 TARGETS = $(SOURCE:%.erl=$(EBIN)/%.beam)
@@ -45,8 +48,11 @@ TARGETS = $(SOURCE:%.erl=$(EBIN)/%.beam)
 $(EBIN)/%.beam: %.erl
 	erlc -pa $(EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
-all: $(TARGETS)
+all: $(TARGETS) post_build
 	
+
+post_build:
+	cp -f -t $(EBIN) $(COPY)
 
 test:
 
