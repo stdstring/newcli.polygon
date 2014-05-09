@@ -5,3 +5,4 @@ rpc_monitor*
 cli_backend/ebin/
 cli_frontend/ebin/
 cli_proxy/ebin/
+deploy/
