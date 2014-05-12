@@ -1,5 +1,5 @@
 # ignoring:
 cli_backend/ebin/
 cli_frontend/ebin/
-cli_proxy/ebin/
+cli_common/ebin/
 deploy/
