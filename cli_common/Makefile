@@ -21,7 +21,7 @@ all: pre_build $(TARGETS)
 pre_build:
 	if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi
 
-test:
+test: all
 	
 
 clean:

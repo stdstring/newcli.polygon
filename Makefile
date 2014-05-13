@@ -1,9 +1,16 @@
-SUBDIRS = cli_backend cli_frontend
+SUBDIRS = cli_common cli_backend cli_frontend
 
-all:
+all: build post_build
+	
+
+build:
 	for directory in $(SUBDIRS); do $(MAKE) -C $$directory; done
 
-test:
+post_build:
+	cp -f -t cli_backend/ebin cli_common/ebin/*
+	cp -f -t cli_frontend/ebin cli_common/ebin/*
+
+test: all
 	for directory in $(SUBDIRS); do $(MAKE) -C $$directory test; done
 
 clean:

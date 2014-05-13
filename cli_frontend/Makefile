@@ -25,10 +25,13 @@ TARGETS = $(SOURCE:%.erl=$(EBIN)/%.beam)
 $(EBIN)/%.beam: %.erl
 	erlc -pa $(EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
-all: $(TARGETS)
+all: pre_build $(TARGETS)
 	
 
-test:
+pre_build:
+	if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi
+
+test: all
 
 
 clean:

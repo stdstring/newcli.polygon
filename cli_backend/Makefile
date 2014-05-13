@@ -48,13 +48,16 @@ TARGETS = $(SOURCE:%.erl=$(EBIN)/%.beam)
 $(EBIN)/%.beam: %.erl
 	erlc -pa $(EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
-all: $(TARGETS) post_build
+all: pre_build $(TARGETS) post_build
 	
+
+pre_build:
+	if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi
 
 post_build:
 	cp -f -t $(EBIN) $(COPY)
 
-test:
+test: all
 
 
 clean:
