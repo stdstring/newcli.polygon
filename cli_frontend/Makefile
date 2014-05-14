@@ -10,13 +10,13 @@ SOURCE=src/commands/command_behaviour.erl \
        src/command_execution_context.erl \
        src/command_parser.erl \
        src/command_parser_fsm.erl \
-       src/commandline_parser.erl \
-       src/config_reader.erl \
-       src/config_utils.erl \
-       src/crypto_utils.erl \
-       src/erlang_term_utils.erl \
-       src/logic_utils.erl \
-       src/string_data_utils.erl
+       #src/commandline_parser.erl \
+       src/config_reader.erl #\
+       #src/config_utils.erl \
+       #src/crypto_utils.erl \
+       #src/erlang_term_utils.erl \
+       #src/logic_utils.erl \
+       #src/string_data_utils.erl
 
 INCLUDE_FLAGS=-I include
 
