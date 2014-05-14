@@ -51,7 +51,7 @@ $(EBIN)/%.beam: %.erl
 all: pre_build $(TARGETS) post_build
 	
 
-pre_build:
+pre_build: clean
 	if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi
 
 post_build:
@@ -61,4 +61,4 @@ test: all
 
 
 clean:
-	rm -f $(EBIN)/*
+	rm -rf $(EBIN)/*

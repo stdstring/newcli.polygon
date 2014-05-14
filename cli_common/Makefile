@@ -18,12 +18,12 @@ $(EBIN)/%.beam: %.erl
 all: pre_build $(TARGETS)
 	
 
-pre_build:
+pre_build: clean
 	if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi
 
 test: all
 	
 
 clean:
-	rm -f $(EBIN)/*
+	rm -rf $(EBIN)/*
 

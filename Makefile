@@ -1,20 +1,21 @@
-SUBDIRS = cli_common cli_backend cli_frontend
+SOURCE_SUBDIRS = cli_common cli_backend cli_frontend
+TEST_SUBDIRS = 
 
 all: build post_build
 	
 
 build:
-	for directory in $(SUBDIRS); do $(MAKE) -C $$directory; done
+	for directory in $(SOURCE_SUBDIRS); do $(MAKE) -C $$directory; done
 
 post_build:
 	cp -f -t cli_backend/ebin cli_common/ebin/*
 	cp -f -t cli_frontend/ebin cli_common/ebin/*
 
 test: all
-	for directory in $(SUBDIRS); do $(MAKE) -C $$directory test; done
+	for directory in $(TEST_SUBDIRS); do $(MAKE) -C $$directory test; done
 
 clean:
-	for directory in $(SUBDIRS); do $(MAKE) -C $$directory clean; done
+	for directory in $(SOURCE_SUBDIRS); do $(MAKE) -C $$directory clean; done
 
 deploy: all
 	rm -rf deploy
