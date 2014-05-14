@@ -30,12 +30,8 @@ SOURCE=src/commands/command_behaviour.erl \
        src/command_execution_context.erl \
        src/command_parser.erl \
        src/command_parser_fsm.erl \
-       #src/commandline_parser.erl \
        src/config_reader.erl \
-       #src/config_utils.erl \
-       #src/erlang_term_utils.erl \
        src/global_input_endpoint.erl \
-       #src/logic_utils.erl \
        src/output_endpoint.erl
 
 COPY=src/cli_backend_application.app \
