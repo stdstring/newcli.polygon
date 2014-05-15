@@ -8,12 +8,12 @@
 
 -export([get_first_token/1, get_first_token/2, get_tokens/1, get_tokens/2]).
 
--spec get_first_token(Source :: string()) -> {Tokens :: [string()], Rest :: string()}.
+-spec get_first_token(Source :: string()) -> {Tokens :: string(), Rest :: string()}.
 get_first_token(Source) ->
     %% $\s == space character
     get_first_token(Source, $\s).
 
--spec get_first_token(Source :: string(), Delimiter :: char()) -> {Tokens :: [string()], Rest :: string()}.
+-spec get_first_token(Source :: string(), Delimiter :: char()) -> {Tokens :: string(), Rest :: string()}.
 get_first_token(Source, Delimiter) ->
     {Token, Rest} = lists:splitwith(fun(Character) -> Character /= Delimiter end, Source),
     {Token, string:strip(Rest, left, Delimiter)}.
