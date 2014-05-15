@@ -4,18 +4,27 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
-%%-spec add_trailing_line_feed(Source :: string()) -> string().
-%%add_trailing_line_feed(Source) ->
-%%    remove_trailing_line_feed(Source) ++ "\n".
-
-%%-spec remove_trailing_line_feed(Source :: string()) -> string().
-%%remove_trailing_line_feed(Source) ->
-%%    string:strip(Source, right, $\n).
-
 %% ====================================================================
 %% Test functions
 %% ====================================================================
 
-add_trailing_line_feed_test_() -> [].
+add_trailing_line_feed_test_() ->
+    [{"empty line", ?_assertEqual("\n", string_data_utils:add_trailing_line_feed(""))},
+     {"line with single line feed", ?_assertEqual("\n", string_data_utils:add_trailing_line_feed("\n"))},
+     {"line without line feed", ?_assertEqual("iddqd idkfa\n", string_data_utils:add_trailing_line_feed("iddqd idkfa"))},
+     {"line with line feed", ?_assertEqual("iddqd idkfa\n", string_data_utils:add_trailing_line_feed("iddqd idkfa\n"))},
+     {"line with multiple line feeds", ?_assertEqual("iddqd idkfa\n\n", string_data_utils:add_trailing_line_feed("iddqd idkfa\n\n"))}].
 
-remove_trailing_line_feed_test_() -> [].
+remove_trailing_line_feed_test_() ->
+    [{"empty line", ?_assertEqual("", string_data_utils:remove_trailing_line_feed(""))},
+     {"line with single line feed", ?_assertEqual("", string_data_utils:remove_trailing_line_feed(""))},
+     {"line without line feed", ?_assertEqual("iddqd idkfa", string_data_utils:remove_trailing_line_feed("iddqd idkfa"))},
+     {"line with line feed", ?_assertEqual("iddqd idkfa", string_data_utils:remove_trailing_line_feed("iddqd idkfa\n"))},
+     {"line with multiple line feeds", ?_assertEqual("iddqd idkfa\n", string_data_utils:remove_trailing_line_feed("iddqd idkfa\n\n"))}].
+
+remove_all_trailing_line_feeds_test_() ->
+    [{"empty line", ?_assertEqual("", string_data_utils:remove_all_trailing_line_feeds(""))},
+     {"line with single line feed", ?_assertEqual("", string_data_utils:remove_all_trailing_line_feeds(""))},
+     {"line without line feed", ?_assertEqual("iddqd idkfa", string_data_utils:remove_all_trailing_line_feeds("iddqd idkfa"))},
+     {"line with line feed", ?_assertEqual("iddqd idkfa", string_data_utils:remove_all_trailing_line_feeds("iddqd idkfa\n"))},
+     {"line with multiple line feeds", ?_assertEqual("iddqd idkfa", string_data_utils:remove_all_trailing_line_feeds("iddqd idkfa\n\n"))}].
