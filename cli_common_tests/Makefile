@@ -3,6 +3,7 @@ EBIN=ebin
 SRC_EBIN = ../cli_common/ebin
 
 SOURCE=src/commandline_parser_tests.erl \
+       src/config_utils_tests.erl \
        src/string_data_utils_tests.erl
 
 INCLUDE_FLAGS=-I include
