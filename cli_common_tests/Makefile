@@ -4,6 +4,7 @@ SRC_EBIN = ../cli_common/ebin
 
 SOURCE=src/commandline_parser_tests.erl \
        src/config_utils_tests.erl \
+       src/crypto_utils_tests.erl \
        src/erlang_term_utils_tests.erl \
        src/logic_utils_tests.erl \
        src/message_reader_tests.erl \
