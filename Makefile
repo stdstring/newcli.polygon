@@ -1,5 +1,5 @@
 SOURCE_SUBDIRS = cli_common cli_backend cli_frontend
-TEST_SUBDIRS = cli_common_tests
+TEST_SUBDIRS = cli_common_tests cli_backend_tests
 
 all: build post_build
 	
