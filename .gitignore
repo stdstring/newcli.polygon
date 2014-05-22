@@ -1,6 +1,8 @@
 # ignoring:
 cli_backend/ebin/
+cli_backend_tests/ebin/
 cli_frontend/ebin/
+cli_frontend_tests/ebin/
 cli_common/ebin/
 cli_common_tests/ebin/
 deploy/
