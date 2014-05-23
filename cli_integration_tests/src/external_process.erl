@@ -8,7 +8,7 @@
 %% API functions
 %% ====================================================================
 
--export([create/1, create/2, send_data_to_process/2, receive_data_from_process/1, close/1]).
+-export([create/1, create/2, send_data_to_process/2, receive_data_from_process/0, close/1]).
 
 -spec create(ProcessFilename :: file:name()) -> port().
 create(ProcessFilename) ->
@@ -23,15 +23,28 @@ send_data_to_process(ProcessPort, Data) ->
     port_command(ProcessPort, Data),
     ok.
 
--spec receive_data_from_process(ProcessPort :: port()) -> [Data :: string()].
-receive_data_from_process(ProcessPort) ->
+-spec receive_data_from_process() -> [Data :: string()].
+receive_data_from_process() ->
     Messages = message_reader:read_all_messages(),
-    FilteredMessages = lists:filter(fun({ProcessPort, {data, _Data}}) -> true;
+    FilteredMessages = lists:filter(fun({_ProcessPort, {data, _Data}}) -> true;
                                        (_Other) ->false end, Messages),
-    ok.
+    DataList = lists:map(fun({_ProcessPort, {data, Data}}) -> Data end, FilteredMessages),
+    process_data(DataList, [], "").
 
-close(_ProcessPort) -> ok.
+-spec close(ProcessPort :: port()) -> 'ok'.
+close(ProcessPort) ->
+    port_close(ProcessPort),
+    ok.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+process_data([], Lines, "") -> lists:reverse(Lines);
+process_data([], Lines, Line) -> lists:reverse([Line] ++ Lines);
+process_data([{eol, Line} | Rest], Lines, []) ->
+    process_data(Rest, [Line] ++ Lines, []);
+process_data([{eol, Line} | Rest], Lines, LineStart) ->
+    process_data(Rest, [LineStart ++ Line] ++ Lines, []);
+process_data([{noeol, Line} | Rest], Lines, LineStart) ->
+    process_data(Rest, Lines, LineStart ++ Line).
