@@ -1,0 +1,7 @@
+/data_backend - data files for backend
+/data_frontend - data files for frontend
+/ebin - binary files for tests
+/ebin_backend - binary files for backend
+/ebin_common - binary files for common libs
+/ebin_frontend - binary files for frontend
+/src - source files for tests

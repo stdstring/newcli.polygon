@@ -1,6 +1,6 @@
 %% @author stdstring
 
--module(string_data_utils_tests).
+-module(integration_tests).
 
 -include_lib("eunit/include/eunit.hrl").
 
