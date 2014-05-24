@@ -6,5 +6,8 @@ cli_frontend_tests/ebin/
 cli_common/ebin/
 cli_common_tests/ebin/
 cli_integration_tests/ebin/
+cli_integration_tests/backend_ebin/
+cli_integration_tests/common_ebin/
+cli_integration_tests/frontend_ebin/
 deploy/
 untitled.sublime-workspace
