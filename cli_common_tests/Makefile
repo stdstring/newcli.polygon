@@ -26,7 +26,7 @@ test: all
 	for TEST_NAME in $(TESTS_LIST); do erl -noshell -pa $(EBIN) $(SRC_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 
 pre_build: clean
-	if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi
+	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
 
 clean:
-	rm -rf $(EBIN)/*
+	$(shell rm -rf $(EBIN)/*)

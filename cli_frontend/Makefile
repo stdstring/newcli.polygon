@@ -23,10 +23,10 @@ all: pre_build $(TARGETS)
 	
 
 pre_build: clean
-	if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi
+	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
 
 test: all
 
 
 clean:
-	rm -rf $(EBIN)/*
+	$(shell rm -rf $(EBIN)/*)

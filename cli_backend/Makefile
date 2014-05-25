@@ -48,13 +48,13 @@ all: pre_build $(TARGETS) post_build
 	
 
 pre_build: clean
-	if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi
+	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
 
 post_build:
-	cp -f -t $(EBIN) $(COPY)
+	$(shell cp -f -t $(EBIN) $(COPY))
 
 test: all
 
 
 clean:
-	rm -rf $(EBIN)/*
+	$(shell rm -rf $(EBIN)/*)
