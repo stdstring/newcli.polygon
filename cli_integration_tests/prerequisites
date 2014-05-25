@@ -1,4 +1,5 @@
 /backend_data - data files for backend
+/backend_prerequisites - backend prerequisites: copies into backend_ebin
 /frontend_data - data files for frontend
 /ebin - binary files for tests
 /backend_ebin - binary files for backend
