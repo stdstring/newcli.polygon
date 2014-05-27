@@ -42,7 +42,7 @@ all: pre_build $(TARGETS) $(TEST_TARGETS) $(BACKEND_COMMANDS_TARGETS)
 test: all
 	# prerequisites
 	$(shell cp -f -t backend_ebin backend_prerequisites/*)
-	cp -f -t backend_ebin $(BACKEND_COMMANDS_EBIN)/*
+	$(shell cp -f -t backend_ebin $(BACKEND_COMMANDS_EBIN)/*)
 	# tests
 	for TEST_NAME in $(TESTS_LIST); do erl -noshell -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 
