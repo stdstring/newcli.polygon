@@ -12,11 +12,11 @@
 
 -spec create(ProcessFilename :: file:name()) -> port().
 create(ProcessFilename) ->
-    open_port({spawn_executable, ProcessFilename}, [{line, ?MAX_LINE_LENGTH}]).
+    open_port({spawn_executable, ProcessFilename}, [{line, ?MAX_LINE_LENGTH}, stderr_to_stdout]).
 
 -spec create(ProcessFilename :: file:name(), ProcessArgs :: [string() | binary()]) -> port().
 create(ProcessFilename, ProcessArgs) ->
-    open_port({spawn_executable, ProcessFilename}, [{line, ?MAX_LINE_LENGTH}, {args, ProcessArgs}]).
+    open_port({spawn_executable, ProcessFilename}, [{line, ?MAX_LINE_LENGTH}, {args, ProcessArgs}, stderr_to_stdout]).
 
 -spec send_data_to_process(ProcessPort :: port(), Data :: iodata()) -> 'ok'.
 send_data_to_process(ProcessPort, Data) ->
