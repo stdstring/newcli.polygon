@@ -38,9 +38,7 @@ init({CommandLineRest, Stdout, Stderr}) ->
 handle_call(execute, _From, State) ->
     Stdout = State#command_state.stdout,
     gen_server:cast(Stdout, #command_output{message = "ping line 1\n"}),
-    timer:sleep(500),
     gen_server:cast(Stdout, #command_output{message = "ping line 2\n"}),
-    timer:sleep(500),
     gen_server:cast(Stdout, #command_output{message = "ping line 3\n"}),
     {reply, 0, State}.
 
