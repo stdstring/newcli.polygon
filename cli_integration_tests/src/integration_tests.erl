@@ -16,10 +16,19 @@
 -spec setup() -> #integration_test_state{}.
 setup() ->
     ErlangExecutablePath = os:find_executable("erl"),
-    BackendArgs = ["-noshell" "-sname backend_node@polygon-vm" "-s application start cli_backend_application"],
-    Backend = external_process:create(ErlangExecutablePath, BackendArgs),
-    FrontendArgs = ["-noshell", "-sname frontend_node@polygon-vm", "-run cli_frontend_application main ../frontend_data/frontend.conf"],
-    Frontend = external_process:create(ErlangExecutablePath, FrontendArgs),
+    %%BackendArgs = " -noshell -sname backend_node@polygon-vm -s application start cli_backend_application >> /tmp/d1",
+    BackendArgs = " -noshell -sname backend_node -s application start cli_backend_application >> /tmp/d1",
+    Backend = external_process:create(ErlangExecutablePath ++ BackendArgs, "/home/stdstring/work/newcli/cli_integration_tests/backend_ebin"),
+    timer:sleep(20000),
+    BackendPingResult = net_adm:ping('backend_node@polygon-vm'),
+    ?debugFmt("BackendPingResult: ~p~n", [BackendPingResult]),
+    CommandsInfo = gen_server:call({global_input_endpoint, 'backend_node@polygon-vm'}, {commands_info}),
+    ?debugFmt("CommandsInfo: ~p~n", [CommandsInfo]),
+    %%FrontendArgs = " -noshell -sname frontend_node@polygon-vm -run cli_frontend_application main /home/stdstring/work/newcli/cli_integration_tests/frontend_data/frontend.conf  >> /tmp/d2",
+    FrontendArgs = " -noshell -sname frontend_node -run cli_frontend_application main /home/stdstring/work/newcli/cli_integration_tests/frontend_data/frontend.conf  >> /tmp/d2",
+    Frontend = external_process:create(ErlangExecutablePath ++ FrontendArgs, "/home/stdstring/work/newcli/cli_integration_tests/frontend_ebin"),
+    FrontendPingResult = net_adm:ping('frontend_node@polygon-vm'),
+    ?debugFmt("FrontendPingResult: ~p~n", [FrontendPingResult]),
     #integration_test_state{backend = Backend, frontend = Frontend}.
 
 -spec cleanup(State :: #integration_test_state{}) -> ok.
@@ -30,4 +39,5 @@ cleanup(#integration_test_state{backend = Backend, frontend = Frontend}) ->
 
 help_test_instance(#integration_test_state{frontend = Frontend}) ->
     external_process:send_data_to_process(Frontend, "i?\n"),
-    ?debugFmt("Messages: ~p~n", [external_process:receive_data_from_process()]).
+    Messages = message_reader:read_all_messages(),
+    ?debugFmt("Messages: ~p~n", [Messages]).

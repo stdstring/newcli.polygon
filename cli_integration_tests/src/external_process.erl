@@ -8,15 +8,20 @@
 %% API functions
 %% ====================================================================
 
--export([create/1, create/2, send_data_to_process/2, receive_data_from_process/0, close/1]).
+%%-export([create/1, create/2, send_data_to_process/2, receive_data_from_process/0, close/1]).
+-export([create/2, send_data_to_process/2, receive_data_from_process/0, close/1]).
 
--spec create(ProcessFilename :: file:name()) -> port().
-create(ProcessFilename) ->
-    open_port({spawn_executable, ProcessFilename}, [{line, ?MAX_LINE_LENGTH}, stderr_to_stdout]).
+%%-spec create(ProcessFilename :: file:name()) -> port().
+%%create(ProcessFilename) ->
+%%    open_port({spawn_executable, ProcessFilename}, [{line, ?MAX_LINE_LENGTH}, stream, use_stdio, exit_status, stderr_to_stdout]).
 
--spec create(ProcessFilename :: file:name(), ProcessArgs :: [string() | binary()]) -> port().
-create(ProcessFilename, ProcessArgs) ->
-    open_port({spawn_executable, ProcessFilename}, [{line, ?MAX_LINE_LENGTH}, {args, ProcessArgs}, stderr_to_stdout]).
+%%-spec create(ProcessFilename :: file:name(), ProcessArgs :: [string() | binary()]) -> port().
+%%create(ProcessFilename, ProcessArgs) ->
+%%    open_port({spawn_executable, ProcessFilename}, [{line, ?MAX_LINE_LENGTH}, {args, ProcessArgs}, stream, use_stdio, exit_status, stderr_to_stdout]).
+
+-spec create(Command :: string(), Dir :: string()) -> port().
+create(Command, Dir) ->
+    open_port({spawn, Command}, [{line, ?MAX_LINE_LENGTH}, {cd, Dir}, stream, use_stdio, exit_status, stderr_to_stdout]).
 
 -spec send_data_to_process(ProcessPort :: port(), Data :: iodata()) -> 'ok'.
 send_data_to_process(ProcessPort, Data) ->

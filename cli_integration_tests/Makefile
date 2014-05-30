@@ -44,7 +44,7 @@ test: all
 	$(shell cp -f -t backend_ebin backend_prerequisites/*)
 	$(shell cp -f -t backend_ebin $(BACKEND_COMMANDS_EBIN)/*)
 	# tests
-	for TEST_NAME in $(TESTS_LIST); do erl -noshell -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
+	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 
 pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
