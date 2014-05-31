@@ -12,9 +12,9 @@ post_build:
 	$(shell cp -f -t cli_frontend/ebin cli_common/ebin/*)
 
 test: all
-	# unit & functional tests
 	for directory in $(TEST_SUBDIRS); do $(MAKE) -C $$directory test; done
-	# integration tests
+
+integration_test: all
 	$(shell if [ ! -d "cli_integration_tests/backend_ebin" ]; then mkdir cli_integration_tests/backend_ebin; fi)
 	$(shell if [ ! -d "cli_integration_tests/common_ebin" ]; then mkdir cli_integration_tests/common_ebin; fi)
 	$(shell if [ ! -d "cli_integration_tests/frontend_ebin" ]; then mkdir cli_integration_tests/frontend_ebin; fi)

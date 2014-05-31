@@ -30,7 +30,6 @@ start() ->
     port_command(Frontend, "i?\n"),
     port_command(Frontend, "interface ?\n"),
     timer:sleep(60000),
-    %%c:flush(),
     Messages = message_reader:read_all_messages(),
     io:format("Messages: ~p~n", [Messages]),
     port_close(Backend),
