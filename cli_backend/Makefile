@@ -32,7 +32,8 @@ SOURCE=src/commands/command_behaviour.erl \
        src/command_parser_fsm.erl \
        src/config_reader.erl \
        src/global_input_endpoint.erl \
-       src/output_endpoint.erl
+       src/output_endpoint.erl \
+       src/entry_point.erl
 
 COPY=src/cli_backend_application.app \
      src/cli_backend_start.sh

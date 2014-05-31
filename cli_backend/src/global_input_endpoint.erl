@@ -18,7 +18,8 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -spec start(GlobalConfig :: #global_config{}) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
-start(GlobalConfig) -> gen_server:start_link(?MODULE, GlobalConfig, []).
+start(GlobalConfig) ->
+    gen_server:start_link(?MODULE, GlobalConfig, []).
 
 -spec process_login(LoginName :: string(), Password :: binary()) -> #login_success{} | #login_fail{}.
 process_login(LoginName, Password) ->

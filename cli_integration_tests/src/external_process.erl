@@ -21,7 +21,7 @@
 
 -spec create(Command :: string(), Dir :: string()) -> port().
 create(Command, Dir) ->
-    open_port({spawn, Command}, [{line, ?MAX_LINE_LENGTH}, {cd, Dir}, stream, use_stdio, exit_status, stderr_to_stdout]).
+    open_port({spawn, Command}, [{line, ?MAX_LINE_LENGTH}, {cd, Dir}, binary, stream, use_stdio, exit_status, stderr_to_stdout]).
 
 -spec send_data_to_process(ProcessPort :: port(), Data :: iodata()) -> 'ok'.
 send_data_to_process(ProcessPort, Data) ->
