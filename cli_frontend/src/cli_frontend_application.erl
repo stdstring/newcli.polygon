@@ -63,8 +63,12 @@ generate_prompt(ExecutionState) ->
 main_worker(GlobalConfig, ExecutionState, ConsoleOpts) ->
     io:setopts(ConsoleOpts),
     Prompt = generate_prompt(ExecutionState),
-    CommandLine = io:get_line(Prompt),
-    io:format("CommandLine: ~p~n", [CommandLine]),
-    Command = string_data_utils:remove_trailing_line_feed(CommandLine),
-    NewExecutionState = command_execution_context:execute(Command, GlobalConfig, ExecutionState),
-    main_worker(GlobalConfig, NewExecutionState, ConsoleOpts).
+    case io:get_line(Prompt) of
+        {error, ErrorDescription} -> {error, ErrorDescription};
+        eof -> eof;
+        CommandLine ->
+            io:format("CommandLine: ~p~n", [CommandLine]),
+            Command = string_data_utils:remove_trailing_line_feed(CommandLine),
+            NewExecutionState = command_execution_context:execute(Command, GlobalConfig, ExecutionState),
+            main_worker(GlobalConfig, NewExecutionState, ConsoleOpts)
+    end.
