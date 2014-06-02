@@ -5,10 +5,10 @@
 -define(MAX_LINE_LENGTH, 1000).
 
 start() ->
+    {ok, CurrentDir} = file:get_cwd(),
     ErlangExecutablePath = os:find_executable("erl"),
     BackendArgs = " -noshell -sname backend_node -s entry_point start",
-    %%BackendArgs = " -noshell -sname backend_node -s entry_point start > /tmp/b 2>&1",
-    BackendDir = "/home/std-string/work/newcli/cli_integration_tests/backend_ebin/",
+    BackendDir = filename:join([CurrentDir, "backend_ebin"]),    
     %%BackendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, BackendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
     BackendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, BackendDir}, stream, use_stdio],
     Backend = open_port({spawn, ErlangExecutablePath ++ BackendArgs}, BackendSettings),
@@ -17,9 +17,8 @@ start() ->
     io:format("BackendPingResult: ~p~n", [BackendPingResult]),
     CommandsInfo = gen_server:call({global_input_endpoint, 'backend_node@polygon-vm'}, {commands_info}),
     io:format("CommandsInfo: ~p~n", [CommandsInfo]),
-    FrontendArgs = " -noshell -sname frontend_node -run cli_frontend_application main /home/std-string/work/newcli/cli_integration_tests/frontend_data/frontend.conf",
-    %%FrontendArgs = " -noshell -sname frontend_node -run cli_frontend_application main /home/std-string/work/newcli/cli_integration_tests/frontend_data/frontend.conf > /tmp/f 2>&1",
-    FrontendDir = "/home/std-string/work/newcli/cli_integration_tests/frontend_ebin/",
+    FrontendArgs = " -noshell -sname frontend_node -run cli_frontend_application main ../frontend_data/frontend.conf",
+    FrontendDir = filename:join([CurrentDir, "frontend_ebin"]),
     FrontendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, FrontendDir}, stream, use_stdio],
     %%FrontendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, FrontendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
     Frontend = open_port({spawn, ErlangExecutablePath ++ FrontendArgs}, FrontendSettings),
