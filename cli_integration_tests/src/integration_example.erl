@@ -17,7 +17,7 @@ start() ->
     io:format("BackendPingResult: ~p~n", [BackendPingResult]),
     CommandsInfo = gen_server:call({global_input_endpoint, 'backend_node@polygon-vm'}, {commands_info}),
     io:format("CommandsInfo: ~p~n", [CommandsInfo]),
-    FrontendArgs = " -noshell -sname frontend_node -run cli_frontend_application main ../frontend_data/frontend.conf",
+    FrontendArgs = " -noshell -sname frontend_node -run cli_frontend_application main ../frontend_data/frontend.conf -s init stop",
     FrontendDir = filename:join([CurrentDir, "frontend_ebin"]),
     FrontendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, FrontendDir}, stream, use_stdio],
     %%FrontendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, FrontendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
