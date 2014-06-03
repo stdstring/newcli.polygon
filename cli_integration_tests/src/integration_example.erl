@@ -27,8 +27,19 @@ start() ->
     io:format("FrontendPingResult: ~p~n", [FrontendPingResult]),
     port_command(Frontend, "i?\n"),
     port_command(Frontend, "interface ?\n"),
-    timer:sleep(60000),
-    Messages = message_reader:read_all_messages(),
-    io:format("Messages: ~p~n", [Messages]),
+    true = wait_message(Frontend, "@CliDemo>CommandLine: \"i?\\n\"", 20000),
+    true = wait_message(Frontend, "interface\tinterface range", 20000),
+    true = wait_message(Frontend, "@CliDemo>CommandLine: \"interface ?\\n\"", 20000),
+    true = wait_message(Frontend, "interface {interface-id} command", 20000),
+    %%{#Port<0.680>,{data,{eol,"@CliDemo>CommandLine: \"i?\\n\""}}},
+    %%{#Port<0.680>,{data,{eol,"interface\tinterface range"}}},
+    %%{#Port<0.680>,{data,{eol,"@CliDemo>CommandLine: \"interface ?\\n\""}}},
+    %%{#Port<0.680>,{data,{eol,"interface {interface-id} command"}}}
     port_close(Backend),
     port_close(Frontend).
+
+wait_message(SourcePort, MessageBody, Timeout) ->
+    receive
+        {SourcePort, {data, {eol, MessageBody}}} -> true
+    after Timeout -> false
+    end.
