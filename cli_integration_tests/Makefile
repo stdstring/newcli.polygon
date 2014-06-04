@@ -1,5 +1,6 @@
 EBIN=ebin
 COMMON_EBIN=common_ebin
+BACKEND_EBIN=backend_ebin
 BACKEND_COMMANDS_EBIN=backend_commands_ebin
 
 COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
@@ -18,7 +19,8 @@ COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
                 backend_commands/show_vlan_command.erl \
                 backend_commands/switchport_vlan_command.erl \
                 backend_commands/vlan_command.erl
-SOURCE=src/external_process.erl \
+SOURCE=src/cli_backend_life_manager.erl \
+       src/external_process.erl \
        src/integration_example.erl
 TEST_SOURCE=src/integration_tests.erl
 
@@ -42,8 +44,9 @@ all: pre_build $(TARGETS) $(TEST_TARGETS) $(BACKEND_COMMANDS_TARGETS)
 
 test: all
 	# prerequisites
-	$(shell cp -f -t backend_ebin backend_prerequisites/*)
-	$(shell cp -f -t backend_ebin $(BACKEND_COMMANDS_EBIN)/*)
+	$(shell cp -f -t $(BACKEND_EBIN) backend_prerequisites/*)
+	$(shell cp -f -t $(BACKEND_EBIN) $(BACKEND_COMMANDS_EBIN)/*)
+	$(shell cp -f $(EBIN)/cli_backend_life_manager.beam $(BACKEND_EBIN))
 	# tests
 	# for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 	erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -s integration_example start -s init stop

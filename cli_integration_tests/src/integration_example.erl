@@ -13,6 +13,7 @@ start() ->
     BackendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, BackendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
     Backend = open_port({spawn, ErlangExecutablePath ++ BackendArgs}, BackendSettings),
     timer:sleep(20000),
+    cli_backend_life_manager:start('backend_node@polygon-vm'),
     BackendPingResult = net_adm:ping('backend_node@polygon-vm'),
     io:format("BackendPingResult: ~p~n", [BackendPingResult]),
     FrontendArgs = " -noshell -sname frontend_node -run cli_frontend_application main ../frontend_data/frontend.conf -s init stop",
@@ -33,8 +34,9 @@ start() ->
     true = wait_message(Frontend, "@CliDemo>CommandLine: \"interface ?\\n\"", 20000),
     %%{Frontend,{data,{eol,"interface {interface-id} command"}}}
     true = wait_message(Frontend, "interface {interface-id} command", 20000),
+    port_close(Frontend),
     port_close(Backend),
-    port_close(Frontend).
+    cli_backend_life_manager:stop('backend_node@polygon-vm').
 
 wait_message(SourcePort, MessageBody, Timeout) ->
     receive
