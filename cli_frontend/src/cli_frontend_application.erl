@@ -64,7 +64,7 @@ main_worker(GlobalConfig, ExecutionState, ConsoleOpts) ->
     io:setopts(ConsoleOpts),
     Prompt = generate_prompt(ExecutionState),
     case io:get_line(Prompt) of
-        {error, ErrorDescription} -> {error, ErrorDescription};
+        {error, ErrorDescription} -> error({get_line_error, ErrorDescription});
         eof -> eof;
         CommandLine ->
             io:format("CommandLine: ~p~n", [CommandLine]),

@@ -16,12 +16,14 @@ start() ->
     cli_backend_life_manager:start('backend_node@polygon-vm'),
     BackendPingResult = net_adm:ping('backend_node@polygon-vm'),
     io:format("BackendPingResult: ~p~n", [BackendPingResult]),
+    io:format("RPC check result: ~p~n", [rpc:call('backend_node666@polygon-vm', erlang, whereis, [global_input_endpoint])]),
     FrontendArgs = " -noshell -sname frontend_node -run cli_frontend_application main ../frontend_data/frontend.conf -s init stop",
     FrontendDir = filename:join([CurrentDir, "frontend_ebin"]),
     FrontendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, FrontendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
     %%FrontendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, FrontendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
     Frontend = open_port({spawn, ErlangExecutablePath ++ FrontendArgs}, FrontendSettings),
     timer:sleep(20000),
+    %%true = wait_node('frontend_node@polygon-vm', 10, 2000),
     FrontendPingResult = net_adm:ping('frontend_node@polygon-vm'),
     io:format("FrontendPingResult: ~p~n", [FrontendPingResult]),
     port_command(Frontend, "i?\n"),
@@ -45,3 +47,13 @@ wait_message(SourcePort, MessageBody, Timeout) ->
             true
     after Timeout -> false
     end.
+
+%%wait_node(Node, 0, _WaitTime) ->
+%%    net_adm:ping(Node) == pong;
+%%wait_node(Node, Count, WaitTime) ->
+%%    case net_adm:ping(Node) of
+%%        pong -> true;
+%%        pang ->
+%%            timer:sleep(WaitTime),
+%%            wait_node(Node, Count-1, WaitTime)
+%%    end.
