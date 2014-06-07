@@ -1,4 +1,4 @@
--module(integration_example).
+-module(integration_port_example).
 
 -export([start/0]).
 
