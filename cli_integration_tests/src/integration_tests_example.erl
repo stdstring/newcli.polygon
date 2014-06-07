@@ -5,9 +5,21 @@
 -define(MAX_LINE_LENGTH, 1000).
 -define(BACKEND_NODE, 'backend_node@polygon-vm').
 -define(FRONTEND_NODE, 'frontend_node@polygon-vm').
+-define(INPUT_DATA, "/tmp/input").
 
-integration_test() ->
-    ?debugHere,
+-record(integration_test_state, {backend = undefined :: 'undefined' | port(), frontend_cmd = "" :: string()}).
+
+integration_test_() ->
+    [{foreach, fun() -> setup() end, fun(State) -> cleanup(State) end, [fun(State) -> [fun() -> integration_test(State) end] end]}].
+
+integration_test(#integration_test_state{frontend_cmd = FrontendCmd}) ->
+    InputData = "i?\ninterface ?\n",
+    ?assertEqual(ok, file:write_file(?INPUT_DATA, InputData)),
+    ActualData = os:cmd(FrontendCmd),
+    ExpectedData = "@CliDemo>interface\tinterface range\n@CliDemo>interface {interface-id} command\n@CliDemo>",
+    ?assertEqual(ExpectedData, ActualData).
+
+setup() ->
     {ok, CurrentDir} = file:get_cwd(),
     ErlangExecutablePath = os:find_executable("erl"),
     BackendArgs = prepare_args(" -noshell -sname ~s -s entry_point start", ?BACKEND_NODE),
@@ -16,15 +28,11 @@ integration_test() ->
     Backend = open_port({spawn, ErlangExecutablePath ++ BackendArgs}, BackendSettings),
     true = wait_process(?BACKEND_NODE, global_input_endpoint, 10, 1000),
     cli_backend_life_manager:start(?BACKEND_NODE),
-    ?debugHere,
-    InputData = "i?\ninterface ?\n",
-    ?assertEqual(ok, file:write_file("/tmp/input", InputData)),
-    FrontendDir = filename:join([CurrentDir, "frontend_ebin"]),
-    FrontendDataDir = filename:join([CurrentDir, "frontend_data"]),
-    FrontendArgs = prepare_args(" -noshell -sname ~s -pa " ++ FrontendDir ++ " -run cli_frontend_application main " ++ FrontendDataDir ++ "/frontend.conf -s init stop < /tmp/input", ?FRONTEND_NODE),
-    ?debugMsg(FrontendArgs),
-    OutputData = os:cmd(ErlangExecutablePath ++ FrontendArgs),
-    ?debugFmt("OutputData: ~p~n", [OutputData]),
+    FrontendArgs = prepare_args(" -noshell -sname ~s -pa ./frontend_ebin -run cli_frontend_application main ./frontend_data/frontend.conf -s init stop < " ++ ?INPUT_DATA, ?FRONTEND_NODE),
+    FrontendCmd = ErlangExecutablePath ++ FrontendArgs,
+    #integration_test_state{backend = Backend, frontend_cmd = FrontendCmd}.
+
+cleanup(#integration_test_state{backend = Backend}) ->
     port_close(Backend),
     cli_backend_life_manager:stop(?BACKEND_NODE).
 
