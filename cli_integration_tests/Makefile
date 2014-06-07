@@ -20,7 +20,8 @@ COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
                 backend_commands/switchport_vlan_command.erl \
                 backend_commands/vlan_command.erl
 SOURCE=src/cli_backend_life_manager.erl \
-       src/integration_port_example.erl       
+       src/integration_port_example.erl  \
+       src/integration_tests_manager.erl
 TEST_SOURCE=src/integration_tests_example.erl
 
 BACKEND_COMMANDS_INCLUDE_FLAGS=-I backend_commands_include
