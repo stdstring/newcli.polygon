@@ -21,8 +21,9 @@ COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
                 backend_commands/vlan_command.erl
 SOURCE=src/cli_backend_life_manager.erl \
        src/external_process.erl \
-       src/integration_port_example.erl
-TEST_SOURCE=src/integration_tests.erl
+       src/integration_port_example.erl       
+TEST_SOURCE=src/integration_tests.erl \
+            src/integration_tests_example.erl
 
 BACKEND_COMMANDS_INCLUDE_FLAGS=-I backend_commands_include
 INCLUDE_FLAGS=-I include
@@ -49,7 +50,8 @@ test: all
 	$(shell cp -f $(EBIN)/cli_backend_life_manager.beam $(BACKEND_EBIN))
 	# tests
 	# for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
-	erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -s integration_port_example start -s init stop
+	# erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -s integration_port_example start -s init stop
+	erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([integration_tests_example], [verbose])" -s init stop
 
 pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
