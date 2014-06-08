@@ -19,10 +19,10 @@ COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
                 backend_commands/show_vlan_command.erl \
                 backend_commands/switchport_vlan_command.erl \
                 backend_commands/vlan_command.erl
-SOURCE=src/cli_backend_life_manager.erl \
-       src/integration_port_example.erl  \
+SOURCE=src/integration_port_example.erl  \
        src/integration_tests_manager.erl
-TEST_SOURCE=src/integration_tests_example.erl
+TEST_SOURCE=src/integration_tests_example.erl \
+            src/help_integration_tests.erl
 
 BACKEND_COMMANDS_INCLUDE_FLAGS=-I backend_commands_include
 INCLUDE_FLAGS=-I include
@@ -46,7 +46,6 @@ test: all
 	# prerequisites
 	$(shell cp -f -t $(BACKEND_EBIN) backend_prerequisites/*)
 	$(shell cp -f -t $(BACKEND_EBIN) $(BACKEND_COMMANDS_EBIN)/*)
-	$(shell cp -f $(EBIN)/cli_backend_life_manager.beam $(BACKEND_EBIN))
 	# tests
 	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 	# erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -s integration_port_example start -s init stop
