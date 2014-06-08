@@ -2,6 +2,8 @@
 
 -module(integration_tests_manager).
 
+-include_lib("eunit/include/eunit.hrl").
+
 -include("integration_tests_defs.hrl").
 
 -define(MAX_LINE_LENGTH, 1000).
@@ -16,6 +18,7 @@
 -export([setup/0, cleanup/1]).
 
 setup() ->
+    ?debugMsg("SETUP\n"),
     {ok, CurrentDir} = file:get_cwd(),
     ErlangExecutablePath = os:find_executable("erl"),
     BackendArgs = prepare_args(" -noshell -sname ~s -s entry_point start", ?BACKEND_NODE),
@@ -28,6 +31,7 @@ setup() ->
     #integration_test_state{backend = Backend, frontend_cmd = FrontendCmd}.
 
 cleanup(#integration_test_state{backend = Backend}) ->
+    ?debugMsg("CLEANUP\n"),
     port_close(Backend),
     rpc:call(?BACKEND_NODE, init, stop, []).
 
