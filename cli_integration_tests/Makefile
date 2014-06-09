@@ -22,8 +22,7 @@ COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
 SOURCE=src/integration_port_example.erl  \
        src/integration_tests_common.erl \
        src/integration_tests_manager.erl
-TEST_SOURCE=src/integration_tests_example.erl \
-            src/help_integration_tests.erl
+TEST_SOURCE=src/help_integration_tests.erl
 
 BACKEND_COMMANDS_INCLUDE_FLAGS=-I backend_commands_include
 INCLUDE_FLAGS=-I include
