@@ -18,22 +18,21 @@
 -export([setup/0, cleanup/1]).
 
 setup() ->
-    ?debugMsg("SETUP\n"),
     {ok, CurrentDir} = file:get_cwd(),
     ErlangExecutablePath = os:find_executable("erl"),
     BackendArgs = prepare_args(" -noshell -sname ~s -s entry_point start", ?BACKEND_NODE),
     BackendDir = filename:join([CurrentDir, "backend_ebin"]),    
     BackendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, BackendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
     Backend = open_port({spawn, ErlangExecutablePath ++ BackendArgs}, BackendSettings),
-    true = wait_process(?BACKEND_PROCESS, 10, 1000),
+    true = wait_process(?BACKEND_PROCESS, 10, 500),
     FrontendArgs = prepare_args(" -noshell -sname ~s -pa ./frontend_ebin -run cli_frontend_application main ./frontend_data/frontend.conf -s init stop < " ++ ?INPUT_DATA, ?FRONTEND_NODE),
     FrontendCmd = ErlangExecutablePath ++ FrontendArgs,
     #integration_test_state{backend = Backend, frontend_cmd = FrontendCmd}.
 
 cleanup(#integration_test_state{backend = Backend}) ->
-    ?debugMsg("CLEANUP\n"),
     port_close(Backend),
-    rpc:call(?BACKEND_NODE, init, stop, []).
+    rpc:call(?BACKEND_NODE, init, stop, []),
+    wait_node_exit(10, 500).
 
 prepare_args(FormatArgsStr, Node) ->
     lists:flatten(io_lib:format(FormatArgsStr, [atom_to_list(Node)])).
@@ -53,4 +52,17 @@ wait_process(ProcessName, Count, WaitTime) ->
             timer:sleep(WaitTime),
             wait_process(ProcessName, Count-1, WaitTime);
         _Pid -> true
+    end.
+
+wait_node_exit(0, _WaitTime) ->
+    case net_adm:ping(?BACKEND_NODE) of
+        pang -> true;
+        pong -> false
+    end;
+wait_node_exit(Count, WaitTime) ->
+    case net_adm:ping(?BACKEND_NODE) of
+        pong ->
+            timer:sleep(WaitTime),
+            wait_node_exit(Count-1, WaitTime);
+        pang -> true
     end.
