@@ -17,6 +17,7 @@
 
 -export([setup/0, cleanup/1]).
 
+-spec setup() -> #integration_test_state{}.
 setup() ->
     {ok, CurrentDir} = file:get_cwd(),
     ErlangExecutablePath = os:find_executable("erl"),
@@ -29,14 +30,22 @@ setup() ->
     FrontendCmd = ErlangExecutablePath ++ FrontendArgs,
     #integration_test_state{backend = Backend, frontend_cmd = FrontendCmd}.
 
+-spec cleanup(State :: #integration_test_state{}) -> 'ok'.
 cleanup(#integration_test_state{backend = Backend}) ->
     port_close(Backend),
     rpc:call(?BACKEND_NODE, init, stop, []),
-    wait_node_exit(10, 500).
+    wait_node_exit(10, 500),
+    ok.
 
+%% ====================================================================
+%% Internal functions
+%% ====================================================================
+
+-spec prepare_args(FormatArgsStr :: string(), Node :: atom()) -> string().
 prepare_args(FormatArgsStr, Node) ->
     lists:flatten(io_lib:format(FormatArgsStr, [atom_to_list(Node)])).
 
+-spec wait_process(ProcessName :: atom(), Count :: integer(), WaitTime :: integer()) -> boolean().
 wait_process(ProcessName, 0, _WaitTime) ->
     case rpc:call(?BACKEND_NODE, erlang, whereis, [ProcessName]) of
         {badrpc,nodedown} -> false;
@@ -54,6 +63,7 @@ wait_process(ProcessName, Count, WaitTime) ->
         _Pid -> true
     end.
 
+-spec wait_node_exit(Count :: integer(), WaitTime :: integer()) -> boolean().
 wait_node_exit(0, _WaitTime) ->
     case net_adm:ping(?BACKEND_NODE) of
         pang -> true;

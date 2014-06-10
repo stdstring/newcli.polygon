@@ -6,11 +6,13 @@
 
 -include("integration_tests_defs.hrl").
 
+-define(CRASH_DUMP_FILE, "erl_crash.dump").
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
--export([create_tests_entry/1, process/3]).
+-export([create_tests_entry/1, check_normal_execution/0, process/3]).
 
 -spec create_tests_entry(Source :: {Input :: [string()], Output :: [string()], Description :: string()}) ->
     {'foreach', fun(() -> #integration_test_state{}), fun((#integration_test_state{}) -> 'ok'), [fun((#integration_test_state{}) -> 'ok')]}.
@@ -27,7 +29,15 @@ process(Input, ExpectedOutput, #integration_test_state{frontend_cmd = FrontendCm
     ?assertEqual(length(ExpectedOutput)+1, length(OutputDataParts)),
     ActualOutput = lists:sublist(OutputDataParts, length(ExpectedOutput)),
     ?debugFmt("ActualOutput: ~p~n", [ActualOutput]),
-    ?assertEqual(ExpectedOutput, ActualOutput).
+    ?assertEqual(ExpectedOutput, ActualOutput),
+    check_normal_execution(),
+    ok.
+
+check_normal_execution() ->
+    ?assertNot(filelib:is_regular("./"  ++ ?CRASH_DUMP_FILE)),
+    ?assertNot(filelib:is_regular("./backend_ebin/"  ++ ?CRASH_DUMP_FILE)),
+    ?assertNot(filelib:is_regular("./frontend_ebin/"  ++ ?CRASH_DUMP_FILE)).
+
 
 %% ====================================================================
 %% Internal functions
