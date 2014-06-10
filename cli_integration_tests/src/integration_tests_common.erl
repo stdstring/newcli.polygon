@@ -33,10 +33,12 @@ process(Input, ExpectedOutput, #integration_test_state{frontend_cmd = FrontendCm
     check_normal_execution(),
     ok.
 
+-spec check_normal_execution() -> 'ok'.
 check_normal_execution() ->
     ?assertNot(filelib:is_regular("./"  ++ ?CRASH_DUMP_FILE)),
     ?assertNot(filelib:is_regular("./backend_ebin/"  ++ ?CRASH_DUMP_FILE)),
-    ?assertNot(filelib:is_regular("./frontend_ebin/"  ++ ?CRASH_DUMP_FILE)).
+    ?assertNot(filelib:is_regular("./frontend_ebin/"  ++ ?CRASH_DUMP_FILE)),
+    ok.
 
 
 %% ====================================================================

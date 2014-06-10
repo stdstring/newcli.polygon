@@ -14,7 +14,6 @@ start() ->
     BackendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, BackendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
     Backend = open_port({spawn, ErlangExecutablePath ++ BackendArgs}, BackendSettings),
     true = wait_process(?BACKEND_NODE, global_input_endpoint, 10, 2000),
-    cli_backend_life_manager:start(?BACKEND_NODE),
     FrontendArgs = prepare_args(" -noshell -sname ~s -run cli_frontend_application main ../frontend_data/frontend.conf -s init stop", ?FRONTEND_NODE),
     FrontendDir = filename:join([CurrentDir, "frontend_ebin"]),
     FrontendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, FrontendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
@@ -30,7 +29,7 @@ start() ->
     [] = message_reader:read_all_messages(),
     port_close(Frontend),
     port_close(Backend),
-    cli_backend_life_manager:stop(?BACKEND_NODE).
+    rpc:call(?BACKEND_NODE, init, stop, []).
 
 prepare_args(FormatArgsStr, Node) ->
     lists:flatten(io_lib:format(FormatArgsStr, [atom_to_list(Node)])).

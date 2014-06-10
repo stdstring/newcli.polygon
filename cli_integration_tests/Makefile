@@ -19,8 +19,7 @@ COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
                 backend_commands/show_vlan_command.erl \
                 backend_commands/switchport_vlan_command.erl \
                 backend_commands/vlan_command.erl
-SOURCE=src/integration_port_example.erl  \
-       src/integration_tests_common.erl \
+SOURCE=src/integration_tests_common.erl \
        src/integration_tests_manager.erl
 TEST_SOURCE=src/help_integration_tests.erl
 
@@ -48,7 +47,6 @@ test: all
 	$(shell cp -f -t $(BACKEND_EBIN) $(BACKEND_COMMANDS_EBIN)/*)
 	# tests
 	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
-	# erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -s integration_port_example start -s init stop
 
 pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
