@@ -28,7 +28,6 @@ process(Input, ExpectedOutput, #integration_test_state{frontend_cmd = FrontendCm
     OutputDataParts = string:tokens(OutputData, "\n"),
     ?assertEqual(length(ExpectedOutput)+1, length(OutputDataParts)),
     ActualOutput = lists:sublist(OutputDataParts, length(ExpectedOutput)),
-    ?debugFmt("ActualOutput: ~p~n", [ActualOutput]),
     ?assertEqual(ExpectedOutput, ActualOutput),
     check_normal_execution(),
     ok.
