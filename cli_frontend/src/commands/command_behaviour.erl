@@ -10,9 +10,5 @@
 %% get command body
 -callback get_command_body() -> [string()].
 
-%% create command's instance
-%% -callback create(CommandLineRest :: string()) -> {'ok', Command :: pid()} | {'error', Reason :: term()}.
-
 %% synchronous executing
-%% -callback execute(Command :: pid(), ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 -callback execute(CommandLineRest :: string(), ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.

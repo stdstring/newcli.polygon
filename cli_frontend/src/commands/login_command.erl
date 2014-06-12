@@ -20,9 +20,6 @@ get_name() -> login_command.
 -spec get_command_body() -> [string()].
 get_command_body() -> ["login"].
 
-%%-spec create(CommandLineRest :: string()) -> {'ok', Command :: pid()} | {'error', Reason :: term()}.
-%%create(CommandLineRest) -> {error, not_implemented}.
-
 -spec execute(CommandLineRest :: string(), ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 execute("", ExecutionState) ->
     case ExecutionState#execution_state.session of
@@ -52,7 +49,7 @@ execute_impl(ExecutionState) ->
             NewExecutionState = ExecutionState#execution_state{session = Session, login_info = LoginInfo, current_cli_mode = CliMode},
             {0, NewExecutionState};
         #login_fail{reason = Reason} ->
-            io:format(standard_error, "Login's attempt is failed due to the following: ~p~n", [Reason]),
+            io:format(standard_error, "Login's attempt is failed due to the following: ~w~n", [Reason]),
             {255, ExecutionState}
     end.
 

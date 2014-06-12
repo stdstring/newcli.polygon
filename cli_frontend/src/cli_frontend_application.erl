@@ -36,7 +36,7 @@ retrieve_commands_info(GlobalHandler) ->
         #commands_info_result{info = CommandsInfo} ->
             lists:map(fun(#command_info{command_name = Name, command_body = Body, command_help = Help}) -> {Name, Body, Help} end, CommandsInfo);
         #commands_info_fail{reason = Reason} ->
-            io:fotmat(standard_info, "Command's info retrieving is failed due to the following: ~p~n", [Reason]),
+            io:fotmat(standard_error, "Command's info retrieving is failed due to the following: ~w~n", [Reason]),
             error({commands_info, Reason})
     end.
 

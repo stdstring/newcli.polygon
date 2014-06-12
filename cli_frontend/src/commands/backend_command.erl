@@ -19,9 +19,6 @@ get_name() -> backend_command.
 -spec get_command_body() -> [string()].
 get_command_body() -> [].
 
-%%-spec create(CommandLineRest :: string()) -> {'ok', Command :: pid()} | {'error', Reason :: term()}.
-%%create(CommandLineRest) -> {error, not_implemented}.
-
 -spec execute(CommandLineRest :: string(), ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 execute(CommandLineRest, ExecutionState) ->
     case ExecutionState#execution_state.session of
@@ -55,6 +52,6 @@ process_response() ->
         #command_end{completion_code = ReturnCode, cli_mode = CliMode} ->
             {ReturnCode, CliMode};
         #command_fail{reason = Reason, cli_mode = CliMode} ->
-            io:format(standard_error, "Command's execution is failed due to the following: ~p~n", [Reason]),
+            io:format(standard_error, "Command's execution is failed due to the following: ~w~n", [Reason]),
             {255, CliMode}
     end.

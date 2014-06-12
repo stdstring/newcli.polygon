@@ -18,9 +18,6 @@ get_name() -> help_command.
 -spec get_command_body() -> [string()].
 get_command_body() -> ["?"].
 
-%% -spec create(CommandLineRest :: string()) -> {'ok', Command :: pid()} | {'error', Reason :: term()}.
-%% create(CommandLineRest) -> {error, not_implemented}.
-
 -spec execute(CommandLineRest :: string(), ExecutionState :: #execution_state{}) -> {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 execute(CommandLineRest, ExecutionState) ->
     SourceCommands = ExecutionState#execution_state.commands_info,
