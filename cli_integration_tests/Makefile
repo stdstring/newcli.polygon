@@ -21,8 +21,10 @@ COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
                 backend_commands/vlan_command.erl
 SOURCE=src/integration_tests_common.erl \
        src/integration_tests_manager.erl
-TEST_SOURCE=src/help_integration_tests.erl \
-            src/login_integration_tests.erl
+TEST_SOURCE=src/command_integration_tests.erl \
+            src/help_integration_tests.erl \
+            src/login_integration_tests.erl \
+            src/transition_integration_tests.erl \
 
 BACKEND_COMMANDS_INCLUDE_FLAGS=-I backend_commands_include
 INCLUDE_FLAGS=-I include
