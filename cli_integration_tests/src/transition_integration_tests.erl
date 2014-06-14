@@ -4,10 +4,6 @@
 
 -include("integration_tests_defs.hrl").
 
--define(LOGIN, "@CliDemo>login:password:").
--define(GREETING, "some greeting message").
--define(ADMIN_LOGOUT, "root@CliDemo#You are logged out.").
-
 integration_test_() ->
     integration_tests_common:create_tests_entry([
         {["login", "root", "iddqd", "no name", "logout"], [?LOGIN, ?GREETING, "root@CliDemo#Command's execution is failed due to the following: {precondition_check_fail,unsuitable_command}", "Command execution failed. Return code is 255", ?ADMIN_LOGOUT], "transition: execute unsuitable command"},

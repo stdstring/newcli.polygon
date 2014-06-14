@@ -4,11 +4,6 @@
 
 -include("integration_tests_defs.hrl").
 
--define(LOGIN, "@CliDemo>login:password:").
--define(GREETING, "some greeting message").
--define(GUEST_LOGOUT, "guest@CliDemo>You are logged out.").
--define(ADMIN_LOGOUT, "root@CliDemo#You are logged out.").
-
 integration_test_() ->
     [create_integration_test(["login", "guest", "idclip", "logout"], [?LOGIN, ?GREETING, ?GUEST_LOGOUT], "lifecycle: login an logout by user"),
      create_integration_test(["login", "root", "iddqd", "logout"], [?LOGIN, ?GREETING, ?ADMIN_LOGOUT], "lifecycle: login an logout by admin"),

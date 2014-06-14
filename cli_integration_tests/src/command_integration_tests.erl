@@ -4,11 +4,6 @@
 
 -include("integration_tests_defs.hrl").
 
--define(LOGIN, "@CliDemo>login:password:").
--define(GREETING, "some greeting message").
--define(GUEST_LOGOUT, "guest@CliDemo>You are logged out.").
--define(ADMIN_LOGOUT, "root@CliDemo#You are logged out.").
-
 integration_test_() ->
     integration_tests_common:create_tests_entry([
         {["ping 192.168.0.1"], ["@CliDemo>Can't execute command for unauthenticated user.", "Command execution failed. Return code is 255"], "command: execute command by unauthenticated user"},
