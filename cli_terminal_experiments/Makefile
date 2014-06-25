@@ -1,20 +1,22 @@
-EBIN=ebin
+CC=g++
+CFLAGS=-g -std=gnu++11 -Wall
+LFLAGS=
 
-SOURCE=src/terminal_work_example.erl
+BIN=bin
 
-INCLUDE_FLAGS=-I include
+#SOURCE=src/terminal_work_example_1.cpp
 
-TARGETS = $(SOURCE:%.erl=$(EBIN)/%.beam)
+#OBJECTS=$(SOURCE:%.cpp=%.o)
 
-$(EBIN)/%.beam: %.erl
-	erlc -pa $(EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
+#%.o: %.cpp
+#	$(CC) $(CFLAGS) $< -o $@
 
-all: pre_build $(TARGETS)
-	
+all: pre_build $(SOURCE)
+	$(CC) $(CFLAGS) -o $(BIN)/terminal_work_example_1 src/terminal_work_example_1.cpp
 
 pre_build: clean
-	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
+	$(shell if [ ! -d "./$(BIN)/" ]; then mkdir $(BIN); fi)
 
 clean:
-	$(shell rm -rf $(EBIN)/*)
+	$(shell rm -rf $(BIN)/*)
 
