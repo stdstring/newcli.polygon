@@ -66,12 +66,19 @@ void check_noncanon_mode()
 
 void main_loop()
 {
-    int buf;
-    while(read(STDIN_FILENO, &buf, 1) == 1)
-    {
-        std::cout << "Pressed: " << buf << std::endl;
-        std::cout << "Char: " << (char) buf << std::endl;
-        if ((buf &= 255) == 0177)
+    char buf[100];
+    int length;
+    while((length = read(STDIN_FILENO, &buf, 100)) > 0)
+    {        
+        std::cout << "Pressed: ";
+        for (int i = 0; i < length; ++i)
+            std::cout << (unsigned int)buf[i] << " ";
+        std::cout << std::endl;
+        std::cout << "Char: ";
+        for (int i = 0; i < length; ++i)
+            std::cout << (char)buf[i] << " ";
+        std::cout << std::endl;
+        if (length == 1 && (buf[0] &= 255) == 0177)
             break;
     }
 }
