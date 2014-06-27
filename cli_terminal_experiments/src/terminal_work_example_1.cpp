@@ -1,4 +1,8 @@
 #include <iostream>
+#include <vector>
+#include <map>
+#include <string>
+
 #include <unistd.h>
 #include <termios.h>
 
@@ -8,6 +12,18 @@ void set_term_attrs(termios const &attrs);
 termios construct_noncanon_mode(termios const &source_attrs);
 void check_noncanon_mode();
 void main_loop();
+void show_keycodes(char buf[], int length);
+void show_keychars(char buf[], int length);
+
+typedef std::vector<char> cseq;
+
+std::map<cseq, std::string> known_cseqs =
+    {
+        // right arrow
+        {{27, 91, 67}, "right arrow"},
+        // crtl + F
+        {{6}, "ctrl + F"},
+    };
 
 int main()
 {
@@ -68,17 +84,34 @@ void main_loop()
 {
     char buf[100];
     int length;
+    std::map<cseq, std::string>::const_iterator known_cseqs_end = known_cseqs.end();
     while((length = read(STDIN_FILENO, &buf, 100)) > 0)
-    {        
+    {
         std::cout << "Pressed: ";
-        for (int i = 0; i < length; ++i)
-            std::cout << (unsigned int)buf[i] << " ";
-        std::cout << std::endl;
-        std::cout << "Char: ";
-        for (int i = 0; i < length; ++i)
-            std::cout << (char)buf[i] << " ";
-        std::cout << std::endl;
+        cseq seq(&buf[0], &buf[length]);
+        if (known_cseqs_end != known_cseqs.find(seq))
+            std::cout << known_cseqs[seq] << std::endl;
+        else
+        {
+            show_keycodes(buf, length);
+            std::cout << "Char: ";
+            show_keychars(buf, length);
+        }
         if (length == 1 && (buf[0] &= 255) == 0177)
             break;
     }
+}
+
+void show_keycodes(char buf[], int length)
+{
+    for (int i = 0; i < length; ++i)
+        std::cout << (unsigned int)buf[i] << " ";
+    std::cout << std::endl;
+}
+
+void show_keychars(char buf[], int length)
+{
+    for (int i = 0; i < length; ++i)
+        std::cout << (char)buf[i] << " ";
+    std::cout << std::endl;
 }
