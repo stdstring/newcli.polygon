@@ -19,10 +19,34 @@ typedef std::vector<char> cseq;
 
 std::map<cseq, std::string> known_cseqs =
     {
-        // right arrow
         {{27, 91, 67}, "right arrow"},
-        // crtl + F
         {{6}, "ctrl + F"},
+        {{27, 91, 68}, "left arrow"},
+        {{2}, "ctrl + B"},
+        {{27}, "esc"},
+        {{27, 79, 72}, "home"},
+        {{1}, "ctrl + A"},
+        {{27, 79, 70}, "end"},
+        {{5}, "ctrl + E"},
+        {{27, 91, 51, 126}, "Del"},
+        {{4}, "ctrl + D"},
+        {{127}, "Backspace"},
+        {{9}, "Tab"},
+        {{11}, "ctrl + K"},
+        {{21}, "ctrl + U"},
+        {{13}, "Enter"},
+        {{12}, "ctrl + L"},
+        {{20}, "ctrl + T"},
+        {{23}, "ctrl + W"},
+        {{25}, "ctrl + Y"},
+        {{3}, "ctrl + C"},
+        {{27, 91, 65}, "top arrow"},
+        {{16}, "ctrl + P"},
+        {{27, 91, 66}, "bottom arrow"},
+        {{14}, "ctrl + N"},
+        {{27, 91, 53, 126}, "PgUp"},
+        {{27, 91, 54, 126}, "PgDown"},
+        {{15}, "ctrl + O"}
     };
 
 int main()
