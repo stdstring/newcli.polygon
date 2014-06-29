@@ -20,10 +20,10 @@ typedef std::vector<char> cseq;
 std::map<cseq, std::string> known_cseqs =
     {
         {{27, 91, 67}, "right arrow"},
-        {{6}, "ctrl + F"},
+        {{6}, "ctrl + F"}, // ACK : Acknowledgment
         {{27, 91, 68}, "left arrow"},
-        {{2}, "ctrl + B"},
-        {{27}, "esc"},
+        {{2}, "ctrl + B"}, // STX : Start of Text
+        {{27}, "esc"}, // ESC : Escape
         {{27, 79, 72}, "home"},
         {{1}, "ctrl + A"},
         {{27, 79, 70}, "end"},
