@@ -9,8 +9,9 @@
 #include <readline.h>
 #include <history.h>
 
+void process_data(char* raw_data);
 void init_readline();
-char* duplicate_str(char* source);
+char* duplicate_str(std::string const &source);
 std::string trim_left(std::string const &source);
 std::string trim_right(std::string const& source);
 std::string trim_full(std::string const& source);
@@ -19,7 +20,7 @@ std::string trim_full(std::string const& source);
 char** completion_func(const char *text, int start, int end);
 char* generator_func(const char *text, int state);
 
-std::vector<char*> completion_data = {"iddqd666", "idkfa777", "idclip888", "iddqd999"};
+std::vector<std::string> completion_data = {"iddqd666", "idkfa777", "idclip888", "iddqd999"};
 
 int main()
 {
@@ -30,12 +31,27 @@ int main()
         char *raw_data = readline("readline usage example >>>");
         if (!raw_data)
             break;
-        std::string raw_str = std::string(raw_data);
-        std::string line = trim_full(raw_str);
-        std::cout << "line: " << line << " size: " << line.size() << std::endl;
+        process_data(raw_data);
         free(raw_data);
     }
     return 0;
+}
+
+void process_data(char* raw_data)
+{
+    std::string raw_str = std::string(raw_data);
+    std::string line = trim_full(raw_str);
+    std::cout << "line: " << line << " size: " << line.size() << std::endl;
+    if (line.empty())
+        return;
+    char *expansion = nullptr;
+    int result = history_expand(const_cast<char*>(line.c_str()), &expansion);
+    if (result)
+        std::cout << "expansion result: " << expansion <<  std::endl;
+    if (result == 0 || result == 1)
+        add_history(expansion);
+    if (expansion != nullptr)
+        free(expansion);
 }
 
 void init_readline()
@@ -45,6 +61,7 @@ void init_readline()
     rl_attempted_completion_function = completion_func;
     rl_sort_completion_matches = 0;
     rl_ignore_completion_duplicates = 0;
+    using_history();
 }
 
 std::string trim_left(std::string const &source)
@@ -67,10 +84,11 @@ std::string trim_full(std::string const& source)
     return trim_right(trim_left_result);
 }
 
-char* duplicate_str(char* source)
+char* duplicate_str(std::string const &source)
 {
-    char *buffer = (char*) malloc(strlen(source) + 1);
-    strcpy(buffer, source);
+    const char* source_str = source.c_str();
+    char *buffer = (char*) malloc(strlen(source_str) + 1);
+    strcpy(buffer, source_str);
     return buffer;
 }
 
