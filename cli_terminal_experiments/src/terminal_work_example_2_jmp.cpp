@@ -7,6 +7,7 @@
 #include <vector>
 // posix
 #include <signal.h>
+#include <setjmp.h>
 // readline library
 #include <readline.h>
 #include <history.h>
@@ -28,10 +29,13 @@ char* generator_func(const char *text, int state);
 
 std::vector<std::string> completion_data = {"iddqd666", "idkfa777", "idclip888", "iddqd999"};
 
+sigjmp_buf sh_buf;
+
 int main()
 {
     init_readline();
     std::cout << "readline usage example start" << std::endl;
+    while (sigsetjmp(sh_buf, 1) != 0);
     for(;;)
     {
         char *raw_data = readline("readline usage example >>>");
@@ -152,23 +156,23 @@ void signal_handler(int signo)
     if (signo == SIGINT)
     {
         // ???
-        //rl_free_line_state();
-        //rl_cleanup_after_signal();
+        //rl_echo_signal_char(SIGINT);
+        std::cout << "^C" << std::endl;
+        siglongjmp(sh_buf, 1);
     }
     if (signo == SIGQUIT)
     {
-        // ???
-        //rl_cleanup_after_signal();
+        std::cout << "^\\" << std::endl;
+        siglongjmp(sh_buf, 1);
     }
     if (signo == SIGWINCH)
     {
-        // ???
-        //rl_cleanup_after_signal();
+        siglongjmp(sh_buf, 1);
     }
     if (signo == SIGTSTP)
     {
+        std::cout << "^Z" << std::endl;
         rl_cleanup_after_signal();
-        std::cout << "in SIGTSTP signal handler" << std::endl;
         std::exit(0);
     }
 }
