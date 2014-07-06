@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+// posix
+#include <signal.h>
 // readline library
 #include <readline.h>
 #include <history.h>
@@ -15,6 +17,10 @@ char* duplicate_str(std::string const &source);
 std::string trim_left(std::string const &source);
 std::string trim_right(std::string const& source);
 std::string trim_full(std::string const& source);
+
+// signal functions
+void setup_signal_handlers();
+void signal_handler(int signo);
 
 // completion functions
 char** completion_func(const char *text, int start, int end);
@@ -30,7 +36,10 @@ int main()
     {
         char *raw_data = readline("readline usage example >>>");
         if (!raw_data)
+        {
+            std::cout << "empty raw_data" << std::endl;
             break;
+        }
         process_data(raw_data);
         free(raw_data);
     }
@@ -61,6 +70,13 @@ void init_readline()
     rl_attempted_completion_function = completion_func;
     rl_sort_completion_matches = 0;
     rl_ignore_completion_duplicates = 0;
+    // singnals
+    rl_catch_signals = 0;
+    rl_catch_sigwinch = 0;
+    // absent in readline 6.2
+    // rl_change_environment = 0;
+    setup_signal_handlers();
+    // history
     using_history();
 }
 
@@ -90,6 +106,75 @@ char* duplicate_str(std::string const &source)
     char *buffer = (char*) malloc(strlen(source_str) + 1);
     strcpy(buffer, source_str);
     return buffer;
+}
+
+void setup_signal_handlers()
+{
+    sigset_t oldset, newset;
+    sigemptyset(&newset);
+    sigaddset(&newset, SIGINT);
+    sigaddset(&newset, SIGQUIT);
+    sigaddset(&newset, SIGWINCH);
+    sigaddset(&newset, SIGTSTP);
+    sigprocmask(SIG_SETMASK, &newset, &oldset);
+    sigset_t signal_mask;
+    sigemptyset(&signal_mask);
+    sigaddset(&signal_mask, SIGINT);
+    sigaddset(&signal_mask, SIGQUIT);
+    sigaddset(&signal_mask, SIGTERM);
+    sigaddset(&signal_mask, SIGHUP);
+    sigaddset(&signal_mask, SIGALRM);
+    sigaddset(&signal_mask, SIGTSTP);
+    sigaddset(&signal_mask, SIGTTIN);
+    sigaddset(&signal_mask, SIGTTOU);
+    sigaddset(&signal_mask, SIGWINCH);
+    struct sigaction int_action;
+    int_action.sa_handler = signal_handler;
+    int_action.sa_mask = signal_mask;
+    sigaction(SIGINT, &int_action, nullptr);
+    struct sigaction quit_action;
+    quit_action.sa_handler = signal_handler;
+    quit_action.sa_mask = signal_mask;
+    sigaction(SIGQUIT, &quit_action, nullptr);
+    struct sigaction winch_action;
+    winch_action.sa_handler = signal_handler;
+    winch_action.sa_mask = signal_mask;
+    sigaction(SIGWINCH, &winch_action, nullptr);
+    struct sigaction tstp_action;
+    tstp_action.sa_handler = signal_handler;
+    tstp_action.sa_mask = signal_mask;
+    sigaction(SIGTSTP, &tstp_action, nullptr);
+    sigprocmask(SIG_SETMASK, &oldset, nullptr);
+}
+
+void signal_handler(int signo)
+{
+    if (signo == SIGINT)
+    {
+        //rl_free_line_state();
+        //rl_cleanup_after_signal();
+        //std::cout << "in SIGINT signal handler >>>" << std::endl;
+        rl_free_line_state();
+        rl_cleanup_after_signal();        
+        rl_echo_signal_char(SIGINT);
+        rl_on_new_line();
+    }
+    if (signo == SIGQUIT)
+    {
+        //rl_cleanup_after_signal();
+        std::cout << "in SIGQUIT signal handler" << std::endl;
+    }
+    if (signo == SIGWINCH)
+    {
+        //rl_cleanup_after_signal();
+        std::cout << "in SIGWINCH signal handler" << std::endl;
+    }
+    if (signo == SIGTSTP)
+    {
+        rl_cleanup_after_signal();
+        std::cout << "in SIGTSTP signal handler" << std::endl;
+        std::exit(0);
+    }
 }
 
 char** completion_func(const char *text, int start, int end)
