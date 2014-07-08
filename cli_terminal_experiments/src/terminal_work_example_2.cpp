@@ -5,20 +5,24 @@
 #include <iostream>
 #include <string>
 #include <vector>
-// posix
+// C lib
+#include <stdio.h>
+// select
+#include <sys/types.h>
+#include <sys/select.h>
+// signal
 #include <signal.h>
 // readline library
 #include <readline.h>
 #include <history.h>
 
-void process_data(char* raw_data);
 void init_readline();
 char* duplicate_str(std::string const &source);
 std::string trim_left(std::string const &source);
 std::string trim_right(std::string const& source);
 std::string trim_full(std::string const& source);
 
-// signal functions
+// signals
 void setup_signal_handlers();
 void signal_handler(int signo);
 
@@ -26,28 +30,19 @@ void signal_handler(int signo);
 char** completion_func(const char *text, int start, int end);
 char* generator_func(const char *text, int state);
 
+const char *prompt = "readline usage example >>>";
 std::vector<std::string> completion_data = {"iddqd666", "idkfa777", "idclip888", "iddqd999"};
+bool running = true;
 
-int main()
+void readline_handler(char *raw_data)
 {
-    init_readline();
-    std::cout << "readline usage example start" << std::endl;
-    for(;;)
+    if (raw_data == nullptr)
     {
-        char *raw_data = readline("readline usage example >>>");
-        if (!raw_data)
-        {
-            std::cout << "empty raw_data" << std::endl;
-            break;
-        }
-        process_data(raw_data);
-        free(raw_data);
+        std::cout << "exit handler" << std::endl;
+        running = false;
+        rl_callback_handler_remove();
+        return;
     }
-    return 0;
-}
-
-void process_data(char* raw_data)
-{
     std::string raw_str = std::string(raw_data);
     std::string line = trim_full(raw_str);
     std::cout << "line: " << line << " size: " << line.size() << std::endl;
@@ -61,11 +56,44 @@ void process_data(char* raw_data)
         add_history(expansion);
     if (expansion != nullptr)
         free(expansion);
+    free(raw_data);
+}
+
+int main()
+{    
+    std::cout << "start terminal_work_example_2_alt" << std::endl;
+    init_readline();
+    rl_callback_handler_install(prompt, readline_handler);
+    setup_signal_handlers();
+    int instream_no = fileno(rl_instream);
+    running = 1;
+    while(running)
+    {
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(instream_no, &fds);
+        int result = select(FD_SETSIZE, &fds, nullptr, nullptr, nullptr);
+        if (result == -1)
+        {
+            if (errno == EINTR)
+                continue;
+            else
+            {
+                std::cout << "select error" << std::endl;
+                rl_callback_handler_remove();
+                break;
+            }
+        }
+        if (FD_ISSET(instream_no, &fds))
+            rl_callback_read_char();
+    }
+    std::cout << "finish terminal_work_example_2_alt" << std::endl;
+    //rl_deprep_terminal();
+    return 0;
 }
 
 void init_readline()
 {
-    //rl_readline_name = "terminal_work_example_2";
     rl_attempted_completion_over = 1;
     rl_attempted_completion_function = completion_func;
     rl_sort_completion_matches = 0;
@@ -75,9 +103,31 @@ void init_readline()
     rl_catch_sigwinch = 0;
     // absent in readline 6.2
     // rl_change_environment = 0;
-    setup_signal_handlers();
-    // history
+     // history
     using_history();
+}
+
+char* duplicate_str(std::string const &source)
+{
+    const char* source_str = source.c_str();
+    char *buffer = (char*) malloc(strlen(source_str) + 1);
+    strcpy(buffer, source_str);
+    return buffer;
+}
+
+char** completion_func(const char *text, int start, int end)
+{
+    return rl_completion_matches(text, generator_func);
+}
+
+char* generator_func(const char *text, int state)
+{
+    static size_t index;
+    if (state == 0)
+        index = 0;
+    if (index < completion_data.size())
+        return duplicate_str(completion_data.at(index++));
+    return (char*) NULL;
 }
 
 std::string trim_left(std::string const &source)
@@ -100,12 +150,30 @@ std::string trim_full(std::string const& source)
     return trim_right(trim_left_result);
 }
 
-char* duplicate_str(std::string const &source)
+void signal_handler(int signo)
 {
-    const char* source_str = source.c_str();
-    char *buffer = (char*) malloc(strlen(source_str) + 1);
-    strcpy(buffer, source_str);
-    return buffer;
+    if (signo == SIGINT)
+    {
+        std::cout << "^C" << std::endl;
+        rl_callback_handler_remove();
+        rl_callback_handler_install(prompt, readline_handler);
+    }
+    if (signo == SIGQUIT)
+    {
+        std::cout << "^\\" << std::endl;
+        rl_callback_handler_remove();
+        running = false;
+    }
+    if (signo == SIGWINCH)
+    {
+        // ??
+    }
+    if (signo == SIGTSTP)
+    {
+        std::cout << "^Z" << std::endl;
+        rl_callback_handler_remove();
+        running = false;
+    }
 }
 
 void setup_signal_handlers()
@@ -114,8 +182,13 @@ void setup_signal_handlers()
     sigemptyset(&newset);
     sigaddset(&newset, SIGINT);
     sigaddset(&newset, SIGQUIT);
-    sigaddset(&newset, SIGWINCH);
+    sigaddset(&newset, SIGTERM);
+    sigaddset(&newset, SIGHUP);
+    sigaddset(&newset, SIGALRM);
     sigaddset(&newset, SIGTSTP);
+    sigaddset(&newset, SIGTTIN);
+    sigaddset(&newset, SIGTTOU);
+    sigaddset(&newset, SIGWINCH);
     sigprocmask(SIG_SETMASK, &newset, &oldset);
     sigset_t signal_mask;
     sigemptyset(&signal_mask);
@@ -145,45 +218,4 @@ void setup_signal_handlers()
     tstp_action.sa_mask = signal_mask;
     sigaction(SIGTSTP, &tstp_action, nullptr);
     sigprocmask(SIG_SETMASK, &oldset, nullptr);
-}
-
-void signal_handler(int signo)
-{
-    if (signo == SIGINT)
-    {
-        // ???
-        //rl_free_line_state();
-        //rl_cleanup_after_signal();
-    }
-    if (signo == SIGQUIT)
-    {
-        // ???
-        //rl_cleanup_after_signal();
-    }
-    if (signo == SIGWINCH)
-    {
-        // ???
-        //rl_cleanup_after_signal();
-    }
-    if (signo == SIGTSTP)
-    {
-        rl_cleanup_after_signal();
-        std::cout << "in SIGTSTP signal handler" << std::endl;
-        std::exit(0);
-    }
-}
-
-char** completion_func(const char *text, int start, int end)
-{
-    return rl_completion_matches(text, generator_func);
-}
-
-char* generator_func(const char *text, int state)
-{
-    static size_t index;
-    if (state == 0)
-        index = 0;
-    if (index < completion_data.size())
-        return duplicate_str(completion_data.at(index++));
-    return (char*) NULL;
 }

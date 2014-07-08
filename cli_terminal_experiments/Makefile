@@ -14,8 +14,6 @@ BIN=bin
 all: pre_build $(SOURCE)
 	$(CC) $(CFLAGS) -o $(BIN)/terminal_work_example_1 src/terminal_work_example_1.cpp
 	$(CC) $(CFLAGS) -I/usr/include/readline/ -o $(BIN)/terminal_work_example_2 src/terminal_work_example_2.cpp -L/usr/lib/x86_64-linux-gnu -lreadline -lhistory
-	$(CC) $(CFLAGS) -I/usr/include/readline/ -o $(BIN)/terminal_work_example_2_jmp src/terminal_work_example_2_jmp.cpp -L/usr/lib/x86_64-linux-gnu -lreadline -lhistory
-	$(CC) $(CFLAGS) -I/usr/include/readline/ -o $(BIN)/terminal_work_example_2_alt src/terminal_work_example_2_alt.cpp -L/usr/lib/x86_64-linux-gnu -lreadline -lhistory
 
 pre_build: clean
 	$(shell if [ ! -d "./$(BIN)/" ]; then mkdir $(BIN); fi)
