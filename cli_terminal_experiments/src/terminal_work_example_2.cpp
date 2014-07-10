@@ -66,7 +66,7 @@ int main()
     rl_callback_handler_install(prompt, readline_handler);
     setup_signal_handlers();
     int instream_no = fileno(rl_instream);
-    running = 1;
+    running = true;
     while(running)
     {
         fd_set fds;

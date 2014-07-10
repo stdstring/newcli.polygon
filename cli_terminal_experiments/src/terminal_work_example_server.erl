@@ -4,6 +4,8 @@
 
 -record(server_state, {socket = none, timeout = infinity, command = none}).
 
+-define(END, {'end', ""}).
+
 start() -> start_server(22222, 60*1000).
 
 start_server(Port, Timeout) ->
@@ -24,16 +26,16 @@ server_event_loop(State) ->
         {'EXIT', _Command, normal} ->
             server_event_loop(State);
         {'EXIT', Command, killed} ->
-            tcp_gen:send(Socket, term_to_binary('end')),
+            tcp_gen:send(Socket, term_to_binary(?END)),
             UpdatedState = State#server_state{command = none},
             server_event_loop(UpdatedState);
         {'EXIT', Command, _Reason} ->
             tcp_gen:send(Socket, term_to_binary("command execution error\n")),
-            tcp_gen:send(Socket, term_to_binary('end')),
+            tcp_gen:send(Socket, term_to_binary(?END)),
             UpdatedState = State#server_state{command = none},
             server_event_loop(UpdatedState);
         {response, command_finish} ->
-            tcp_gen:send(Socket, term_to_binary('end')),
+            tcp_gen:send(Socket, term_to_binary(?END)),
             UpdatedState = State#server_state{command = none},
             server_event_loop(UpdatedState);
         {response, command_continue, Data} ->
@@ -66,5 +68,5 @@ process_request("stop", #server_state{command = Command} = State) ->
     State#server_state{command = none};
 process_request(_Data, #server_state{socket = Socket} = State) ->
     tcp_gen:send(Socket, term_to_binary({result, "unknown command\n"})),
-    tcp_gen:send(Socket, term_to_binary('end')),
+    tcp_gen:send(Socket, term_to_binary(?END)),
     State.
