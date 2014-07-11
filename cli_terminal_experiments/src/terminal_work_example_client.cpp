@@ -4,10 +4,13 @@
 #include <utility>
 // C
 #include <strings.h>
+#include <unistd.h>
 // network
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+// select
+#include <sys/select.h>
 
 #define IP_ADDRESS "127.0.0.1"
 #define PORT 22222
@@ -28,9 +31,31 @@ int main()
     connect(socketd);
     while (running)
     {
-        
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(STDIN_FILENO, &fds);
+        FD_SET(socketd, &fds);
+        int result = select(FD_SETSIZE, &fds, nullptr, nullptr, nullptr);
+        if (result == -1)
+        {
+            if (errno != EINTR)
+            {
+                std::cout << "select error" << std::endl;
+                running = false;
+            }
+            continue;
+        }
+        if (FD_ISSET(STDIN_FILENO, &fds))
+        {
+            // some action
+        }
+        if (FD_ISSET(socketd, &fds))
+        {
+            // some action
+        }
     }
     std::cout << "finish terminal_work_example_client" << std::endl;
+    close(socketd);
     return 0;
 }
 
