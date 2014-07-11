@@ -5,6 +5,7 @@
 -record(server_state, {socket = none, timeout = infinity, command = none}).
 
 -define(END, {'end', ""}).
+-define(TIMEOUT, {timeout, ""}).
 
 start() -> start_server(22222, 60*1000).
 
@@ -26,20 +27,20 @@ server_event_loop(State) ->
         {'EXIT', _Command, normal} ->
             server_event_loop(State);
         {'EXIT', Command, killed} ->
-            tcp_gen:send(Socket, term_to_binary(?END)),
+            gen_tcp:send(Socket, term_to_binary(?END)),
             UpdatedState = State#server_state{command = none},
             server_event_loop(UpdatedState);
         {'EXIT', Command, _Reason} ->
-            tcp_gen:send(Socket, term_to_binary("command execution error\n")),
-            tcp_gen:send(Socket, term_to_binary(?END)),
+            gen_tcp:send(Socket, term_to_binary({result, "command execution error\n"})),
+            gen_tcp:send(Socket, term_to_binary(?END)),
             UpdatedState = State#server_state{command = none},
             server_event_loop(UpdatedState);
         {response, command_finish} ->
-            tcp_gen:send(Socket, term_to_binary(?END)),
+            gen_tcp:send(Socket, term_to_binary(?END)),
             UpdatedState = State#server_state{command = none},
             server_event_loop(UpdatedState);
         {response, command_continue, Data} ->
-            tcp_gen:send(Socket, term_to_binary({result, Data})),
+            gen_tcp:send(Socket, term_to_binary({result, Data})),
             server_event_loop(State);
         {tcp, Socket, Data} ->
             Request = binary_to_term(Data),
@@ -50,7 +51,7 @@ server_event_loop(State) ->
             io:format("socket closed~n", []),
             ok
     after Timeout ->
-        tcp_gen:send(Socket, term_to_binary(timeout)),
+        gen_tcp:send(Socket, term_to_binary(?TIMEOUT)),
         gen_tcp:close(Socket),
         ok
     end.
@@ -67,6 +68,6 @@ process_request("stop", #server_state{command = Command} = State) ->
     exit(Command, kill),
     State#server_state{command = none};
 process_request(_Data, #server_state{socket = Socket} = State) ->
-    tcp_gen:send(Socket, term_to_binary({result, "unknown command\n"})),
-    tcp_gen:send(Socket, term_to_binary(?END)),
+    gen_tcp:send(Socket, term_to_binary({result, "unknown command\n"})),
+    gen_tcp:send(Socket, term_to_binary(?END)),
     State.

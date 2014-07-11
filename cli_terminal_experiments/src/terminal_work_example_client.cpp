@@ -1,6 +1,7 @@
 // C++
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <utility>
 // C
 #include <strings.h>
@@ -20,15 +21,15 @@ int create_socket();
 void connect(int socketd);
 std::pair<std::string, std::string> read_message(int socketd);
 void write_message(int socketd, std::string const &message);
-
-// global variables
-bool running = true;
+std::pair<bool, bool> process_message(std::pair<std::string, std::string> const &message);
 
 int main()
 {
     std::cout << "start terminal_work_example_client" << std::endl;
     int socketd = create_socket();
     connect(socketd);
+    bool running = true;
+    bool allow_input = true;
     while (running)
     {
         fd_set fds;
@@ -47,10 +48,16 @@ int main()
         }
         if (FD_ISSET(STDIN_FILENO, &fds))
         {
-            // some action
+            if (allow_input)
+            {
+                // some action
+            }
+            continue;
+            
         }
         if (FD_ISSET(socketd, &fds))
         {
+            std::pair<std::string, std::string> message = read_message(socketd);
             // some action
         }
     }
@@ -101,13 +108,12 @@ std::pair<std::string, std::string> read_message(int socketd)
     }
     int length = ntohl(length_binary);
     // read body
-    char *buffer = new char[length];
-    if (recv(socketd, buffer, length, MSG_WAITALL) != length)
+    std::unique_ptr<char[]> buffer(new char[length]);
+    if (recv(socketd, buffer.get(), length, MSG_WAITALL) != length)
     {
         std::cout << "error in read body" << std::endl;
         std::exit(-1);
-    }
-    delete[] buffer;
+    }    
     // data deserialization
     // ...
     return std::pair<std::string, std::string>("", "");
@@ -115,3 +121,25 @@ std::pair<std::string, std::string> read_message(int socketd)
 
 void write_message(int socketd, std::string const &message)
 {}
+
+std::pair<bool, bool> process_message(std::pair<std::string, std::string> const &message)
+{
+    // std::pair<bool, bool> == {allow_input, running}
+    std::string type = message.first;
+    std::string data = message.second;
+    if (type.compare("result"))
+    {
+        std::cout << data;
+        return std::pair<bool, bool>(false, true);
+    }
+    if (type.compare("end"))
+    {
+        return std::pair<bool, bool>(true, true);
+    }
+    if (type.compare("timeout"))
+    {
+        std::cout << data;
+        return std::pair<bool, bool>(false, false);
+    }
+    return std::pair<bool, bool>(true, true);
+}
