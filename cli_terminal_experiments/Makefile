@@ -17,7 +17,10 @@ all: pre_build $(SOURCE)
 	erlc -Werror -b beam -o $(BIN) src/terminal_work_example_heavy_command.erl
 	erlc -Werror -b beam -o $(BIN) src/terminal_work_example_light_command.erl
 	erlc -Werror -b beam -o $(BIN) src/terminal_work_example_server.erl
-	$(CC) $(CFLAGS) -I/usr/include/readline/ -o $(BIN)/terminal_work_example_client src/terminal_work_example_client.cpp -L/usr/lib/x86_64-linux-gnu -lreadline -lhistory
+	$(CC) $(CFLAGS) -I/usr/include/readline/ -o $(BIN)/terminal_work_example_client src/terminal_work_example_client.cpp\
+                                             -L/usr/lib/x86_64-linux-gnu -lreadline -lhistory\
+                                             -L/usr/lib/erlang/lib/erl_interface-3.7.13/lib -lerl_interface -lei\
+                                             -lpthread
 
 pre_build: clean
 	$(shell if [ ! -d "./$(BIN)/" ]; then mkdir $(BIN); fi)

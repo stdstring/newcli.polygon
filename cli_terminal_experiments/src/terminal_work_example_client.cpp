@@ -12,11 +12,15 @@
 #include <sys/socket.h>
 // select
 #include <sys/select.h>
+// erlang terms
+#include <erl_interface.h>
+
 
 #define IP_ADDRESS "127.0.0.1"
 #define PORT 22222
 
 // declaration
+void initialize();
 int create_socket();
 void connect(int socketd);
 std::pair<std::string, std::string> read_message(int socketd);
@@ -26,6 +30,7 @@ std::pair<bool, bool> process_message(std::pair<std::string, std::string> const 
 int main()
 {
     std::cout << "start terminal_work_example_client" << std::endl;
+    initialize();
     int socketd = create_socket();
     connect(socketd);
     bool running = true;
@@ -64,6 +69,11 @@ int main()
     std::cout << "finish terminal_work_example_client" << std::endl;
     close(socketd);
     return 0;
+}
+
+void initialize()
+{
+    erl_init(NULL, 0);
 }
 
 int create_socket()
@@ -115,7 +125,7 @@ std::pair<std::string, std::string> read_message(int socketd)
         std::exit(-1);
     }    
     // data deserialization
-    // ...
+
     return std::pair<std::string, std::string>("", "");
 }
 
