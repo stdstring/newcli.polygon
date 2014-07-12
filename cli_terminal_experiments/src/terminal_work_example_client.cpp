@@ -1,5 +1,6 @@
 // C++
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -37,6 +38,9 @@ public:
     bool allow_running;    
 };
 
+// typedefs
+typedef std::unique_ptr<ETERM, std::function<void (ETERM*)>> eterm_unique_ptr;
+
 // declaration
 void initialize();
 int create_socket();
@@ -44,6 +48,9 @@ void connect(int socketd);
 Message read_message(int socketd);
 void write_message(int socketd, std::string const &message);
 ProcessResult process_message(Message const &message);
+
+// eterm deleter
+std::function<void (ETERM*)> eterm_deleter = [](ETERM* term){erl_free_term(term);};
 
 int main()
 {
@@ -133,15 +140,35 @@ Message read_message(int socketd)
     }
     int length = ntohl(length_binary);
     // read body
-    std::unique_ptr<char[]> buffer(new char[length]);
+    std::unique_ptr<unsigned char[]> buffer(new unsigned char[length]);
     if (recv(socketd, buffer.get(), length, MSG_WAITALL) != length)
     {
         std::cout << "error in read body" << std::endl;
         std::exit(-1);
     }    
     // data deserialization
-
-    return Message("", "");
+    eterm_unique_ptr message_body(erl_decode(buffer.get()), eterm_deleter);
+    if (!ERL_IS_TUPLE(message_body.get()))
+    {
+        std::cout << "bad message body" << std::endl;
+        std::exit(-1);
+    }
+    eterm_unique_ptr message_type(erl_element(1, message_body.get()));
+    if (message_type.get() == nullptr)
+    {
+        std::cout << "bad message type" << std::endl;
+        std::exit(-1);
+    }
+    eterm_unique_ptr message_data(erl_element(2, message_body.get()));
+    if (message_data.get() == nullptr)
+    {
+        std::cout << "bad message data" << std::endl;
+        std::exit(-1);
+    }
+    std::string type(ERL_ATOM_PTR(message_type));
+    std::unique_ptr<char[]> data_str(erl_iolist_to_string(message_data.get()));
+    std::string data(data_str.get());
+    return Message(type, data);
 }
 
 void write_message(int socketd, std::string const &message)
