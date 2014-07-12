@@ -19,13 +19,31 @@
 #define IP_ADDRESS "127.0.0.1"
 #define PORT 22222
 
+struct Message
+{
+public:
+    Message(std::string const &type_value, std::string const &data_value) : type(type_value), data(data_value) {};
+
+    std::string type;
+    std::string data;
+};
+
+struct ProcessResult
+{
+public:
+    ProcessResult(bool allow_input_value, bool allow_running_value) : allow_input(allow_input_value), allow_running(allow_running_value) {};
+
+    bool allow_input;
+    bool allow_running;    
+};
+
 // declaration
 void initialize();
 int create_socket();
 void connect(int socketd);
-std::pair<std::string, std::string> read_message(int socketd);
+Message read_message(int socketd);
 void write_message(int socketd, std::string const &message);
-std::pair<bool, bool> process_message(std::pair<std::string, std::string> const &message);
+ProcessResult process_message(Message const &message);
 
 int main()
 {
@@ -53,17 +71,14 @@ int main()
         }
         if (FD_ISSET(STDIN_FILENO, &fds))
         {
-            if (allow_input)
-            {
-                // some action
-            }
-            continue;
-            
+            // some action
         }
         if (FD_ISSET(socketd, &fds))
         {
-            std::pair<std::string, std::string> message = read_message(socketd);
-            // some action
+            Message message = read_message(socketd);
+            ProcessResult result = process_message(message);
+            running = result.allow_running;
+            allow_input = result.allow_input;
         }
     }
     std::cout << "finish terminal_work_example_client" << std::endl;
@@ -107,7 +122,7 @@ void connect(int socketd)
     }
 }
 
-std::pair<std::string, std::string> read_message(int socketd)
+Message read_message(int socketd)
 {
     // read 4-bytes length
     int length_binary;
@@ -126,30 +141,29 @@ std::pair<std::string, std::string> read_message(int socketd)
     }    
     // data deserialization
 
-    return std::pair<std::string, std::string>("", "");
+    return Message("", "");
 }
 
 void write_message(int socketd, std::string const &message)
 {}
 
-std::pair<bool, bool> process_message(std::pair<std::string, std::string> const &message)
+ProcessResult process_message(Message const &message)
 {
-    // std::pair<bool, bool> == {allow_input, running}
-    std::string type = message.first;
-    std::string data = message.second;
+    std::string type = message.type;
+    std::string data = message.data;
     if (type.compare("result"))
     {
         std::cout << data;
-        return std::pair<bool, bool>(false, true);
+        return ProcessResult(false, true);
     }
     if (type.compare("end"))
     {
-        return std::pair<bool, bool>(true, true);
+        return ProcessResult(true, true);
     }
     if (type.compare("timeout"))
     {
         std::cout << data;
-        return std::pair<bool, bool>(false, false);
+        return ProcessResult(false, false);
     }
-    return std::pair<bool, bool>(true, true);
+    return ProcessResult(true, true);
 }
