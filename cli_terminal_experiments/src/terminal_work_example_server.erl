@@ -7,12 +7,13 @@
 -define(END, {'end', ""}).
 -define(TIMEOUT, {timeout, ""}).
 
-start() -> start_server(22222, 60*1000).
+start() -> start_server(22222, 2*60*1000).
 
 start_server(Port, Timeout) ->
     process_flag(trap_exit, true),
     io:format("starting ... ~n", []),
     {ok, ListenSocket} = gen_tcp:listen(Port, [binary, {packet, 4}, {active, once}]),
+    %% {ok, ListenSocket} = gen_tcp:listen(Port, [binary, {packet, raw}, {active, once}]),
     io:format("listening ... ~n", []),
     {ok, Socket} = gen_tcp:accept(ListenSocket),
     State = #server_state{socket = Socket, timeout = Timeout},
