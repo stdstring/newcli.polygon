@@ -1,4 +1,5 @@
 // C++
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -16,6 +17,9 @@
 #include <sys/select.h>
 // erlang terms
 #include <erl_interface.h>
+// readline library
+#include <readline.h>
+#include <history.h>
 
 
 #define IP_ADDRESS "127.0.0.1"
@@ -36,67 +40,111 @@ public:
     ProcessResult(bool allow_input_value, bool allow_running_value) : allow_input(allow_input_value), allow_running(allow_running_value) {};
 
     bool allow_input;
-    bool allow_running;    
+    bool allow_running;
+};
+
+struct ClientState
+{
+public:
+    int socketd;
+    bool allow_input;
+    bool allow_running;
 };
 
 // typedefs
+// typedef std::unique_ptr<T, std::function<void (T*)>> c_unique_ptr; ???
+typedef std::unique_ptr<char, std::function<void (char*)>> cstr_unique_ptr;
 typedef std::unique_ptr<ETERM, std::function<void (ETERM*)>> eterm_unique_ptr;
 
-// declaration
+// init
 void initialize();
+// sockets
 int create_socket();
 void connect(int socketd);
+// messages
 Message read_message(int socketd);
 void write_message(int socketd, std::string const &message);
 ProcessResult process_message(Message const &message);
+// readline
+void readline_handler(char *raw_data);
+// trim string
+std::string trim_left(std::string const &source);
+std::string trim_right(std::string const& source);
+std::string trim_full(std::string const& source);
 
+// cstr deleter
+std::function<void (char*)> cstr_deleter = [](char* str){free(str);};
 // eterm deleter
 std::function<void (ETERM*)> eterm_deleter = [](ETERM* term){erl_free_term(term);};
+
+// global variables
+ClientState client_state;
+const char *prompt = "readline usage example >>>";
 
 int main()
 {
     std::cout << "start terminal_work_example_client" << std::endl;
     initialize();
-    int socketd = create_socket();
-    connect(socketd);
-    bool running = true;
-    bool allow_input = true;
-    while (running)
+    rl_callback_handler_install(prompt, readline_handler);
+    client_state.socketd = create_socket();
+    connect(client_state.socketd);
+    client_state.allow_running = true;
+    client_state.allow_input = true;
+    while (client_state.allow_running)
     {
         fd_set fds;
         FD_ZERO(&fds);
         FD_SET(STDIN_FILENO, &fds);
-        FD_SET(socketd, &fds);
+        FD_SET(client_state.socketd, &fds);
         int result = select(FD_SETSIZE, &fds, nullptr, nullptr, nullptr);
         if (result == -1)
         {
             if (errno != EINTR)
             {
                 std::cout << "select error" << std::endl;
-                running = false;
+                rl_callback_handler_remove();
+                client_state.allow_running = false;
             }
             continue;
         }
         if (FD_ISSET(STDIN_FILENO, &fds))
         {
-            // some action
+            if (client_state.allow_input)
+                rl_callback_read_char();
+            else
+            {
+            }
         }
-        if (FD_ISSET(socketd, &fds))
+        if (FD_ISSET(client_state.socketd, &fds))
         {
-            Message message = read_message(socketd);
+            Message message = read_message(client_state.socketd);
             ProcessResult result = process_message(message);
-            running = result.allow_running;
-            allow_input = result.allow_input;
+            client_state.allow_running = result.allow_running;
+            client_state.allow_input = result.allow_input;
         }
     }
     std::cout << "finish terminal_work_example_client" << std::endl;
-    close(socketd);
+    close(client_state.socketd);
     return 0;
 }
 
 void initialize()
-{
+{    
+    // erl runtime
     erl_init(NULL, 0);
+    // readline
+    rl_attempted_completion_over = 1;
+    // completion
+    //rl_attempted_completion_function = completion_func;
+    //rl_sort_completion_matches = 0;
+    //rl_ignore_completion_duplicates = 0;
+    /*// singnals
+    rl_catch_signals = 0;
+    rl_catch_sigwinch = 0;
+    // absent in readline 6.2
+    // rl_change_environment = 0;*/
+     // readline history
+    using_history();
 }
 
 int create_socket()
@@ -214,4 +262,48 @@ ProcessResult process_message(Message const &message)
         return ProcessResult(false, false);
     }
     return ProcessResult(true, true);
+}
+
+void readline_handler(char *raw_data)
+{
+    if (raw_data == nullptr)
+    {
+        std::cout << "exit handler" << std::endl;
+        client_state.allow_running = false;
+        rl_callback_handler_remove();
+        return;
+    }    
+    cstr_unique_ptr raw_data_ptr(raw_data);
+    std::string raw_str = std::string(raw_data_ptr.get());
+    std::string line = trim_full(raw_str);
+    if (line.empty())
+        return;
+    char *expansion = nullptr;
+    int result = history_expand(const_cast<char*>(line.c_str()), &expansion);
+    cstr_unique_ptr expansion_ptr(expansion);
+    if (result == 0 || result == 1)
+        add_history(expansion);
+    std::string message(expansion_ptr.get());
+    write_message(client_state.socketd, message);
+    client_state.allow_input = false;
+}
+
+std::string trim_left(std::string const &source)
+{
+    std::string::const_iterator end = source.end();
+    std::string::const_iterator new_begin = std::find_if(source.begin(), end, [](char c){return !std::isspace(c);});
+    return new_begin != end ? std::string(new_begin, end) : std::string();
+}
+
+std::string trim_right(std::string const& source)
+{
+    std::string::const_reverse_iterator rend = source.rend();
+    std::string::const_reverse_iterator new_rbegin = std::find_if(source.rbegin(), rend, [](char c){return !std::isspace(c);});
+    return new_rbegin != rend ? std::string(source.begin(), new_rbegin.base()) : std::string();
+}
+
+std::string trim_full(std::string const& source)
+{
+    std::string trim_left_result = trim_left(source);
+    return trim_right(trim_left_result);
 }
