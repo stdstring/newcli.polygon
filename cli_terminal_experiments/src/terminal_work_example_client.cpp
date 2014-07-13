@@ -125,6 +125,7 @@ int main()
     }
     std::cout << "finish terminal_work_example_client" << std::endl;
     close(client_state.socketd);
+    rl_deprep_terminal();
     return 0;
 }
 
@@ -153,6 +154,7 @@ int create_socket()
     if (socketd == -1)
     {
         std::cout << "error in socket" << std::endl;
+        rl_deprep_terminal();
         std::exit(-1);
     }
     return socketd;
@@ -168,12 +170,14 @@ void connect(int socketd)
     if (inet_pton(AF_INET, IP_ADDRESS, &ip_binary) != 1)
     {
         std::cout << "error in inet_pton" << std::endl;
+        rl_deprep_terminal();
         std::exit(-1);
     }
     server_addr.sin_addr.s_addr = ip_binary;
     if (connect(socketd, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr)) == -1)
     {
         std::cout << "error in connect" << std::endl;
+        rl_deprep_terminal();
         std::exit(-1);
     }
 }
@@ -185,6 +189,7 @@ Message read_message(int socketd)
     if (recv(socketd, &length_binary, sizeof(int), MSG_WAITALL) != sizeof(int))
     {
         std::cout << "error in read 4-bytes length" << std::endl;
+        rl_deprep_terminal();
         std::exit(-1);
     }
     int length = ntohl(length_binary);
@@ -193,6 +198,7 @@ Message read_message(int socketd)
     if (recv(socketd, buffer.get(), length, MSG_WAITALL) != length)
     {
         std::cout << "error in read body" << std::endl;
+        rl_deprep_terminal();
         std::exit(-1);
     }    
     // data deserialization
@@ -200,18 +206,21 @@ Message read_message(int socketd)
     if (!ERL_IS_TUPLE(message_body.get()))
     {
         std::cout << "bad message body" << std::endl;
+        rl_deprep_terminal();
         std::exit(-1);
     }
     eterm_unique_ptr message_type(erl_element(1, message_body.get()));
     if (message_type.get() == nullptr)
     {
         std::cout << "bad message type" << std::endl;
+        rl_deprep_terminal();
         std::exit(-1);
     }
     eterm_unique_ptr message_data(erl_element(2, message_body.get()));
     if (message_data.get() == nullptr)
     {
         std::cout << "bad message data" << std::endl;
+        rl_deprep_terminal();
         std::exit(-1);
     }
     std::string type(ERL_ATOM_PTR(message_type));
@@ -231,6 +240,7 @@ void write_message(int socketd, std::string const &message)
     if (erl_encode(message_body.get(), (buffer.get() + 4)) != length)
     {
         std::cout << "error in message encode" << std::endl;
+        rl_deprep_terminal();
         std::exit(-1);
     }
     int length_binary = htonl(length);
@@ -239,6 +249,7 @@ void write_message(int socketd, std::string const &message)
     if (send(socketd, buffer.get(), total_length, 0) != total_length)
     {
         std::cout << "error in write message" << std::endl;
+        rl_deprep_terminal();
         std::exit(-1);
     }
 }
