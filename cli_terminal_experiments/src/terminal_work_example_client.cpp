@@ -1,5 +1,6 @@
 // C++
 #include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -172,7 +173,27 @@ Message read_message(int socketd)
 }
 
 void write_message(int socketd, std::string const &message)
-{}
+{
+    // data serialization
+    eterm_unique_ptr message_body(erl_mk_string(message.c_str()));
+    int length = erl_term_len(message_body.get());
+    // buffer size = 4-byte length + term length
+    int total_length = length + 4;
+    std::unique_ptr<unsigned char[]> buffer(new unsigned char[total_length]);
+    if (erl_encode(message_body.get(), (buffer.get() + 4)) != length)
+    {
+        std::cout << "error in message encode" << std::endl;
+        std::exit(-1);
+    }
+    int length_binary = htonl(length);
+    memcpy(message_body.get(), &length_binary, 4);
+    // write message
+    if (send(socketd, buffer.get(), total_length, 0) != total_length)
+    {
+        std::cout << "error in write message" << std::endl;
+        std::exit(-1);
+    }
+}
 
 ProcessResult process_message(Message const &message)
 {
