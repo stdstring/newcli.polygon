@@ -52,7 +52,6 @@ public:
 };
 
 // typedefs
-// typedef std::unique_ptr<T, std::function<void (T*)>> c_unique_ptr; ???
 typedef std::unique_ptr<char, std::function<void (char*)>> cstr_unique_ptr;
 typedef std::unique_ptr<ETERM, std::function<void (ETERM*)>> eterm_unique_ptr;
 
@@ -184,7 +183,7 @@ void connect(int socketd)
 
 Message read_message(int socketd)
 {
-    /*// read 4-bytes length
+    // read 4-bytes length
     int length_binary;
     if (recv(socketd, &length_binary, sizeof(int), MSG_WAITALL) != sizeof(int))
     {
@@ -209,14 +208,14 @@ Message read_message(int socketd)
         rl_deprep_terminal();
         std::exit(-1);
     }
-    eterm_unique_ptr message_type(erl_element(1, message_body.get()));
+    eterm_unique_ptr message_type(erl_element(1, message_body.get()), eterm_deleter);
     if (message_type.get() == nullptr)
     {
         std::cout << "bad message type" << std::endl;
         rl_deprep_terminal();
         std::exit(-1);
     }
-    eterm_unique_ptr message_data(erl_element(2, message_body.get()));
+    eterm_unique_ptr message_data(erl_element(2, message_body.get()), eterm_deleter);
     if (message_data.get() == nullptr)
     {
         std::cout << "bad message data" << std::endl;
@@ -224,92 +223,20 @@ Message read_message(int socketd)
         std::exit(-1);
     }
     std::string type(ERL_ATOM_PTR(message_type));
-    std::unique_ptr<char[]> data_str(erl_iolist_to_string(message_data.get()));
+    cstr_unique_ptr data_str(erl_iolist_to_string(message_data.get()), cstr_deleter);
     std::string data(data_str.get());
-    return Message(type, data);*/
-    // read 4-bytes length
-    int length_binary;
-    if (recv(socketd, &length_binary, sizeof(int), MSG_WAITALL) != sizeof(int))
-    {
-        std::cout << "error in read 4-bytes length" << std::endl;
-        rl_deprep_terminal();
-        std::exit(-1);
-    }
-    int length = ntohl(length_binary);
-    // read body
-    unsigned char *buffer = new unsigned char[length];
-    if (recv(socketd, buffer, length, MSG_WAITALL) != length)
-    {
-        std::cout << "error in read body" << std::endl;
-        rl_deprep_terminal();
-        std::exit(-1);
-    }    
-    // data deserialization
-    ETERM *message_body = erl_decode(buffer);
-    if (!ERL_IS_TUPLE(message_body))
-    {
-        std::cout << "bad message body" << std::endl;
-        rl_deprep_terminal();
-        std::exit(-1);
-    }
-    ETERM *message_type = erl_element(1, message_body);
-    if (message_type == nullptr)
-    {
-        std::cout << "bad message type" << std::endl;
-        rl_deprep_terminal();
-        std::exit(-1);
-    }
-    ETERM *message_data = erl_element(2, message_body);
-    if (message_data == nullptr)
-    {
-        std::cout << "bad message data" << std::endl;
-        rl_deprep_terminal();
-        std::exit(-1);
-    }
-    std::string type(ERL_ATOM_PTR(message_type));
-    char *data_str = erl_iolist_to_string(message_data);
-    std::string data(data_str);
-    //std::cout << "type: \"" << type << "\"" << std::endl;
-    //std::cout << "data: " << data << std::endl;
-    delete[] data_str;
-    erl_free_term(message_data);
-    erl_free_term(message_type);
-    erl_free_term(message_body);
-    delete[] buffer;
     return Message(type, data);
 }
 
 void write_message(int socketd, std::string const &message)
 {
-    /*// data serialization
-    eterm_unique_ptr message_body(erl_mk_string(message.c_str()));
+    // data serialization
+    eterm_unique_ptr message_body(erl_mk_string(message.c_str()), eterm_deleter);
     int length = erl_term_len(message_body.get());
     // buffer size = 4-byte length + term length
     int total_length = length + 4;
     std::unique_ptr<unsigned char[]> buffer(new unsigned char[total_length]);
     if (erl_encode(message_body.get(), (buffer.get() + 4)) != length)
-    {
-        std::cout << "error in message encode" << std::endl;
-        rl_deprep_terminal();
-        std::exit(-1);
-    }
-    int length_binary = htonl(length);
-    memcpy(buffer.get(), &length_binary, 4);
-    // write message
-    if (send(socketd, buffer.get(), total_length, 0) != total_length)
-    {
-        std::cout << "error in write message" << std::endl;
-        rl_deprep_terminal();
-        std::exit(-1);
-    }
-    std::cout << "1" << std::endl;*/
-    // data serialization
-    ETERM *message_body = erl_mk_string(message.c_str());
-    int length = erl_term_len(message_body);
-    // buffer size = 4-byte length + term length
-    int total_length = length + 4;
-    std::unique_ptr<unsigned char[]> buffer(new unsigned char[total_length]);
-    if (erl_encode(message_body, (buffer.get() + 4)) != length)
     {
         std::cout << "error in message encode" << std::endl;
         rl_deprep_terminal();
@@ -349,48 +276,26 @@ ProcessResult process_message(Message const &message)
 
 void readline_handler(char *raw_data)
 {
-    /*if (raw_data == nullptr)
-    {
-        std::cout << "exit handler" << std::endl;
-        client_state.allow_running = false;
-        rl_callback_handler_remove();
-        return;
-    }    
-    cstr_unique_ptr raw_data_ptr(raw_data);
-    std::string raw_str = std::string(raw_data_ptr.get());
-    std::string line = trim_full(raw_str);
-    if (line.empty())
-        return;
-    char *expansion = nullptr;
-    int result = history_expand(const_cast<char*>(line.c_str()), &expansion);
-    cstr_unique_ptr expansion_ptr(expansion);
-    if (result == 0 || result == 1)
-        add_history(expansion);
-    std::string message(expansion_ptr.get());
-    write_message(client_state.socketd, message);
-    client_state.allow_input = false;
-    std::cout << "2" << std::endl;*/
     if (raw_data == nullptr)
     {
         std::cout << "exit handler" << std::endl;
         client_state.allow_running = false;
         rl_callback_handler_remove();
         return;
-    }
-    std::string raw_str = std::string(raw_data);
+    }    
+    cstr_unique_ptr raw_data_ptr(raw_data, cstr_deleter);
+    std::string raw_str = std::string(raw_data_ptr.get());
     std::string line = trim_full(raw_str);
     if (line.empty())
         return;
     char *expansion = nullptr;
     int result = history_expand(const_cast<char*>(line.c_str()), &expansion);
+    cstr_unique_ptr expansion_ptr(expansion, cstr_deleter);
     if (result == 0 || result == 1)
         add_history(expansion);
-    std::string message(expansion);
+    std::string message(expansion_ptr.get());
     write_message(client_state.socketd, message);
     client_state.allow_input = false;
-    if (expansion != nullptr)
-        free(expansion);
-    free(raw_data);
 }
 
 std::string trim_left(std::string const &source)
