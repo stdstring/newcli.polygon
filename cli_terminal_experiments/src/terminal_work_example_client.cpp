@@ -15,6 +15,8 @@
 #include <sys/socket.h>
 // select
 #include <sys/select.h>
+// signal
+#include <signal.h>
 // erlang terms
 #include <erl_interface.h>
 // readline library
@@ -28,7 +30,7 @@
 struct Message
 {
 public:
-    Message(std::string const &type_value, std::string const &data_value) : type(type_value), data(data_value) {};
+    Message(std::string const &type_value, std::string const &data_value) : type(type_value), data(data_value) {}
 
     std::string type;
     std::string data;
@@ -37,7 +39,7 @@ public:
 struct ProcessResult
 {
 public:
-    ProcessResult(bool allow_input_value, bool allow_running_value) : allow_input(allow_input_value), allow_running(allow_running_value) {};
+    ProcessResult(bool allow_input_value, bool allow_running_value) : allow_input(allow_input_value), allow_running(allow_running_value) {}
 
     bool allow_input;
     bool allow_running;
@@ -49,6 +51,39 @@ public:
     int socketd;
     bool allow_input;
     bool allow_running;
+};
+
+class SignalSafeExecuter
+{
+public:
+    // delete default members
+    SignalSafeExecuter() = delete;
+    SignalSafeExecuter(const SignalSafeExecuter&) = delete;
+    SignalSafeExecuter(SignalSafeExecuter&&) = delete;
+    SignalSafeExecuter& operator=(const SignalSafeExecuter&) = delete;
+    SignalSafeExecuter& operator=(SignalSafeExecuter&&) = delete;
+    // define
+    SignalSafeExecuter(sigset_t new_mask)
+    {
+        sigprocmask(SIG_SETMASK, &new_mask, &_old_mask);
+    }
+
+    ~SignalSafeExecuter()
+    {
+        sigprocmask(SIG_SETMASK, &_old_mask, nullptr);
+    }
+
+    template<class Ret, class... Args> Ret execute(std::function<Ret(Args...)> &func, Args... args)
+    {
+        return func(&args...);
+    }
+
+    template<class... Args> void execute(std::function<void(Args...)> &func, Args... args)
+    {
+        func(&args...);
+    }
+private:
+    sigset_t _old_mask;
 };
 
 // typedefs
