@@ -112,6 +112,8 @@ int main()
                 rl_callback_read_char();
             else
             {
+                char buffer;
+                read(STDIN_FILENO, &buffer, 1);
             }
         }
         if (FD_ISSET(client_state.socketd, &fds))
@@ -264,6 +266,7 @@ ProcessResult process_message(Message const &message)
     }
     if (type.compare("end") == 0)
     {
+        rl_callback_handler_install(prompt, readline_handler);
         return ProcessResult(true, true);
     }
     if (type.compare("timeout") == 0)
@@ -295,6 +298,7 @@ void readline_handler(char *raw_data)
         add_history(expansion);
     std::string message(expansion_ptr.get());
     write_message(client_state.socketd, message);
+    rl_callback_handler_remove();
     client_state.allow_input = false;
 }
 
