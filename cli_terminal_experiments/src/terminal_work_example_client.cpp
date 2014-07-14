@@ -110,11 +110,6 @@ int main()
         {
             if (client_state.allow_input)
                 rl_callback_read_char();
-            else
-            {
-                char buffer;
-                read(STDIN_FILENO, &buffer, 1);
-            }
         }
         if (FD_ISSET(client_state.socketd, &fds))
         {
