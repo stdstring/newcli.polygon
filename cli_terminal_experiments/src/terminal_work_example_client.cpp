@@ -53,6 +53,30 @@ public:
     bool allow_running;
 };
 
+class SignalMaskHolder
+{
+public:
+    // delete default members
+    SignalMaskHolder() = delete;
+    SignalMaskHolder(const SignalMaskHolder&) = delete;
+    SignalMaskHolder(SignalMaskHolder&&) = delete;
+    SignalMaskHolder& operator=(const SignalMaskHolder&) = delete;
+    SignalMaskHolder& operator=(SignalMaskHolder&&) = delete;
+
+    // definitions
+    SignalMaskHolder(sigset_t new_mask)
+    {
+        sigprocmask(SIG_SETMASK, &new_mask, &_old_mask);
+    }
+
+    ~SignalMaskHolder()
+    {
+        sigprocmask(SIG_SETMASK, &_old_mask, nullptr);
+    }
+private:
+    sigset_t _old_mask;
+};
+
 class SignalSafeExecuter
 {
 public:
@@ -62,28 +86,35 @@ public:
     SignalSafeExecuter(SignalSafeExecuter&&) = delete;
     SignalSafeExecuter& operator=(const SignalSafeExecuter&) = delete;
     SignalSafeExecuter& operator=(SignalSafeExecuter&&) = delete;
-    // define
-    SignalSafeExecuter(sigset_t new_mask)
-    {
-        sigprocmask(SIG_SETMASK, &new_mask, &_old_mask);
-    }
+    // definitions
+    SignalSafeExecuter(sigset_t mask) : _mask(mask) {}
+    ~SignalSafeExecuter() {}
 
-    ~SignalSafeExecuter()
+    /*template<class Ret, class... Args> Ret execute(std::function<Ret(Args...)> func, Args... args)
     {
-        sigprocmask(SIG_SETMASK, &_old_mask, nullptr);
-    }
-
-    template<class Ret, class... Args> Ret execute(std::function<Ret(Args...)> &func, Args... args)
-    {
+        SignalMaskHolder signalHolder(_mask);
         return func(&args...);
     }
 
-    template<class... Args> void execute(std::function<void(Args...)> &func, Args... args)
+    template<class... Args> void execute(std::function<void(Args...)> func, Args... args)
     {
+        SignalMaskHolder signalHolder(_mask);
         func(&args...);
+    }*/
+
+    template<class Ret> Ret execute(std::function<Ret()> func)
+    {
+        SignalMaskHolder signalHolder(_mask);
+        return func();
+    }
+
+    void execute(std::function<void()> func)
+    {
+        SignalMaskHolder signalHolder(_mask);
+        func();
     }
 private:
-    sigset_t _old_mask;
+    sigset_t _mask;
 };
 
 // typedefs
@@ -105,6 +136,10 @@ void readline_handler(char *raw_data);
 std::string trim_left(std::string const &source);
 std::string trim_right(std::string const& source);
 std::string trim_full(std::string const& source);
+//signals
+sigset_t create_signal_mask();
+void setup_signal_handlers();
+void signal_handler(int signo);
 
 // cstr deleter
 std::function<void (char*)> cstr_deleter = [](char* str){free(str);};
@@ -119,11 +154,14 @@ int main()
 {
     std::cout << "start terminal_work_example_client" << std::endl;
     initialize();
+    setup_signal_handlers();
     rl_callback_handler_install(prompt, readline_handler);
     client_state.socketd = create_socket();
     connect(client_state.socketd);
     client_state.allow_running = true;
     client_state.allow_input = true;
+    sigset_t mask = create_signal_mask();
+    SignalSafeExecuter executer(mask);
     while (client_state.allow_running)
     {
         fd_set fds;
@@ -148,7 +186,7 @@ int main()
         }
         if (FD_ISSET(client_state.socketd, &fds))
         {
-            Message message = read_message(client_state.socketd);
+            Message message = executer.execute<Message>([](){return read_message(client_state.socketd);});
             ProcessResult result = process_message(message);
             client_state.allow_running = result.allow_running;
             client_state.allow_input = result.allow_input;
@@ -170,11 +208,11 @@ void initialize()
     //rl_attempted_completion_function = completion_func;
     //rl_sort_completion_matches = 0;
     //rl_ignore_completion_duplicates = 0;
-    /*// singnals
+    // singnals
     rl_catch_signals = 0;
     rl_catch_sigwinch = 0;
     // absent in readline 6.2
-    // rl_change_environment = 0;*/
+    // rl_change_environment = 0;
      // readline history
     using_history();
 }
@@ -327,7 +365,9 @@ void readline_handler(char *raw_data)
     if (result == 0 || result == 1)
         add_history(expansion);
     std::string message(expansion_ptr.get());
-    write_message(client_state.socketd, message);
+    sigset_t mask = create_signal_mask();
+    SignalSafeExecuter executer(mask);
+    executer.execute([&message](){write_message(client_state.socketd, message);});
     rl_callback_handler_remove();
     client_state.allow_input = false;
 }
@@ -350,4 +390,70 @@ std::string trim_full(std::string const& source)
 {
     std::string trim_left_result = trim_left(source);
     return trim_right(trim_left_result);
+}
+
+sigset_t create_signal_mask()
+{
+    sigset_t mask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGQUIT);
+    sigaddset(&mask, SIGTERM);
+    sigaddset(&mask, SIGHUP);
+    sigaddset(&mask, SIGALRM);
+    sigaddset(&mask, SIGTSTP);
+    sigaddset(&mask, SIGTTIN);
+    sigaddset(&mask, SIGTTOU);
+    sigaddset(&mask, SIGWINCH);
+    return mask;
+}
+
+void setup_signal_handlers()
+{
+    sigset_t old_mask;
+    sigset_t mask = create_signal_mask();
+    pthread_sigmask(SIG_SETMASK, &mask, &old_mask);
+    struct sigaction int_action;
+    int_action.sa_handler = signal_handler;
+    int_action.sa_mask = mask;
+    sigaction(SIGINT, &int_action, nullptr);
+    struct sigaction quit_action;
+    quit_action.sa_handler = signal_handler;
+    quit_action.sa_mask = mask;
+    sigaction(SIGQUIT, &quit_action, nullptr);
+    struct sigaction winch_action;
+    winch_action.sa_handler = signal_handler;
+    winch_action.sa_mask = mask;
+    sigaction(SIGWINCH, &winch_action, nullptr);
+    struct sigaction tstp_action;
+    tstp_action.sa_handler = signal_handler;
+    tstp_action.sa_mask = mask;
+    sigaction(SIGTSTP, &tstp_action, nullptr);
+    pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);
+}
+
+void signal_handler(int signo)
+{
+    if (signo == SIGINT)
+    {
+        write_message(client_state.socketd, "stop");
+        //rl_callback_handler_remove();
+        //rl_callback_handler_install(prompt, readline_handler);
+    }
+    if (signo == SIGQUIT)
+    {
+        std::cout << "^\\" << std::endl;
+        rl_callback_handler_remove();
+        client_state.allow_running = false;
+    }
+    if (signo == SIGWINCH)
+    {
+        // ??
+    }
+    if (signo == SIGTSTP)
+    {
+        std::cout << "^Z" << std::endl;
+        rl_callback_handler_remove();
+        client_state.allow_running = false;
+    }
 }

@@ -23,17 +23,15 @@ start_server(Port, Timeout) ->
 server_event_loop(State) ->
     Socket = State#server_state.socket,
     Timeout = State#server_state.timeout,
-    Command = State#server_state.command,
     receive
         {'EXIT', _Command, normal} ->
             io:format("command's normal exit~n", []),
             server_event_loop(State);
-        {'EXIT', Command, killed} ->
+        {'EXIT', _Command, killed} ->
             io:format("command's termination~n", []),
             gen_tcp:send(Socket, term_to_binary(?END)),
-            UpdatedState = State#server_state{command = none},
-            server_event_loop(UpdatedState);
-        {'EXIT', Command, Reason} ->
+            server_event_loop(State);
+        {'EXIT', _Command, Reason} ->
             io:format("command's exit by reason: ~p~n", [Reason]),
             gen_tcp:send(Socket, term_to_binary({result, "command execution error\n"})),
             gen_tcp:send(Socket, term_to_binary(?END)),
