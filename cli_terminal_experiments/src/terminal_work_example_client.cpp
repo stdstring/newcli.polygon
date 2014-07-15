@@ -335,6 +335,7 @@ ProcessResult process_message(Message const &message)
     if (type.compare("end") == 0)
     {
         rl_callback_handler_install(prompt, readline_handler);
+        setup_signal_handlers();
         return ProcessResult(true, true);
     }
     if (type.compare("timeout") == 0)
@@ -369,6 +370,7 @@ void readline_handler(char *raw_data)
     SignalSafeExecuter executer(mask);
     executer.execute([&message](){write_message(client_state.socketd, message);});
     rl_callback_handler_remove();
+    setup_signal_handlers();
     client_state.allow_input = false;
 }
 
@@ -442,7 +444,7 @@ void signal_handler(int signo)
     }
     if (signo == SIGQUIT)
     {
-        std::cout << "^\\" << std::endl;
+        //std::cout << "^\\" << std::endl;
         rl_callback_handler_remove();
         client_state.allow_running = false;
     }
@@ -452,7 +454,7 @@ void signal_handler(int signo)
     }
     if (signo == SIGTSTP)
     {
-        std::cout << "^Z" << std::endl;
+        //std::cout << "^Z" << std::endl;
         rl_callback_handler_remove();
         client_state.allow_running = false;
     }
