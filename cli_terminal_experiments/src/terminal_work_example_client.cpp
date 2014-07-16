@@ -414,37 +414,77 @@ void setup_signal_handlers()
 {
     sigset_t old_mask;
     sigset_t mask = create_signal_mask();
-    pthread_sigmask(SIG_SETMASK, &mask, &old_mask);
+    if (pthread_sigmask(SIG_SETMASK, &mask, &old_mask) != 0)
+    {
+        std::cout << "error in pthread_sigmask" << std::endl;
+        rl_deprep_terminal();
+        std::exit(-1);
+    }
     struct sigaction int_action;
     int_action.sa_handler = signal_handler;
     int_action.sa_mask = mask;
-    sigaction(SIGINT, &int_action, nullptr);
+    if (sigaction(SIGINT, &int_action, nullptr) == -1)
+    {
+        std::cout << "error in sigaction(SIGINT, ...)" << std::endl;
+        rl_deprep_terminal();
+        std::exit(-1);
+    }
     struct sigaction quit_action;
     quit_action.sa_handler = signal_handler;
     quit_action.sa_mask = mask;
-    sigaction(SIGQUIT, &quit_action, nullptr);
+    if (sigaction(SIGQUIT, &quit_action, nullptr) == -1)
+    {
+        std::cout << "error in sigaction(SIGQUIT, ...)" << std::endl;
+        rl_deprep_terminal();
+        std::exit(-1);
+    }
     struct sigaction winch_action;
     winch_action.sa_handler = signal_handler;
     winch_action.sa_mask = mask;
-    sigaction(SIGWINCH, &winch_action, nullptr);
+    if (sigaction(SIGWINCH, &winch_action, nullptr) == -1)
+    {
+        std::cout << "error in sigaction(SIGWINCH, ...)" << std::endl;
+        rl_deprep_terminal();
+        std::exit(-1);
+    }
     struct sigaction tstp_action;
     tstp_action.sa_handler = signal_handler;
     tstp_action.sa_mask = mask;
-    sigaction(SIGTSTP, &tstp_action, nullptr);
-    pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);
+    if (sigaction(SIGTSTP, &tstp_action, nullptr) == -1)
+    {
+        std::cout << "error in sigaction(SIGTSTP, ...)" << std::endl;
+        rl_deprep_terminal();
+        std::exit(-1);
+    }
+    if (pthread_sigmask(SIG_SETMASK, &old_mask, nullptr) != 0)
+    {
+        std::cout << "error in pthread_sigmask" << std::endl;
+        rl_deprep_terminal();
+        std::exit(-1);
+    }
 }
 
 void signal_handler(int signo)
 {
     if (signo == SIGINT)
     {
-        write_message(client_state.socketd, "stop");
-        //rl_callback_handler_remove();
-        //rl_callback_handler_install(prompt, readline_handler);
+        if (client_state.allow_input)
+        {
+            std::cout << "^C" << std::endl;
+            rl_callback_handler_remove();
+            rl_callback_handler_install(prompt, readline_handler);
+            setup_signal_handlers();
+        }
+        else
+        {
+            std::cout << std::endl;
+            write_message(client_state.socketd, "stop");
+        }
     }
     if (signo == SIGQUIT)
     {
-        //std::cout << "^\\" << std::endl;
+        if (client_state.allow_input)
+            std::cout << "^\\" << std::endl;
         rl_callback_handler_remove();
         client_state.allow_running = false;
     }
@@ -454,7 +494,8 @@ void signal_handler(int signo)
     }
     if (signo == SIGTSTP)
     {
-        //std::cout << "^Z" << std::endl;
+        if (client_state.allow_input)
+            std::cout << "^Z" << std::endl;
         rl_callback_handler_remove();
         client_state.allow_running = false;
     }
