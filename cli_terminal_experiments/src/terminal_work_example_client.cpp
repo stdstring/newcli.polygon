@@ -13,8 +13,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-// select
-#include <sys/select.h>
+// poll
+#include <poll.h>
 // signal
 #include <signal.h>
 // erlang terms
@@ -162,13 +162,17 @@ int main()
     client_state.allow_input = true;
     sigset_t mask = create_signal_mask();
     SignalSafeExecuter executer(mask);
+    // pollfd
+    struct pollfd fdarray[2];
+    fdarray[0].fd = STDIN_FILENO;
+    fdarray[0].events = POLLIN;
+    fdarray[1].fd = client_state.socketd;
+    fdarray[1].events = POLLIN;
     while (client_state.allow_running)
     {
-        fd_set fds;
-        FD_ZERO(&fds);
-        FD_SET(STDIN_FILENO, &fds);
-        FD_SET(client_state.socketd, &fds);
-        int result = select(FD_SETSIZE, &fds, nullptr, nullptr, nullptr);
+        fdarray[0].revents = 0;
+        fdarray[1].revents = 0;
+        int result = poll(fdarray, 2, -1);
         if (result == -1)
         {
             if (errno != EINTR)
@@ -179,17 +183,29 @@ int main()
             }
             continue;
         }
-        if (FD_ISSET(STDIN_FILENO, &fds))
+        if ((fdarray[0].revents & POLLIN) == POLLIN)
         {
             if (client_state.allow_input)
                 rl_callback_read_char();
         }
-        if (FD_ISSET(client_state.socketd, &fds))
+        if ((fdarray[0].revents & POLLERR) == POLLERR)
+        {
+            std::cout << "error in poll from STDIN_FILENO" << std::endl;
+            rl_deprep_terminal();
+            std::exit(-1);
+        }
+        if ((fdarray[1].revents & POLLIN) == POLLIN)
         {
             Message message = executer.execute<Message>([](){return read_message(client_state.socketd);});
             ProcessResult result = process_message(message);
             client_state.allow_running = result.allow_running;
             client_state.allow_input = result.allow_input;
+        }
+        if ((fdarray[1].revents & POLLERR) == POLLERR)
+        {
+            std::cout << "error in poll from socket" << std::endl;
+            rl_deprep_terminal();
+            std::exit(-1);
         }
     }
     std::cout << "finish terminal_work_example_client" << std::endl;
