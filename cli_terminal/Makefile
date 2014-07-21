@@ -4,7 +4,9 @@ LFLAGS=
 
 BIN=bin
 
-INCLUDE=
+HEADER=include/message.h\
+       include/signal_mask_holder.h\
+       include/signal_safe_executer.h
 
 SOURCE=src/cli_terminal.cpp
 
@@ -15,7 +17,7 @@ EXTERNAL_LIB=-L/usr/lib/x86_64-linux-gnu -lreadline -lhistory\
              -lpthread
 
 all: pre_build
-	$(CC) $(CFLAGS) $(EXTERNAL_INCLUDE) -o $(BIN)/cli_terminal $(INCLUDE) $(SOURCE) $(EXTERNAL_LIB)
+	$(CC) $(CFLAGS) $(EXTERNAL_INCLUDE) -o $(BIN)/cli_terminal $(HEADER) $(SOURCE) $(EXTERNAL_LIB)
 
 pre_build: clean
 	$(shell if [ ! -d "./$(BIN)/" ]; then mkdir $(BIN); fi)
