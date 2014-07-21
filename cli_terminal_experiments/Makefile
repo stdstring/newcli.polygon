@@ -11,7 +11,7 @@ BIN=bin
 #%.o: %.cpp
 #	$(CC) $(CFLAGS) $< -o $@
 
-all: pre_build $(SOURCE)
+all: pre_build
 	$(CC) $(CFLAGS) -o $(BIN)/terminal_work_example_1 src/terminal_work_example_1.cpp
 	$(CC) $(CFLAGS) -I/usr/include/readline/ -o $(BIN)/terminal_work_example_2 src/terminal_work_example_2.cpp -L/usr/lib/x86_64-linux-gnu -lreadline -lhistory
 	erlc -Werror -b beam -o $(BIN) src/terminal_work_example_heavy_command.erl
@@ -27,4 +27,3 @@ pre_build: clean
 
 clean:
 	$(shell rm -rf $(BIN)/*)
-

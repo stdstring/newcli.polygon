@@ -1,4 +1,4 @@
-SOURCE_SUBDIRS = cli_common cli_backend cli_frontend cli_terminal_experiments
+SOURCE_SUBDIRS = cli_common cli_backend cli_frontend cli_terminal
 TEST_SUBDIRS = cli_common_tests cli_backend_tests cli_frontend_tests
 
 BACKEND_EBIN = cli_backend/ebin
