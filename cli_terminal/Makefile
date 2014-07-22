@@ -4,7 +4,11 @@ LFLAGS=
 
 BIN=bin
 
-HEADER=include/message.h\
+HEADER=include/client_state.h\
+       include/cterm_unique_ptr.h\
+       include/eterm_unique_ptr.h\
+       include/message.h\
+       include/message_serialization.h\
        include/signal_mask_holder.h\
        include/signal_safe_executer.h
 
