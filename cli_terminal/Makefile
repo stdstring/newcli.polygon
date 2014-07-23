@@ -12,9 +12,11 @@ HEADER=include/client_state.h\
        include/signal_mask_holder.h\
        include/signal_safe_executer.h
 
-SOURCE=src/cli_terminal.cpp
+SOURCE=src/message_serialization.cpp\
+       src/cli_terminal.cpp
 
-EXTERNAL_INCLUDE=-I/usr/include/readline/
+EXTERNAL_INCLUDE=-I/usr/include/readline/\
+                 -Iinclude/
 
 EXTERNAL_LIB=-L/usr/lib/x86_64-linux-gnu -lreadline -lhistory\
              -L/usr/lib/erlang/lib/erl_interface-3.7.13/lib -lerl_interface -lei\
