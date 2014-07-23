@@ -5,8 +5,8 @@ LFLAGS=
 BIN=bin
 
 HEADER=include/client_state.h\
-       include/cterm_unique_ptr.h\
-       include/eterm_unique_ptr.h\
+       include/cterm_ptr.h\
+       include/eterm_ptr.h\
        include/message.h\
        include/message_serialization.h\
        include/signal_mask_holder.h\
