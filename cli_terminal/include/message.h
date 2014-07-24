@@ -22,10 +22,10 @@ struct CurrentStateRequest
 {
 };
 
-struct ExpansionRequest
+struct ExtensionRequest
 {
 public:
-    ExpansionRequest(std::string const &command_line_value) : command_line(command_line_value) {}
+    ExtensionRequest(std::string const &command_line_value) : command_line(command_line_value) {}
 
     std::string command_line;
 };
@@ -46,12 +46,12 @@ public:
     std::string data;
 };
 
-class ExpansionResponse
+class ExtensionResponse
 {
 public:
-    ExpansionResponse(std::vector<std::string> const &expansions_value) : expansions(expansions_value) {}
+    ExtensionResponse(std::vector<std::string> const &extension_value) : extensions(extension_value) {}
 
-    std::vector<std::string> expansions;
+    std::vector<std::string> extensions;
 };
 
 #endif
