@@ -9,11 +9,13 @@ HEADER=include/client_state.h\
        include/eterm_ptr.h\
        include/message.h\
        include/message_serialization.h\
+       include/server_interaction.h\
        include/signal_mask_holder.h\
        include/signal_safe_executer.h
 
-SOURCE=src/message_serialization.cpp\
-       src/cli_terminal.cpp
+SOURCE=src/cli_terminal.cpp\
+       src/message_serialization.cpp\
+       src/server_interaction.cpp
 
 EXTERNAL_INCLUDE=-I/usr/include/readline/\
                  -Iinclude/
