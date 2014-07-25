@@ -24,7 +24,7 @@
 byte_array_ptr serialize(eterm_ptr const &eterm)
 {
     int length = erl_term_len(eterm.get());
-    byte_array_ptr buffer(new unsigned char[length]);
+    byte_array_ptr buffer(new unsigned char[length], length);
     if (erl_encode(eterm.get(), (buffer.get())) == 0)
         return byte_array_ptr();
     return buffer;
