@@ -10,4 +10,7 @@ template <typename T> void write_message(int socketd, T const &message);
 
 template <typename TIn, typename TOut> TOut sync_exchange(int socketd, TIn const &request);
 
+class send_error
+{};
+
 #endif
