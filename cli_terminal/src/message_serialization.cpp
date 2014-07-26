@@ -6,21 +6,6 @@
 #include "message.h"
 #include "message_serialization.h"
 
-/*#define LENGTH_SIZE 4*/
-
-/*byte_array_ptr serialize(eterm_ptr const &eterm)
-{
-    int length = erl_term_len(eterm.get());
-    // buffer size = 4-byte length + term length
-    int total_length = length + LENGTH_SIZE;
-    byte_array_ptr buffer(new unsigned char[total_length]);
-    if (erl_encode(eterm.get(), (buffer.get() + LENGTH_SIZE)) == 0)
-        return byte_array_ptr();
-    int length_binary = htonl(length);
-    memcpy(buffer.get(), &length_binary, 4);
-    return buffer;
-}*/
-
 byte_array_ptr serialize(eterm_ptr const &eterm)
 {
     int length = erl_term_len(eterm.get());

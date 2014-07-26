@@ -13,4 +13,7 @@ template <typename TIn, typename TOut> TOut sync_exchange(int socketd, TIn const
 class send_error
 {};
 
+class recv_error
+{};
+
 #endif
