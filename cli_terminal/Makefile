@@ -11,11 +11,13 @@ HEADER=include/client_state.h\
        include/message_serialization.h\
        include/server_interaction.h\
        include/signal_mask_holder.h\
-       include/signal_safe_executer.h
+       include/signal_safe_executer.h\
+       include/string_utils.h
 
 SOURCE=src/cli_terminal.cpp\
        src/message_serialization.cpp\
-       src/server_interaction.cpp
+       src/server_interaction.cpp\
+       src/string_utils.cpp
 
 EXTERNAL_INCLUDE=-I/usr/include/readline/\
                  -Iinclude/
