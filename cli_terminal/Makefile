@@ -14,12 +14,14 @@ HEADER=include/client_state.h\
        include/signal_mask_holder.h\
        include/signal_safe_executer.h\
        include/signal_utils.h\
+       include/socket_utils.h\
        include/string_utils.h
 
 SOURCE=src/cli_terminal.cpp\
        src/message_serialization.cpp\
        src/server_interaction.cpp\
        src/signal_utils.cpp\
+       src/socket_utils.cpp\
        src/string_utils.cpp
 
 EXTERNAL_INCLUDE=-I/usr/include/readline/\

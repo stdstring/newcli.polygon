@@ -14,7 +14,7 @@
 #include <signal.h>
 // readline library
 #include <readline.h>
-#include <history.h>
+#include <history.h> 
 
 void init_readline();
 char* duplicate_str(std::string const &source);
