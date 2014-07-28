@@ -9,6 +9,7 @@ HEADER=include/client_state.h\
        include/eterm_ptr.h\
        include/message.h\
        include/message_serialization.h\
+       include/resource_holder.h\
        include/server_interaction.h\
        include/signal_mask_holder.h\
        include/signal_safe_executer.h\
