@@ -1,6 +1,7 @@
 #include <array>
 #include <exception>
 #include <unordered_map>
+#include <vector>
 #include <erl_interface.h>
 #include <history.h>
 #include <poll.h>
@@ -9,7 +10,10 @@
 #include <unistd.h>
 
 #include "client_state.h"
+#include "message.h"
+#include "process_result.h"
 #include "resource_holder.h"
+#include "server_interaction.h"
 #include "signal_safe_executer.h"
 #include "signal_utils.h"
 #include "socket_utils.h"
@@ -19,6 +23,8 @@
 #define FD_COUNT 2
 #define STDIN_INDEX 0
 #define SOCKETD_INDEX 1
+
+typedef std::vector<MessageResponse> MessageResponseVector;
 
 class poll_error
 {};
@@ -35,6 +41,7 @@ void readline_handler(char *raw_data);
 char** completion_func(const char *text, int start, int end);
 // signals
 void signal_handler(int signo);
+// message
 
 // global variables
 ClientState client_state;
@@ -69,6 +76,9 @@ int main()
             throw poll_error();
         if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
         {
+            MessageResponse r = read_message<MessageResponse>(6);
+            //MessageResponseVector responses = read_messages<MessageResponse>(socket_holder.get());
+            //MessageResponseVector responses = executer.execute<MessageResponseVector>([&socket_holder](){ return read_messages<MessageResponse>(socket_holder.get()); });
             /*Message message = executer.execute<Message>([](){return read_message(client_state.socketd);});
             ProcessResult result = process_message(message);
             client_state.allow_running = result.allow_running;
