@@ -53,6 +53,9 @@ int main()
     int socketd = socket_holder.get();
     connect(socketd, PORT);
     MessageResponse init_state_response = sync_exchange<CurrentStateRequest, MessageResponse>(socketd, CurrentStateRequest());
+    /*if (0 != init_state_response.type.compare(CURRENT_STATE))
+        throw bad_message();*/
+    client_state.prompt = init_state_response.data;
     client_state.socketd = socketd;
     client_state.execution_state = EX_CONTINUE;
     client_state.editor_state = ED_INPUT;
@@ -62,9 +65,9 @@ int main()
     {
         clear_fdarray(fdarray);
         int poll_result = poll(fdarray.data(), FD_COUNT, -1);
-        if (poll_result == -1)
+        if (-1 == poll_result)
         {
-            if (errno != EINTR)
+            if (EINTR != errno)
                 throw poll_error();
             continue;
         }
