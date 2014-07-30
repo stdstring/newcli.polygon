@@ -26,6 +26,7 @@
 #define SOCKETD_INDEX 1
 
 typedef std::vector<MessageResponse> MessageResponseVector;
+typedef std::vector<MessageResponse>::const_iterator MessageResponseIterator;
 
 // init
 void initialize();
@@ -150,4 +151,11 @@ void signal_handler(int signo)
 {}
 
 ProcessResult process_responses(MessageResponseVector const &responses)
-{}
+{
+    ExecutionState execution_state = EX_CONTINUE;
+    EditorState editor_state = ED_COMMAND;
+    MessageResponseIterator end = responses.end();
+    for(MessageResponseIterator iterator = responses.begin(); iterator != end; ++iterator)
+    {}
+    return ProcessResult(execution_state, editor_state);
+}
