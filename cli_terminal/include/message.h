@@ -4,6 +4,15 @@
 #include <string>
 #include <vector>
 
+#define COMMAND_START "command"
+#define COMMAND_OUT "command_out"
+#define COMMAND_ERR "command_err"
+#define COMMAND_END "end"
+#define COMMAND_STOP "interrupt"
+#define CURRENT_STATE "current_state"
+#define EXTENSION "extension"
+#define EXIT "exit"
+
 // requests
 
 struct CommandRequest

@@ -35,8 +35,8 @@ byte_array_ptr serialize(InterruptRequest const &request);
 byte_array_ptr serialize(CurrentStateRequest const &request);
 byte_array_ptr serialize(ExtensionRequest const &request);
 
-template <typename T> T deserialize(byte_array_ptr source_data);
-template<> MessageResponse deserialize(byte_array_ptr source_data);
-template<> ExtensionResponse deserialize(byte_array_ptr source_data);
+template <typename T> T deserialize(byte_array_ptr const &source_data);
+template<> MessageResponse deserialize(byte_array_ptr const & source_data);
+template<> ExtensionResponse deserialize(byte_array_ptr const & source_data);
 
 #endif

@@ -7,6 +7,7 @@ BIN=bin
 HEADER=include/client_state.h\
        include/cterm_ptr.h\
        include/eterm_ptr.h\
+       include/exception_def.h\
        include/message.h\
        include/message_serialization.h\
        include/process_result.h\

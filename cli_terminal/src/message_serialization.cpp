@@ -34,25 +34,25 @@ byte_array_ptr serialize(const char *type, const char *body)
 
 byte_array_ptr serialize(CommandRequest const &request)
 {
-    return serialize("command", request.command_line.c_str());
+    return serialize(COMMAND_START, request.command_line.c_str());
 }
 
 byte_array_ptr serialize(InterruptRequest const &request)
 {
-    return serialize("interrupt");
+    return serialize(COMMAND_STOP);
 }
 
 byte_array_ptr serialize(CurrentStateRequest const &request)
 {
-    return serialize("current_state");
+    return serialize(CURRENT_STATE);
 }
 
 byte_array_ptr serialize(ExtensionRequest const &request)
 {
-    return serialize("extension", request.command_line.c_str());
+    return serialize(EXTENSION, request.command_line.c_str());
 }
 
-template<> MessageResponse deserialize(byte_array_ptr source_data)
+template<> MessageResponse deserialize(byte_array_ptr const &source_data)
 {
     eterm_ptr eterm(erl_decode(source_data.get()));
     /*if (!ERL_IS_TUPLE(eterm.get()))
@@ -69,7 +69,7 @@ template<> MessageResponse deserialize(byte_array_ptr source_data)
     return MessageResponse(type, data);
 };
 
-template<> ExtensionResponse deserialize(byte_array_ptr source_data)
+template<> ExtensionResponse deserialize(byte_array_ptr  const &source_data)
 {
     eterm_ptr eterm(erl_decode(source_data.get()));
     /*if (!ERL_IS_TUPLE(eterm.get()))
@@ -78,7 +78,7 @@ template<> ExtensionResponse deserialize(byte_array_ptr source_data)
     if (!type)
         throw bad_message();
     std::string type(ERL_ATOM_PTR(type_term.get()));
-    if (type.compare("expansion") != 0)
+    if (type.compare(EXTENSION) != 0)
         throw bad_message();*/
     eterm_ptr data_term(erl_element(2, eterm.get()));
     /*if (!data)

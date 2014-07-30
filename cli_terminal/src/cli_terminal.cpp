@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "client_state.h"
+#include "exception_def.h"
 #include "message.h"
 #include "process_result.h"
 #include "resource_holder.h"
@@ -26,9 +27,6 @@
 
 typedef std::vector<MessageResponse> MessageResponseVector;
 
-class poll_error
-{};
-
 // init
 void initialize();
 std::unordered_map<int, signal_handler_t> get_signal_handlers();
@@ -42,6 +40,7 @@ char** completion_func(const char *text, int start, int end);
 // signals
 void signal_handler(int signo);
 // message
+ProcessResult process_responses(MessageResponseVector const &responses);
 
 // global variables
 ClientState client_state;
@@ -51,12 +50,14 @@ int main()
     initialize();
     setup_signal_handlers(get_signal_handlers());
     ResourceHolder<int> socket_holder(create_socket(), [](int socketd){ close(socketd); });
-    connect(socket_holder.get(), PORT);
-    client_state.socketd = socket_holder.get();
+    int socketd = socket_holder.get();
+    connect(socketd, PORT);
+    MessageResponse init_state_response = sync_exchange<CurrentStateRequest, MessageResponse>(socketd, CurrentStateRequest());
+    client_state.socketd = socketd;
     client_state.execution_state = EX_CONTINUE;
     client_state.editor_state = ED_INPUT;
     SignalSafeExecuter executer(create_signal_mask());
-    std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socket_holder.get());
+    std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
     while(EX_CONTINUE == client_state.execution_state)
     {
         clear_fdarray(fdarray);
@@ -76,13 +77,10 @@ int main()
             throw poll_error();
         if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
         {
-            MessageResponse r = read_message<MessageResponse>(6);
-            //MessageResponseVector responses = read_messages<MessageResponse>(socket_holder.get());
-            //MessageResponseVector responses = executer.execute<MessageResponseVector>([&socket_holder](){ return read_messages<MessageResponse>(socket_holder.get()); });
-            /*Message message = executer.execute<Message>([](){return read_message(client_state.socketd);});
-            ProcessResult result = process_message(message);
-            client_state.allow_running = result.allow_running;
-            client_state.allow_input = result.allow_input;*/
+            MessageResponseVector responses = executer.execute<MessageResponseVector>([&socketd](){ return read_messages<MessageResponse>(socketd); });
+            ProcessResult result = process_responses(responses);
+            client_state.execution_state = result.execution_state;
+            client_state.editor_state = result.editor_state;
         }
         if (POLLERR == (fdarray[SOCKETD_INDEX].revents & POLLERR))
             throw poll_error();
@@ -146,4 +144,7 @@ char** completion_func(const char *text, int start, int end)
 {}
 
 void signal_handler(int signo)
+{}
+
+ProcessResult process_responses(MessageResponseVector const &responses)
 {}
