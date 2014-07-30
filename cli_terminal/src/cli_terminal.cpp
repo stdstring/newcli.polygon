@@ -1,7 +1,11 @@
 #include <array>
 #include <exception>
+#include <functional>
+#include <iostream>
+#include <string>
 #include <unordered_map>
 #include <vector>
+
 #include <erl_interface.h>
 #include <history.h>
 #include <poll.h>
@@ -27,11 +31,13 @@
 
 typedef std::vector<MessageResponse> MessageResponseVector;
 typedef std::vector<MessageResponse>::const_iterator MessageResponseIterator;
+typedef std::function<EditorState(MessageResponse, ClientState&)> ResponseHandler;
 
 // init
 void initialize();
 std::unordered_map<int, signal_handler_t> get_signal_handlers();
 std::array<struct pollfd, FD_COUNT> create_fdarray(int socketd);
+std::unordered_map<std::string, ResponseHandler> get_response_handlers();
 // cleanup
 void clear_fdarray(std::array<struct pollfd, FD_COUNT> &fdarray);
 void cleanup();
@@ -41,7 +47,7 @@ char** completion_func(const char *text, int start, int end);
 // signals
 void signal_handler(int signo);
 // message
-ProcessResult process_responses(MessageResponseVector const &responses);
+ProcessResult process_responses(MessageResponseVector const &responses, ClientState &state);
 
 // global variables
 ClientState client_state;
@@ -82,7 +88,7 @@ int main()
         if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
         {
             MessageResponseVector responses = executer.execute<MessageResponseVector>([&socketd](){ return read_messages<MessageResponse>(socketd); });
-            ProcessResult result = process_responses(responses);
+            ProcessResult result = process_responses(responses, client_state);
             client_state.execution_state = result.execution_state;
             client_state.editor_state = result.editor_state;
         }
@@ -129,6 +135,15 @@ std::array<struct pollfd, FD_COUNT> create_fdarray(int socketd)
     return fdarray;
 }
 
+std::unordered_map<std::string, ResponseHandler> get_response_handlers()
+{
+    return {
+        {COMMAND_OUT, [](MessageResponse response, ClientState &state){ std::cout << response.data; return ED_COMMAND; }},
+        {COMMAND_ERR, [](MessageResponse response, ClientState &state){ std::cerr << response.data; return ED_COMMAND; }},
+        {COMMAND_END, [](MessageResponse response, ClientState &state){ state.prompt = response.data; return ED_INPUT; }}
+    };
+}
+
 void clear_fdarray(std::array<struct pollfd, FD_COUNT> &fdarray)
 {
     fdarray[STDIN_INDEX].revents = 0;
@@ -150,12 +165,16 @@ char** completion_func(const char *text, int start, int end)
 void signal_handler(int signo)
 {}
 
-ProcessResult process_responses(MessageResponseVector const &responses)
+ProcessResult process_responses(MessageResponseVector const &responses, ClientState &state)
 {
-    ExecutionState execution_state = EX_CONTINUE;
     EditorState editor_state = ED_COMMAND;
-    MessageResponseIterator end = responses.end();
-    for(MessageResponseIterator iterator = responses.begin(); iterator != end; ++iterator)
-    {}
-    return ProcessResult(execution_state, editor_state);
+    std::unordered_map<std::string, ResponseHandler> response_handlers = get_response_handlers();
+    for(MessageResponse response : responses)
+    {
+        ResponseHandler const &handler = response_handlers.at(response.type);
+        EditorState handler_result = handler(response, state);
+        if (ED_INPUT == handler_result)
+            editor_state = ED_INPUT;
+    }
+    return ProcessResult(EX_CONTINUE, editor_state);
 }
