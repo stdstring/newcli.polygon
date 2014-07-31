@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #include "client_state.h"
+#include "cterm_ptr.h"
 #include "exception_def.h"
 #include "message.h"
 #include "process_result.h"
@@ -22,6 +23,7 @@
 #include "signal_safe_executer.h"
 #include "signal_utils.h"
 #include "socket_utils.h"
+#include "string_utils.h"
 
 // TODO (std_string) : think about config port number
 #define PORT 22222
@@ -30,13 +32,14 @@
 #define SOCKETD_INDEX 1
 
 typedef std::vector<MessageResponse> MessageResponseVector;
-typedef std::vector<MessageResponse>::const_iterator MessageResponseIterator;
+typedef std::function<ExecutionState(std::string const&)> RequestHandler;
 typedef std::function<EditorState(MessageResponse, ClientState&)> ResponseHandler;
 
 // init
 void initialize();
 std::unordered_map<int, signal_handler_t> get_signal_handlers();
 std::array<struct pollfd, FD_COUNT> create_fdarray(int socketd);
+std::unordered_map<std::string, RequestHandler> get_local_request_handlers();
 std::unordered_map<std::string, ResponseHandler> get_response_handlers();
 // cleanup
 void clear_fdarray(std::array<struct pollfd, FD_COUNT> &fdarray);
@@ -47,6 +50,7 @@ char** completion_func(const char *text, int start, int end);
 // signals
 void signal_handler(int signo);
 // message
+ExecutionState process_request(std::string const &request);
 ProcessResult process_responses(MessageResponseVector const &responses, ClientState &state);
 
 // global variables
@@ -135,6 +139,11 @@ std::array<struct pollfd, FD_COUNT> create_fdarray(int socketd)
     return fdarray;
 }
 
+std::unordered_map<std::string, RequestHandler> get_local_request_handlers()
+{
+    return {{"exit", [](std::string const &request){ return EX_FINISH; }}};
+}
+
 std::unordered_map<std::string, ResponseHandler> get_response_handlers()
 {
     return {
@@ -157,13 +166,47 @@ void cleanup()
 }
 
 void readline_handler(char *raw_data)
-{}
+{
+    if (nullptr == raw_data)
+    {
+        client_state.execution_state = EX_FINISH;
+        rl_callback_handler_remove();
+        return;
+    }
+    cterm_ptr<char> raw_data_ptr(raw_data);
+    std::string line = trim_full(raw_data_ptr.get());
+    if (line.empty())
+        return;
+    char *expansion = nullptr;
+    int result = history_expand(const_cast<char*>(line.c_str()), &expansion);
+    cterm_ptr<char> expansion_ptr(expansion);
+    if (result == 0 || result == 1)
+        add_history(expansion);
+    std::string request(expansion_ptr.get());
+    ExecutionState execution_state = process_request(request);
+    rl_callback_handler_remove();
+    setup_signal_handlers(get_signal_handlers());
+    client_state.execution_state = execution_state;
+    client_state.editor_state = ED_COMMAND;
+}
 
 char** completion_func(const char *text, int start, int end)
 {}
 
 void signal_handler(int signo)
 {}
+
+ExecutionState process_request(std::string const &request)
+{
+    std::unordered_map<std::string, RequestHandler> local_handlers = get_local_request_handlers();
+    std::unordered_map<std::string, RequestHandler>::const_iterator iterator = local_handlers.find(request);
+    if (local_handlers.end() != iterator)
+        return iterator->second(request);
+    sigset_t mask = create_signal_mask();
+    SignalSafeExecuter executer(mask);
+    executer.execute([&request](){ write_message(client_state.socketd, CommandRequest(request)); });
+    return EX_CONTINUE;
+}
 
 ProcessResult process_responses(MessageResponseVector const &responses, ClientState &state)
 {
