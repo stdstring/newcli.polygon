@@ -191,7 +191,19 @@ void readline_handler(char *raw_data)
 }
 
 char** completion_func(const char *text, int start, int end)
-{}
+{
+    std::string line = trim_left(text);
+    sigset_t mask = create_signal_mask();
+    SignalSafeExecuter executer(mask);
+    ExtensionResponse response = sync_exchange<ExtensionRequest, ExtensionResponse>(client_state.socketd, ExtensionRequest(line));
+    std::vector<std::string> extensions = response.extensions;
+    // NULL terminated array
+    char** completion_array = (char**) malloc((extensions.size() + 1) * sizeof(char*));
+    for(size_t index = 0; index < extensions.size(); ++index)
+    {}
+    completion_array[extensions.size()] = nullptr;
+    return completion_array;
+}
 
 void signal_handler(int signo)
 {}
