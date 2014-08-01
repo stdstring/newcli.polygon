@@ -32,27 +32,27 @@ byte_array_ptr serialize(const char *type, const char *body)
     return serialize(message);
 }
 
-byte_array_ptr serialize(CommandRequest const &request)
+byte_array_ptr serialize(command_request const &request)
 {
     return serialize(COMMAND_START, request.command_line.c_str());
 }
 
-byte_array_ptr serialize(InterruptRequest const &request)
+byte_array_ptr serialize(interrupt_request const &request)
 {
     return serialize(COMMAND_STOP);
 }
 
-byte_array_ptr serialize(CurrentStateRequest const &request)
+byte_array_ptr serialize(current_state_request const &request)
 {
     return serialize(CURRENT_STATE);
 }
 
-byte_array_ptr serialize(ExtensionRequest const &request)
+byte_array_ptr serialize(extension_request const &request)
 {
     return serialize(EXTENSION, request.command_line.c_str());
 }
 
-template<> MessageResponse deserialize(byte_array_ptr const &source_data)
+template<> message_response deserialize(byte_array_ptr const &source_data)
 {
     eterm_ptr eterm(erl_decode(source_data.get()));
     /*if (!ERL_IS_TUPLE(eterm.get()))
@@ -66,10 +66,10 @@ template<> MessageResponse deserialize(byte_array_ptr const &source_data)
     std::string type(ERL_ATOM_PTR(type_term.get()));
     cterm_ptr<char> data_ptr(erl_iolist_to_string(data_term.get()));
     std::string data(data_ptr.get());
-    return MessageResponse(type, data);
+    return message_response(type, data);
 };
 
-template<> ExtensionResponse deserialize(byte_array_ptr  const &source_data)
+template<> extension_response deserialize(byte_array_ptr  const &source_data)
 {
     eterm_ptr eterm(erl_decode(source_data.get()));
     /*if (!ERL_IS_TUPLE(eterm.get()))
@@ -95,5 +95,5 @@ template<> ExtensionResponse deserialize(byte_array_ptr  const &source_data)
         extension_list.push_back(std::string(extension_data_ptr.get()));
         list = ERL_CONS_TAIL(list);
     }
-    return ExtensionResponse(extension_list);
+    return extension_response(extension_list);
 };

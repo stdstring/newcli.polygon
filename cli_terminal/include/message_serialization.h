@@ -30,13 +30,13 @@ private:
 
 typedef array_ptr<unsigned char> byte_array_ptr;
 
-byte_array_ptr serialize(CommandRequest const &request);
-byte_array_ptr serialize(InterruptRequest const &request);
-byte_array_ptr serialize(CurrentStateRequest const &request);
-byte_array_ptr serialize(ExtensionRequest const &request);
+byte_array_ptr serialize(command_request const &request);
+byte_array_ptr serialize(interrupt_request const &request);
+byte_array_ptr serialize(current_state_request const &request);
+byte_array_ptr serialize(extension_request const &request);
 
 template <typename T> T deserialize(byte_array_ptr const &source_data);
-template<> MessageResponse deserialize(byte_array_ptr const & source_data);
-template<> ExtensionResponse deserialize(byte_array_ptr const & source_data);
+template<> message_response deserialize(byte_array_ptr const & source_data);
+template<> extension_response deserialize(byte_array_ptr const & source_data);
 
 #endif

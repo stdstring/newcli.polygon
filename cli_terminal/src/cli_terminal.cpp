@@ -31,9 +31,9 @@
 #define STDIN_INDEX 0
 #define SOCKETD_INDEX 1
 
-typedef std::vector<MessageResponse> MessageResponseVector;
+typedef std::vector<message_response> MessageResponseVector;
 typedef std::function<ExecutionState(std::string const&)> RequestHandler;
-typedef std::function<EditorState(MessageResponse, client_state&)> ResponseHandler;
+typedef std::function<EditorState(message_response, client_state&)> ResponseHandler;
 
 // init
 void initialize();
@@ -63,7 +63,7 @@ int main()
     ResourceHolder<int> socket_holder(create_socket(), [](int socketd){ close(socketd); });
     int socketd = socket_holder.get();
     connect(socketd, PORT);
-    MessageResponse init_state_response = sync_exchange<CurrentStateRequest, MessageResponse>(socketd, CurrentStateRequest());
+    message_response init_state_response = sync_exchange<current_state_request, message_response>(socketd, current_state_request());
     /*if (0 != init_state_response.type.compare(CURRENT_STATE))
         throw bad_message();*/
     cstate.prompt = init_state_response.data;
@@ -91,7 +91,7 @@ int main()
             throw poll_error();
         if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
         {
-            MessageResponseVector responses = executer.execute<MessageResponseVector>([&socketd](){ return read_messages<MessageResponse>(socketd); });
+            MessageResponseVector responses = executer.execute<MessageResponseVector>([&socketd](){ return read_messages<message_response>(socketd); });
             ProcessResult result = process_responses(responses, cstate);
             cstate.execution_state = result.execution_state;
             cstate.editor_state = result.editor_state;
@@ -147,9 +147,9 @@ std::unordered_map<std::string, RequestHandler> get_local_request_handlers()
 std::unordered_map<std::string, ResponseHandler> get_response_handlers()
 {
     return {
-        {COMMAND_OUT, [](MessageResponse response, client_state &state){ std::cout << response.data; return ED_COMMAND; }},
-        {COMMAND_ERR, [](MessageResponse response, client_state &state){ std::cerr << response.data; return ED_COMMAND; }},
-        {COMMAND_END, [](MessageResponse response, client_state &state){ state.prompt = response.data; return ED_INPUT; }}
+        {COMMAND_OUT, [](message_response response, client_state &state){ std::cout << response.data; return ED_COMMAND; }},
+        {COMMAND_ERR, [](message_response response, client_state &state){ std::cerr << response.data; return ED_COMMAND; }},
+        {COMMAND_END, [](message_response response, client_state &state){ state.prompt = response.data; return ED_INPUT; }}
     };
 }
 
@@ -195,7 +195,7 @@ char** completion_func(const char *text, int start, int end)
     std::string line = trim_left(text);
     sigset_t mask = create_signal_mask();
     SignalSafeExecuter executer(mask);
-    ExtensionResponse response = sync_exchange<ExtensionRequest, ExtensionResponse>(cstate.socketd, ExtensionRequest(line));
+    extension_response response = sync_exchange<extension_request, extension_response>(cstate.socketd, extension_request(line));
     std::vector<std::string> extensions = response.extensions;
     // NULL terminated array
     size_t extensions_size = extensions.size();
@@ -218,7 +218,7 @@ void handle_sigint()
             break;
         case ED_COMMAND:
             std::cout << std::endl;
-            write_message(cstate.socketd, InterruptRequest());
+            write_message(cstate.socketd, interrupt_request());
             break;
     }
 }
@@ -253,7 +253,7 @@ ExecutionState process_request(std::string const &request)
         return iterator->second(request);
     sigset_t mask = create_signal_mask();
     SignalSafeExecuter executer(mask);
-    executer.execute([&request](){ write_message(cstate.socketd, CommandRequest(request)); });
+    executer.execute([&request](){ write_message(cstate.socketd, command_request(request)); });
     return EX_CONTINUE;
 }
 
@@ -261,7 +261,7 @@ ProcessResult process_responses(MessageResponseVector const &responses, client_s
 {
     EditorState editor_state = ED_COMMAND;
     std::unordered_map<std::string, ResponseHandler> response_handlers = get_response_handlers();
-    for(MessageResponse response : responses)
+    for(message_response response : responses)
     {
         ResponseHandler const &handler = response_handlers.at(response.type);
         EditorState handler_result = handler(response, state);
