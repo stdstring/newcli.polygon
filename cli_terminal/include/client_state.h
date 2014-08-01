@@ -7,10 +7,10 @@ enum ExecutionState {EX_CONTINUE, EX_FINISH};
 
 enum EditorState {ED_INPUT, ED_COMMAND};
 
-struct ClientState
+struct client_state
 {
 public:
-    ClientState() : socketd(-1), execution_state(EX_CONTINUE), editor_state(ED_INPUT) {}
+    client_state() : socketd(-1), execution_state(EX_CONTINUE), editor_state(ED_INPUT) {}
 
     int socketd;
     std::string prompt;

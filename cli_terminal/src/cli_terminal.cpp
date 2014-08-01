@@ -33,7 +33,7 @@
 
 typedef std::vector<MessageResponse> MessageResponseVector;
 typedef std::function<ExecutionState(std::string const&)> RequestHandler;
-typedef std::function<EditorState(MessageResponse, ClientState&)> ResponseHandler;
+typedef std::function<EditorState(MessageResponse, client_state&)> ResponseHandler;
 
 // init
 void initialize();
@@ -51,10 +51,10 @@ char** completion_func(const char *text, int start, int end);
 void signal_handler(int signo);
 // message
 ExecutionState process_request(std::string const &request);
-ProcessResult process_responses(MessageResponseVector const &responses, ClientState &state);
+ProcessResult process_responses(MessageResponseVector const &responses, client_state &state);
 
 // global variables
-ClientState client_state;
+client_state cstate;
 
 int main()
 {
@@ -66,13 +66,13 @@ int main()
     MessageResponse init_state_response = sync_exchange<CurrentStateRequest, MessageResponse>(socketd, CurrentStateRequest());
     /*if (0 != init_state_response.type.compare(CURRENT_STATE))
         throw bad_message();*/
-    client_state.prompt = init_state_response.data;
-    client_state.socketd = socketd;
-    client_state.execution_state = EX_CONTINUE;
-    client_state.editor_state = ED_INPUT;
+    cstate.prompt = init_state_response.data;
+    cstate.socketd = socketd;
+    cstate.execution_state = EX_CONTINUE;
+    cstate.editor_state = ED_INPUT;
     SignalSafeExecuter executer(create_signal_mask());
     std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
-    while(EX_CONTINUE == client_state.execution_state)
+    while(EX_CONTINUE == cstate.execution_state)
     {
         clear_fdarray(fdarray);
         int poll_result = poll(fdarray.data(), FD_COUNT, -1);
@@ -84,7 +84,7 @@ int main()
         }
         if (POLLIN == (fdarray[STDIN_INDEX].revents & POLLIN))
         {
-            if (ED_INPUT == client_state.editor_state)
+            if (ED_INPUT == cstate.editor_state)
                 rl_callback_read_char();
         }
         if (POLLERR == (fdarray[STDIN_INDEX].revents & POLLERR))
@@ -92,9 +92,9 @@ int main()
         if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
         {
             MessageResponseVector responses = executer.execute<MessageResponseVector>([&socketd](){ return read_messages<MessageResponse>(socketd); });
-            ProcessResult result = process_responses(responses, client_state);
-            client_state.execution_state = result.execution_state;
-            client_state.editor_state = result.editor_state;
+            ProcessResult result = process_responses(responses, cstate);
+            cstate.execution_state = result.execution_state;
+            cstate.editor_state = result.editor_state;
         }
         if (POLLERR == (fdarray[SOCKETD_INDEX].revents & POLLERR))
             throw poll_error();
@@ -147,9 +147,9 @@ std::unordered_map<std::string, RequestHandler> get_local_request_handlers()
 std::unordered_map<std::string, ResponseHandler> get_response_handlers()
 {
     return {
-        {COMMAND_OUT, [](MessageResponse response, ClientState &state){ std::cout << response.data; return ED_COMMAND; }},
-        {COMMAND_ERR, [](MessageResponse response, ClientState &state){ std::cerr << response.data; return ED_COMMAND; }},
-        {COMMAND_END, [](MessageResponse response, ClientState &state){ state.prompt = response.data; return ED_INPUT; }}
+        {COMMAND_OUT, [](MessageResponse response, client_state &state){ std::cout << response.data; return ED_COMMAND; }},
+        {COMMAND_ERR, [](MessageResponse response, client_state &state){ std::cerr << response.data; return ED_COMMAND; }},
+        {COMMAND_END, [](MessageResponse response, client_state &state){ state.prompt = response.data; return ED_INPUT; }}
     };
 }
 
@@ -169,7 +169,7 @@ void readline_handler(char *raw_data)
 {
     if (nullptr == raw_data)
     {
-        client_state.execution_state = EX_FINISH;
+        cstate.execution_state = EX_FINISH;
         rl_callback_handler_remove();
         return;
     }
@@ -186,8 +186,8 @@ void readline_handler(char *raw_data)
     ExecutionState execution_state = process_request(request);
     rl_callback_handler_remove();
     setup_signal_handlers(get_signal_handlers());
-    client_state.execution_state = execution_state;
-    client_state.editor_state = ED_COMMAND;
+    cstate.execution_state = execution_state;
+    cstate.editor_state = ED_COMMAND;
 }
 
 char** completion_func(const char *text, int start, int end)
@@ -195,7 +195,7 @@ char** completion_func(const char *text, int start, int end)
     std::string line = trim_left(text);
     sigset_t mask = create_signal_mask();
     SignalSafeExecuter executer(mask);
-    ExtensionResponse response = sync_exchange<ExtensionRequest, ExtensionResponse>(client_state.socketd, ExtensionRequest(line));
+    ExtensionResponse response = sync_exchange<ExtensionRequest, ExtensionResponse>(cstate.socketd, ExtensionRequest(line));
     std::vector<std::string> extensions = response.extensions;
     // NULL terminated array
     size_t extensions_size = extensions.size();
@@ -208,17 +208,17 @@ char** completion_func(const char *text, int start, int end)
 
 void handle_sigint()
 {
-    switch (client_state.editor_state)
+    switch (cstate.editor_state)
     {
         case ED_INPUT:
             std::cout << "^C" << std::endl;
             rl_callback_handler_remove();
-            rl_callback_handler_install(client_state.prompt.c_str(), readline_handler);
+            rl_callback_handler_install(cstate.prompt.c_str(), readline_handler);
             setup_signal_handlers(get_signal_handlers());
             break;
         case ED_COMMAND:
             std::cout << std::endl;
-            write_message(client_state.socketd, InterruptRequest());
+            write_message(cstate.socketd, InterruptRequest());
             break;
     }
 }
@@ -231,16 +231,16 @@ void signal_handler(int signo)
             handle_sigint();
             break;
         case SIGQUIT:
-            if (ED_INPUT == client_state.editor_state)
+            if (ED_INPUT == cstate.editor_state)
                 std::cout << "^\\" << std::endl;
-            client_state.execution_state = EX_FINISH;
+            cstate.execution_state = EX_FINISH;
             break;
         case SIGWINCH:
             break;
         case SIGTSTP:
-            if (ED_INPUT == client_state.editor_state)
+            if (ED_INPUT == cstate.editor_state)
                 std::cout << "^Z" << std::endl;
-            client_state.execution_state = EX_FINISH;
+            cstate.execution_state = EX_FINISH;
             break;
     }
 }
@@ -253,11 +253,11 @@ ExecutionState process_request(std::string const &request)
         return iterator->second(request);
     sigset_t mask = create_signal_mask();
     SignalSafeExecuter executer(mask);
-    executer.execute([&request](){ write_message(client_state.socketd, CommandRequest(request)); });
+    executer.execute([&request](){ write_message(cstate.socketd, CommandRequest(request)); });
     return EX_CONTINUE;
 }
 
-ProcessResult process_responses(MessageResponseVector const &responses, ClientState &state)
+ProcessResult process_responses(MessageResponseVector const &responses, client_state &state)
 {
     EditorState editor_state = ED_COMMAND;
     std::unordered_map<std::string, ResponseHandler> response_handlers = get_response_handlers();
