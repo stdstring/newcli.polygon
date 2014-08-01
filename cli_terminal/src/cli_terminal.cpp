@@ -52,7 +52,7 @@ char** completion_func(const char *text, int start, int end);
 void signal_handler(int signo);
 // message
 ExecutionState process_request(std::string const &request);
-ProcessResult process_responses(MessageResponseVector const &responses, client_state &state);
+process_result process_responses(MessageResponseVector const &responses, client_state &state);
 
 // global variables
 client_state cstate;
@@ -93,7 +93,7 @@ int main()
         if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
         {
             MessageResponseVector responses = executer.execute<MessageResponseVector>([&socketd](){ return read_messages<message_response>(socketd); });
-            ProcessResult result = process_responses(responses, cstate);
+            process_result result = process_responses(responses, cstate);
             cstate.execution_state = result.execution_state;
             cstate.editor_state = result.editor_state;
         }
@@ -258,7 +258,7 @@ ExecutionState process_request(std::string const &request)
     return EX_CONTINUE;
 }
 
-ProcessResult process_responses(MessageResponseVector const &responses, client_state &state)
+process_result process_responses(MessageResponseVector const &responses, client_state &state)
 {
     EditorState editor_state = ED_COMMAND;
     std::unordered_map<std::string, ResponseHandler> response_handlers = get_response_handlers();
@@ -269,5 +269,5 @@ ProcessResult process_responses(MessageResponseVector const &responses, client_s
         if (ED_INPUT == handler_result)
             editor_state = ED_INPUT;
     }
-    return ProcessResult(EX_CONTINUE, editor_state);
+    return process_result(EX_CONTINUE, editor_state);
 }
