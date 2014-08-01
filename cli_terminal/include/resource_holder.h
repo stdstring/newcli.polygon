@@ -3,17 +3,17 @@
 
 #include <functional>
 
-template <typename R> class ResourceHolder
+template <typename R> class resource_holder
 {
 public:
-    ResourceHolder() = delete;
-    ResourceHolder(const ResourceHolder&) = delete;
-    ResourceHolder(ResourceHolder&&) = delete;
-    ResourceHolder& operator=(const ResourceHolder&) = delete;
-    ResourceHolder& operator=(ResourceHolder&&) = delete;
+    resource_holder() = delete;
+    resource_holder(const resource_holder&) = delete;
+    resource_holder(resource_holder&&) = delete;
+    resource_holder& operator=(const resource_holder&) = delete;
+    resource_holder& operator=(resource_holder&&) = delete;
 
-    ResourceHolder(R resource, std::function<void(R)> resource_cleaner) : _resource(resource), _resource_cleaner(resource_cleaner) {}
-    ~ResourceHolder() { _resource_cleaner(_resource); }
+    resource_holder(R resource, std::function<void(R)> resource_cleaner) : _resource(resource), _resource_cleaner(resource_cleaner) {}
+    ~resource_holder() { _resource_cleaner(_resource); }
 
     R get() const { return _resource; }
 private:

@@ -61,7 +61,7 @@ int main()
 {
     initialize();
     setup_signal_handlers(get_signal_handlers());
-    ResourceHolder<int> socket_holder(create_socket(), [](int socketd){ close(socketd); });
+    resource_holder<int> socket_holder(create_socket(), [](int socketd){ close(socketd); });
     int socketd = socket_holder.get();
     connect(socketd, PORT);
     message_response init_state_response = sync_exchange<current_state_request, message_response>(socketd, current_state_request());
