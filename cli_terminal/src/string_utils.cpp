@@ -26,9 +26,8 @@ std::string trim_full(std::string const& source)
 
 char* duplicate_cstr(std::string const &source)
 {
-    size_t length = source.size() + 1;
-    const char* source_str = source.c_str();
+    size_t length = (source.size() + 1) * sizeof(char);
     char *buffer = (char*) malloc(length);
-    memcpy(buffer, source_str, length);
+    memcpy(buffer, source.c_str(), length);
     return buffer;
 }

@@ -198,15 +198,52 @@ char** completion_func(const char *text, int start, int end)
     ExtensionResponse response = sync_exchange<ExtensionRequest, ExtensionResponse>(client_state.socketd, ExtensionRequest(line));
     std::vector<std::string> extensions = response.extensions;
     // NULL terminated array
-    char** completion_array = (char**) malloc((extensions.size() + 1) * sizeof(char*));
-    for(size_t index = 0; index < extensions.size(); ++index)
-    {}
-    completion_array[extensions.size()] = nullptr;
+    size_t extensions_size = extensions.size();
+    char** completion_array = (char**) malloc((extensions_size + 1) * sizeof(char*));
+    for(size_t index = 0; index < extensions_size; ++index)
+        completion_array[index] = duplicate_cstr(extensions.at(index));
+    completion_array[extensions_size] = nullptr;
     return completion_array;
 }
 
+void handle_sigint()
+{
+    switch (client_state.editor_state)
+    {
+        case ED_INPUT:
+            std::cout << "^C" << std::endl;
+            rl_callback_handler_remove();
+            rl_callback_handler_install(client_state.prompt.c_str(), readline_handler);
+            setup_signal_handlers(get_signal_handlers());
+            break;
+        case ED_COMMAND:
+            std::cout << std::endl;
+            write_message(client_state.socketd, InterruptRequest());
+            break;
+    }
+}
+
 void signal_handler(int signo)
-{}
+{
+    switch (signo)
+    {
+        case SIGINT:
+            handle_sigint();
+            break;
+        case SIGQUIT:
+            if (ED_INPUT == client_state.editor_state)
+                std::cout << "^\\" << std::endl;
+            client_state.execution_state = EX_FINISH;
+            break;
+        case SIGWINCH:
+            break;
+        case SIGTSTP:
+            if (ED_INPUT == client_state.editor_state)
+                std::cout << "^Z" << std::endl;
+            client_state.execution_state = EX_FINISH;
+            break;
+    }
+}
 
 ExecutionState process_request(std::string const &request)
 {
