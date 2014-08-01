@@ -71,7 +71,7 @@ int main()
     cstate.socketd = socketd;
     cstate.execution_state = EX_CONTINUE;
     cstate.editor_state = ED_INPUT;
-    SignalSafeExecuter executer(create_signal_mask());
+    signal_safe_executer executer(create_signal_mask());
     std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
     while(EX_CONTINUE == cstate.execution_state)
     {
@@ -195,7 +195,7 @@ char** completion_func(const char *text, int start, int end)
 {
     std::string line = trim_left(text);
     sigset_t mask = create_signal_mask();
-    SignalSafeExecuter executer(mask);
+    signal_safe_executer executer(mask);
     extension_response response = sync_exchange<extension_request, extension_response>(cstate.socketd, extension_request(line));
     std::vector<std::string> extensions = response.extensions;
     // NULL terminated array
@@ -253,7 +253,7 @@ ExecutionState process_request(std::string const &request)
     if (local_handlers.end() != iterator)
         return iterator->second(request);
     sigset_t mask = create_signal_mask();
-    SignalSafeExecuter executer(mask);
+    signal_safe_executer executer(mask);
     executer.execute([&request](){ write_message(cstate.socketd, command_request(request)); });
     return EX_CONTINUE;
 }

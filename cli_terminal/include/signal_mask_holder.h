@@ -3,21 +3,21 @@
 
 #include <signal.h>
 
-class SignalMaskHolder
+class signal_mask_holder
 {
 public:
-    SignalMaskHolder() = delete;
-    SignalMaskHolder(const SignalMaskHolder&) = delete;
-    SignalMaskHolder(SignalMaskHolder&&) = delete;
-    SignalMaskHolder& operator=(const SignalMaskHolder&) = delete;
-    SignalMaskHolder& operator=(SignalMaskHolder&&) = delete;
+    signal_mask_holder() = delete;
+    signal_mask_holder(const signal_mask_holder&) = delete;
+    signal_mask_holder(signal_mask_holder&&) = delete;
+    signal_mask_holder& operator=(const signal_mask_holder&) = delete;
+    signal_mask_holder& operator=(signal_mask_holder&&) = delete;
 
-    SignalMaskHolder(sigset_t new_mask)
+    signal_mask_holder(sigset_t new_mask)
     {
         sigprocmask(SIG_SETMASK, &new_mask, &_old_mask);
     }
 
-    ~SignalMaskHolder()
+    ~signal_mask_holder()
     {
         sigprocmask(SIG_SETMASK, &_old_mask, nullptr);
     }
