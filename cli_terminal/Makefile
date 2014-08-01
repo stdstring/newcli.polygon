@@ -4,7 +4,8 @@ LFLAGS=
 
 BIN=bin
 
-HEADER=include/client_state.h\
+HEADER=include/array_ptr.h\
+       include/client_state.h\
        include/cterm_ptr.h\
        include/eterm_ptr.h\
        include/exception_def.h\

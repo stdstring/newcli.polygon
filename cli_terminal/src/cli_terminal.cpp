@@ -2,6 +2,7 @@
 #include <exception>
 #include <functional>
 #include <iostream>
+#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <vector>
