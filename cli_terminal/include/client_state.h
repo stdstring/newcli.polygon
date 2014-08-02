@@ -3,19 +3,19 @@
 
 #include <string>
 
-enum ExecutionState {EX_CONTINUE, EX_FINISH};
+enum execution_state {EX_CONTINUE, EX_FINISH};
 
-enum EditorState {ED_INPUT, ED_COMMAND};
+enum editor_state {ED_INPUT, ED_COMMAND};
 
 struct client_state
 {
 public:
-    client_state() : socketd(-1), execution_state(EX_CONTINUE), editor_state(ED_INPUT) {}
+    client_state() : socketd(-1), ex_state(EX_CONTINUE), ed_state(ED_INPUT) {}
 
     int socketd;
     std::string prompt;
-    ExecutionState execution_state;
-    EditorState editor_state;
+    execution_state ex_state;
+    editor_state ed_state;
 };
 
 #endif

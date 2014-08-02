@@ -13,4 +13,7 @@ class recv_error
 class poll_error
 {};
 
+class socket_error
+{};
+
 #endif

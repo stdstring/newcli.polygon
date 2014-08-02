@@ -6,10 +6,10 @@
 class process_result
 {
 public:
-    process_result(ExecutionState execution_state_value, EditorState editor_state_value) : execution_state(execution_state_value), editor_state(editor_state_value) {}
+    process_result(execution_state ex_state_value, editor_state ed_state_value) : ex_state(ex_state_value), ed_state(ed_state_value) {}
 
-    ExecutionState execution_state;
-    EditorState editor_state;
+    execution_state ex_state;
+    editor_state ed_state;
 };
 
 #endif

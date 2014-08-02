@@ -32,16 +32,16 @@
 #define STDIN_INDEX 0
 #define SOCKETD_INDEX 1
 
-typedef std::vector<message_response> MessageResponseVector;
-typedef std::function<ExecutionState(std::string const&)> RequestHandler;
-typedef std::function<EditorState(message_response, client_state&)> ResponseHandler;
+typedef std::vector<message_response> message_responses_t;
+typedef std::function<execution_state(std::string const&)> request_handler_t;
+typedef std::function<editor_state(message_response, client_state&)> response_handler_t;
 
 // init
 void initialize();
 std::unordered_map<int, signal_handler_t> get_signal_handlers();
 std::array<struct pollfd, FD_COUNT> create_fdarray(int socketd);
-std::unordered_map<std::string, RequestHandler> get_local_request_handlers();
-std::unordered_map<std::string, ResponseHandler> get_response_handlers();
+std::unordered_map<std::string, request_handler_t> get_local_request_handlers();
+std::unordered_map<std::string, response_handler_t> get_response_handlers();
 // cleanup
 void clear_fdarray(std::array<struct pollfd, FD_COUNT> &fdarray);
 void cleanup();
@@ -51,8 +51,8 @@ char** completion_func(const char *text, int start, int end);
 // signals
 void signal_handler(int signo);
 // message
-ExecutionState process_request(std::string const &request);
-process_result process_responses(MessageResponseVector const &responses, client_state &state);
+execution_state process_request(std::string const &request);
+process_result process_responses(message_responses_t const &responses, client_state &state);
 
 // global variables
 client_state cstate;
@@ -69,11 +69,11 @@ int main()
         throw bad_message();*/
     cstate.prompt = init_state_response.data;
     cstate.socketd = socketd;
-    cstate.execution_state = EX_CONTINUE;
-    cstate.editor_state = ED_INPUT;
+    cstate.ex_state = EX_CONTINUE;
+    cstate.ed_state = ED_INPUT;
     signal_safe_executer executer(create_signal_mask());
     std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
-    while(EX_CONTINUE == cstate.execution_state)
+    while(EX_CONTINUE == cstate.ex_state)
     {
         clear_fdarray(fdarray);
         int poll_result = poll(fdarray.data(), FD_COUNT, -1);
@@ -85,17 +85,17 @@ int main()
         }
         if (POLLIN == (fdarray[STDIN_INDEX].revents & POLLIN))
         {
-            if (ED_INPUT == cstate.editor_state)
+            if (ED_INPUT == cstate.ed_state)
                 rl_callback_read_char();
         }
         if (POLLERR == (fdarray[STDIN_INDEX].revents & POLLERR))
             throw poll_error();
         if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
         {
-            MessageResponseVector responses = executer.execute<MessageResponseVector>([&socketd](){ return read_messages<message_response>(socketd); });
+            message_responses_t responses = executer.execute<message_responses_t>([&socketd](){ return read_messages<message_response>(socketd); });
             process_result result = process_responses(responses, cstate);
-            cstate.execution_state = result.execution_state;
-            cstate.editor_state = result.editor_state;
+            cstate.ex_state = result.ex_state;
+            cstate.ed_state = result.ed_state;
         }
         if (POLLERR == (fdarray[SOCKETD_INDEX].revents & POLLERR))
             throw poll_error();
@@ -140,12 +140,12 @@ std::array<struct pollfd, FD_COUNT> create_fdarray(int socketd)
     return fdarray;
 }
 
-std::unordered_map<std::string, RequestHandler> get_local_request_handlers()
+std::unordered_map<std::string, request_handler_t> get_local_request_handlers()
 {
     return {{"exit", [](std::string const &request){ return EX_FINISH; }}};
 }
 
-std::unordered_map<std::string, ResponseHandler> get_response_handlers()
+std::unordered_map<std::string, response_handler_t> get_response_handlers()
 {
     return {
         {COMMAND_OUT, [](message_response response, client_state &state){ std::cout << response.data; return ED_COMMAND; }},
@@ -170,7 +170,7 @@ void readline_handler(char *raw_data)
 {
     if (nullptr == raw_data)
     {
-        cstate.execution_state = EX_FINISH;
+        cstate.ex_state = EX_FINISH;
         rl_callback_handler_remove();
         return;
     }
@@ -184,11 +184,11 @@ void readline_handler(char *raw_data)
     if (result == 0 || result == 1)
         add_history(expansion);
     std::string request(expansion_ptr.get());
-    ExecutionState execution_state = process_request(request);
+    execution_state ex_state = process_request(request);
     rl_callback_handler_remove();
     setup_signal_handlers(get_signal_handlers());
-    cstate.execution_state = execution_state;
-    cstate.editor_state = ED_COMMAND;
+    cstate.ex_state = ex_state;
+    cstate.ed_state = ED_COMMAND;
 }
 
 char** completion_func(const char *text, int start, int end)
@@ -209,7 +209,7 @@ char** completion_func(const char *text, int start, int end)
 
 void handle_sigint()
 {
-    switch (cstate.editor_state)
+    switch (cstate.ed_state)
     {
         case ED_INPUT:
             std::cout << "^C" << std::endl;
@@ -232,24 +232,24 @@ void signal_handler(int signo)
             handle_sigint();
             break;
         case SIGQUIT:
-            if (ED_INPUT == cstate.editor_state)
+            if (ED_INPUT == cstate.ed_state)
                 std::cout << "^\\" << std::endl;
-            cstate.execution_state = EX_FINISH;
+            cstate.ex_state = EX_FINISH;
             break;
         case SIGWINCH:
             break;
         case SIGTSTP:
-            if (ED_INPUT == cstate.editor_state)
+            if (ED_INPUT == cstate.ed_state)
                 std::cout << "^Z" << std::endl;
-            cstate.execution_state = EX_FINISH;
+            cstate.ex_state = EX_FINISH;
             break;
     }
 }
 
-ExecutionState process_request(std::string const &request)
+execution_state process_request(std::string const &request)
 {
-    std::unordered_map<std::string, RequestHandler> local_handlers = get_local_request_handlers();
-    std::unordered_map<std::string, RequestHandler>::const_iterator iterator = local_handlers.find(request);
+    std::unordered_map<std::string, request_handler_t> local_handlers = get_local_request_handlers();
+    std::unordered_map<std::string, request_handler_t>::const_iterator iterator = local_handlers.find(request);
     if (local_handlers.end() != iterator)
         return iterator->second(request);
     sigset_t mask = create_signal_mask();
@@ -258,16 +258,16 @@ ExecutionState process_request(std::string const &request)
     return EX_CONTINUE;
 }
 
-process_result process_responses(MessageResponseVector const &responses, client_state &state)
+process_result process_responses(message_responses_t const &responses, client_state &state)
 {
-    EditorState editor_state = ED_COMMAND;
-    std::unordered_map<std::string, ResponseHandler> response_handlers = get_response_handlers();
+    editor_state ed_state = ED_COMMAND;
+    std::unordered_map<std::string, response_handler_t> response_handlers = get_response_handlers();
     for(message_response response : responses)
     {
-        ResponseHandler const &handler = response_handlers.at(response.type);
-        EditorState handler_result = handler(response, state);
+        response_handler_t const &handler = response_handlers.at(response.type);
+        editor_state handler_result = handler(response, state);
         if (ED_INPUT == handler_result)
-            editor_state = ED_INPUT;
+            ed_state = ED_INPUT;
     }
-    return process_result(EX_CONTINUE, editor_state);
+    return process_result(EX_CONTINUE, ed_state);
 }

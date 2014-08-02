@@ -2,6 +2,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+
+#include "exception_def.h"
 #include "socket_utils.h"
 
 int create_socket()

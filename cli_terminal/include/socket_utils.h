@@ -6,7 +6,4 @@
 int create_socket();
 void connect(int socketd, int port_number);
 
-class socket_error
-{};
-
 #endif
