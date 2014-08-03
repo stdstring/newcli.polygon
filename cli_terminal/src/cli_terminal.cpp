@@ -20,8 +20,7 @@
 #include "message.h"
 #include "process_result.h"
 #include "resource_holder.h"
-#include "server_interaction.h"
-#include "signal_safe_executer.h"
+#include "server_interaction_helper.h"
 #include "signal_utils.h"
 #include "socket_utils.h"
 #include "string_utils.h"
@@ -32,7 +31,6 @@
 #define STDIN_INDEX 0
 #define SOCKETD_INDEX 1
 
-typedef std::vector<message_response> message_responses_t;
 typedef std::function<execution_state(std::string const&)> request_handler_t;
 typedef std::function<editor_state(message_response, client_state&)> response_handler_t;
 
@@ -64,14 +62,11 @@ int main()
     resource_holder<int> socket_holder(create_socket(), [](int socketd){ close(socketd); });
     int socketd = socket_holder.get();
     connect(socketd, PORT);
-    message_response init_state_response = sync_exchange<current_state_request, message_response>(socketd, current_state_request());
-    /*if (0 != init_state_response.type.compare(CURRENT_STATE))
-        throw bad_message();*/
-    cstate.prompt = init_state_response.data;
+    std::string init_prompt = retrieve_current_state(socketd);
+    cstate.prompt = init_prompt;
     cstate.socketd = socketd;
     cstate.ex_state = EX_CONTINUE;
     cstate.ed_state = ED_INPUT;
-    signal_safe_executer executer(create_signal_mask());
     std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
     while(EX_CONTINUE == cstate.ex_state)
     {
@@ -92,7 +87,7 @@ int main()
             throw poll_error();
         if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
         {
-            message_responses_t responses = executer.execute<message_responses_t>([&socketd](){ return read_messages<message_response>(socketd); });
+            message_responses_t responses = receive_message_responses(socketd, create_signal_mask());
             process_result result = process_responses(responses, cstate);
             cstate.ex_state = result.ex_state;
             cstate.ed_state = result.ed_state;
@@ -194,10 +189,7 @@ void readline_handler(char *raw_data)
 char** completion_func(const char *text, int start, int end)
 {
     std::string line = trim_left(text);
-    sigset_t mask = create_signal_mask();
-    signal_safe_executer executer(mask);
-    extension_response response = sync_exchange<extension_request, extension_response>(cstate.socketd, extension_request(line));
-    std::vector<std::string> extensions = response.extensions;
+    std::vector<std::string> extensions = retrieve_extensions(cstate.socketd, line, create_signal_mask());
     // NULL terminated array
     size_t extensions_size = extensions.size();
     char** completion_array = (char**) malloc((extensions_size + 1) * sizeof(char*));
@@ -219,7 +211,7 @@ void handle_sigint()
             break;
         case ED_COMMAND:
             std::cout << std::endl;
-            write_message(cstate.socketd, interrupt_request());
+            send_interrupt(cstate.socketd);
             break;
     }
 }
@@ -252,9 +244,7 @@ execution_state process_request(std::string const &request)
     std::unordered_map<std::string, request_handler_t>::const_iterator iterator = local_handlers.find(request);
     if (local_handlers.end() != iterator)
         return iterator->second(request);
-    sigset_t mask = create_signal_mask();
-    signal_safe_executer executer(mask);
-    executer.execute([&request](){ write_message(cstate.socketd, command_request(request)); });
+    send_command(cstate.socketd, request, create_signal_mask());
     return EX_CONTINUE;
 }
 

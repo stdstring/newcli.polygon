@@ -14,6 +14,7 @@ HEADER=include/array_ptr.h\
        include/process_result.h\
        include/resource_holder.h\
        include/server_interaction.h\
+       include/server_interaction_helper.h\
        include/signal_mask_holder.h\
        include/signal_safe_executer.h\
        include/signal_utils.h\
@@ -23,6 +24,7 @@ HEADER=include/array_ptr.h\
 SOURCE=src/cli_terminal.cpp\
        src/message_serialization.cpp\
        src/server_interaction.cpp\
+       src/server_interaction_helper.cpp\
        src/signal_utils.cpp\
        src/socket_utils.cpp\
        src/string_utils.cpp
