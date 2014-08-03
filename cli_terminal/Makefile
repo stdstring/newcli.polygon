@@ -5,6 +5,7 @@ LFLAGS=
 BIN=bin
 
 HEADER=include/array_ptr.h\
+       include/cli_io_helper.h\
        include/client_state.h\
        include/cterm_ptr.h\
        include/eterm_ptr.h\
@@ -21,7 +22,8 @@ HEADER=include/array_ptr.h\
        include/socket_utils.h\
        include/string_utils.h
 
-SOURCE=src/cli_terminal.cpp\
+SOURCE=src/cli_io_helper.cpp\
+       src/cli_terminal.cpp\
        src/message_serialization.cpp\
        src/server_interaction.cpp\
        src/server_interaction_helper.cpp\
