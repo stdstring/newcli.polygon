@@ -6,6 +6,9 @@
 #include "message.h"
 #include "message_serialization.h"
 
+namespace cli_terminal
+{
+
 byte_array_ptr serialize(eterm_ptr const &eterm)
 {
     int length = erl_term_len(eterm.get());
@@ -102,3 +105,5 @@ template<> extension_response deserialize(byte_array_ptr  const &source_data)
     }
     return extension_response(extension_list);
 };
+
+}

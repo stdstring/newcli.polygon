@@ -4,6 +4,9 @@
 #include <memory>
 #include <erl_interface.h>
 
+namespace cli_terminal
+{
+
 typedef std::unique_ptr<ETERM, std::function<void (ETERM*)>> eterm_unique_ptr;
 
 class eterm_ptr
@@ -22,5 +25,7 @@ public:
 private:
     eterm_unique_ptr _eterm;
 };
+
+}
 
 #endif

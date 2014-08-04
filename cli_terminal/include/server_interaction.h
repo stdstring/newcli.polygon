@@ -4,6 +4,9 @@
 #include <vector>
 #include "message_serialization.h"
 
+namespace cli_terminal
+{
+
 byte_array_ptr read_message(int socketd);
 bool contains_unread_data(int socketd);
 void write_message(int socketd, byte_array_ptr const &serialized_data);
@@ -32,6 +35,8 @@ template <typename TIn, typename TOut> TOut sync_exchange(int socketd, TIn const
 {
     write_message(socketd, request);
     return read_message<TOut>(socketd);
+}
+
 }
 
 #endif

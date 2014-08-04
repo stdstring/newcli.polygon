@@ -3,6 +3,9 @@
 
 #include <signal.h>
 
+namespace cli_terminal
+{
+
 class signal_mask_holder
 {
 public:
@@ -24,5 +27,7 @@ public:
 private:
     sigset_t _old_mask;
 };
+
+}
 
 #endif

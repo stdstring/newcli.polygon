@@ -3,6 +3,9 @@
 
 #include <functional>
 
+namespace cli_terminal
+{
+
 template <typename R> class resource_holder
 {
 public:
@@ -20,5 +23,7 @@ private:
     R _resource;
     std::function<void(R)> _resource_cleaner;
 };
+
+}
 
 #endif

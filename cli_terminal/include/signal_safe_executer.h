@@ -5,6 +5,9 @@
 #include <signal.h>
 #include "signal_mask_holder.h"
 
+namespace cli_terminal
+{
+
 class signal_safe_executer
 {
 public:
@@ -43,5 +46,7 @@ public:
 private:
     sigset_t _mask;
 };
+
+}
 
 #endif

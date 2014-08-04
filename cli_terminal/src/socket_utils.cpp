@@ -6,6 +6,9 @@
 #include "exception_def.h"
 #include "socket_utils.h"
 
+namespace cli_terminal
+{
+
 int create_socket()
 {
     int socketd = socket(AF_INET, SOCK_STREAM, 0);
@@ -30,4 +33,6 @@ void connect(int socketd, int port_number)
     /*int connect_result = connect(socketd, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr));
     if (connect_result == -1)
         throw socket_error();*/
+}
+
 }

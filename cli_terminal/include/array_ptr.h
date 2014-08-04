@@ -4,6 +4,9 @@
 #include <memory>
 #include <cstddef>
 
+namespace cli_terminal
+{
+
 template <typename T> class array_ptr
 {
 public:
@@ -24,5 +27,7 @@ private:
     std::unique_ptr<T[]> _array;
     size_t _array_size;
 };
+
+}
 
 #endif

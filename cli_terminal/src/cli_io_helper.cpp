@@ -10,6 +10,9 @@
 #include "server_interaction_helper.h"
 #include "signal_utils.h"
 
+namespace cli_terminal
+{
+
 typedef std::function<execution_state(std::string const&)> request_handler_t;
 typedef std::function<editor_state(message_response, client_state&)> response_handler_t;
 
@@ -49,4 +52,6 @@ process_result process_responses(message_responses_t const &responses, client_st
             ed_state = ED_INPUT;
     }
     return process_result(EX_CONTINUE, ed_state);
+}
+
 }

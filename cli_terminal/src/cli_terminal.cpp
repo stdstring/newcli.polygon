@@ -26,93 +26,16 @@
 #include "socket_utils.h"
 #include "string_utils.h"
 
+namespace cli_terminal
+{
+
 // TODO (std_string) : think about config port number
 #define PORT 22222
-
-// init
-void initialize();
-std::unordered_map<int, signal_handler_t> get_signal_handlers();
-// cleanup
-void cleanup();
-// readline
-void readline_handler(char *raw_data);
-char** completion_func(const char *text, int start, int end);
-// signals
-void signal_handler(int signo);
 
 // global variables
 client_state cstate;
 
-int main()
-{
-    initialize();
-    setup_signal_handlers(get_signal_handlers());
-    resource_holder<int> socket_holder(create_socket(), [](int socketd){ close(socketd); });
-    int socketd = socket_holder.get();
-    connect(socketd, PORT);
-    std::string init_prompt = retrieve_current_state(socketd);
-    cstate.prompt = init_prompt;
-    cstate.socketd = socketd;
-    cstate.ex_state = EX_CONTINUE;
-    cstate.ed_state = ED_INPUT;
-    std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
-    while(EX_CONTINUE == cstate.ex_state)
-    {
-        clear_fdarray(fdarray);
-        int poll_result = poll(fdarray.data(), FD_COUNT, -1);
-        if (-1 == poll_result)
-        {
-            if (EINTR != errno)
-                throw poll_error();
-            continue;
-        }
-        if (POLLIN == (fdarray[STDIN_INDEX].revents & POLLIN))
-        {
-            if (ED_INPUT == cstate.ed_state)
-                rl_callback_read_char();
-        }
-        if (POLLERR == (fdarray[STDIN_INDEX].revents & POLLERR))
-            throw poll_error();
-        if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
-        {
-            message_responses_t responses = receive_message_responses(socketd, create_signal_mask());
-            process_result result = process_responses(responses, cstate);
-            cstate.ex_state = result.ex_state;
-            cstate.ed_state = result.ed_state;
-        }
-        if (POLLERR == (fdarray[SOCKETD_INDEX].revents & POLLERR))
-            throw poll_error();
-    }
-    cleanup();
-    end_execution(socketd, create_signal_mask());
-    return 0;
-}
-
-void initialize()
-{    
-    // erl runtime
-    erl_init(NULL, 0);
-    // readline
-    rl_attempted_completion_over = 1;
-    // completion
-    rl_attempted_completion_function = completion_func;
-    rl_sort_completion_matches = 0;
-    rl_ignore_completion_duplicates = 0;
-    // singnals
-    rl_catch_signals = 0;
-    rl_catch_sigwinch = 0;
-    // absent in readline 6.2
-    // rl_change_environment = 0;
-    // readline history
-    using_history();
-    // set cleanup for uncaught exceptions
-    std::set_terminate(cleanup);
-}
-
-std::unordered_map<int, signal_handler_t> get_signal_handlers()
-{
-    return {{SIGINT, signal_handler}, {SIGQUIT, signal_handler}, {SIGWINCH, signal_handler}, {SIGTSTP, signal_handler}};
-}
+std::unordered_map<int, signal_handler_t> get_signal_handlers();
 
 void cleanup()
 {
@@ -195,4 +118,82 @@ void signal_handler(int signo)
             cstate.ex_state = EX_FINISH;
             break;
     }
+}
+
+std::unordered_map<int, signal_handler_t> get_signal_handlers()
+{
+    return {{SIGINT, signal_handler}, {SIGQUIT, signal_handler}, {SIGWINCH, signal_handler}, {SIGTSTP, signal_handler}};
+}
+
+void initialize()
+{    
+    // erl runtime
+    erl_init(NULL, 0);
+    // readline
+    rl_attempted_completion_over = 1;
+    // completion
+    rl_attempted_completion_function = completion_func;
+    rl_sort_completion_matches = 0;
+    rl_ignore_completion_duplicates = 0;
+    // singnals
+    rl_catch_signals = 0;
+    rl_catch_sigwinch = 0;
+    // absent in readline 6.2
+    // rl_change_environment = 0;
+    // readline history
+    using_history();
+    // set cleanup for uncaught exceptions
+    std::set_terminate(cleanup);
+}
+
+int main_impl()
+{
+    initialize();
+    setup_signal_handlers(get_signal_handlers());
+    resource_holder<int> socket_holder(create_socket(), [](int socketd){ close(socketd); });
+    int socketd = socket_holder.get();
+    connect(socketd, PORT);
+    std::string init_prompt = retrieve_current_state(socketd);
+    cstate.prompt = init_prompt;
+    cstate.socketd = socketd;
+    cstate.ex_state = EX_CONTINUE;
+    cstate.ed_state = ED_INPUT;
+    std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
+    while(EX_CONTINUE == cstate.ex_state)
+    {
+        clear_fdarray(fdarray);
+        int poll_result = poll(fdarray.data(), FD_COUNT, -1);
+        if (-1 == poll_result)
+        {
+            if (EINTR != errno)
+                throw poll_error();
+            continue;
+        }
+        if (POLLIN == (fdarray[STDIN_INDEX].revents & POLLIN))
+        {
+            if (ED_INPUT == cstate.ed_state)
+                rl_callback_read_char();
+        }
+        if (POLLERR == (fdarray[STDIN_INDEX].revents & POLLERR))
+            throw poll_error();
+        if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
+        {
+            message_responses_t responses = receive_message_responses(socketd, create_signal_mask());
+            process_result result = process_responses(responses, cstate);
+            cstate.ex_state = result.ex_state;
+            cstate.ed_state = result.ed_state;
+        }
+        if (POLLERR == (fdarray[SOCKETD_INDEX].revents & POLLERR))
+            throw poll_error();
+    }
+    cleanup();
+    end_execution(socketd, create_signal_mask());
+    return 0;
+}
+
+}
+
+int main()
+{
+    return cli_terminal::main_impl();
 }

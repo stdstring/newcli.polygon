@@ -3,6 +3,9 @@
 
 #include <memory>
 
+namespace cli_terminal
+{
+
 template <typename T> class cterm_ptr
 {
 public:
@@ -20,5 +23,7 @@ public:
 private:
     std::unique_ptr<T, std::function<void (T*)>> _term;
 };
+
+}
 
 #endif

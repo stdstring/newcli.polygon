@@ -4,6 +4,9 @@
 #include <cstring>
 #include "string_utils.h"
 
+namespace cli_terminal
+{
+
 std::string trim_left(std::string const &source)
 {
     std::string::const_iterator end = source.end();
@@ -30,4 +33,6 @@ char* duplicate_cstr(std::string const &source)
     char *buffer = (char*) malloc(length);
     memcpy(buffer, source.c_str(), length);
     return buffer;
+}
+
 }

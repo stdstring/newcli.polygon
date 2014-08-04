@@ -2,6 +2,9 @@
 #include "signal.h"
 #include "signal_utils.h"
 
+namespace cli_terminal
+{
+
 sigset_t create_signal_mask()
 {
     sigset_t mask;
@@ -45,4 +48,6 @@ void setup_signal_handlers(std::unordered_map<int, signal_handler_t> const &sign
     /*int restoremask_result = pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);
     if (restoremask_result != 0)
         throw signal_error();*/
+}
+
 }

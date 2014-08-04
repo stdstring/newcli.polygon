@@ -1,6 +1,9 @@
 #ifndef H_EXCEPTION_DEF
 #define H_EXCEPTION_DEF
 
+namespace cli_terminal
+{
+
 class bad_message
 {};
 
@@ -15,5 +18,7 @@ class poll_error
 
 class socket_error
 {};
+
+}
 
 #endif

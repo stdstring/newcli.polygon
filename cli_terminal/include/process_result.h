@@ -3,6 +3,9 @@
 
 #include "client_state.h"
 
+namespace cli_terminal
+{
+
 class process_result
 {
 public:
@@ -11,5 +14,7 @@ public:
     execution_state ex_state;
     editor_state ed_state;
 };
+
+}
 
 #endif

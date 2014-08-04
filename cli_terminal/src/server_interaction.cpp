@@ -7,6 +7,9 @@
 #include "exception_def.h"
 #include "server_interaction.h"
 
+namespace cli_terminal
+{
+
 byte_array_ptr read_message(int socketd)
 {
     int length_binary;
@@ -49,4 +52,6 @@ void write_message(int socketd, byte_array_ptr const &serialized_data)
     ssize_t send_result = sendmsg(socketd, &prepared_data, 0);
     if (-1 == send_result)
         throw send_error();
+}
+
 }

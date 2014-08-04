@@ -10,6 +10,9 @@
 #include "server_interaction_helper.h"
 #include "signal_safe_executer.h"
 
+namespace cli_terminal
+{
+
 std::string retrieve_current_state(int socketd, sigset_t mask)
 {
     signal_safe_executer executer(mask);
@@ -57,4 +60,6 @@ void end_execution(int socketd, sigset_t mask)
 {
     signal_safe_executer executer(mask);
     executer.execute([socketd](){ write_message(socketd, exit_request()); });
+}
+
 }

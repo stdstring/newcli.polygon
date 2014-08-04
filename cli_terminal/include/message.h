@@ -13,6 +13,9 @@
 #define EXTENSION "extension"
 #define EXIT "exit"
 
+namespace cli_terminal
+{
+
 // requests
 
 struct command_request
@@ -62,5 +65,7 @@ public:
 
     std::vector<std::string> extensions;
 };
+
+}
 
 #endif
