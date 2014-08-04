@@ -42,13 +42,19 @@ std::vector<std::string> retrieve_extensions(int socketd, std::string const &lin
     return response.extensions;
 }
 
-void send_interrupt(int socketd)
+void interrupt_command(int socketd)
 {
     write_message(socketd, interrupt_request());
 }
 
-void send_command(int socketd, std::string const &line, sigset_t mask)
+void process_command(int socketd, std::string const &line, sigset_t mask)
 {
     signal_safe_executer executer(mask);
     executer.execute([socketd, &line](){ write_message(socketd, command_request(line)); });
+}
+
+void end_execution(int socketd, sigset_t mask)
+{
+    signal_safe_executer executer(mask);
+    executer.execute([socketd](){ write_message(socketd, exit_request()); });
 }

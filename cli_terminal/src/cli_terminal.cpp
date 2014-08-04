@@ -84,6 +84,7 @@ int main()
             throw poll_error();
     }
     cleanup();
+    end_execution(socketd, create_signal_mask());
     return 0;
 }
 
@@ -169,7 +170,7 @@ void handle_sigint()
             break;
         case ED_COMMAND:
             std::cout << std::endl;
-            send_interrupt(cstate.socketd);
+            interrupt_command(cstate.socketd);
             break;
     }
 }

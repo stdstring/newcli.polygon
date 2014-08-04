@@ -13,6 +13,7 @@ byte_array_ptr serialize(command_request const &request);
 byte_array_ptr serialize(interrupt_request const &request);
 byte_array_ptr serialize(current_state_request const &request);
 byte_array_ptr serialize(extension_request const &request);
+byte_array_ptr serialize(exit_request const &request);
 
 template <typename T> T deserialize(byte_array_ptr const &source_data);
 template<> message_response deserialize(byte_array_ptr const & source_data);

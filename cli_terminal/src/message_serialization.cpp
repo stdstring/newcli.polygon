@@ -52,6 +52,11 @@ byte_array_ptr serialize(extension_request const &request)
     return serialize(EXTENSION, request.command_line.c_str());
 }
 
+byte_array_ptr serialize(exit_request const &request)
+{
+    return serialize(EXIT);
+}
+
 template<> message_response deserialize(byte_array_ptr const &source_data)
 {
     eterm_ptr eterm(erl_decode(source_data.get()));

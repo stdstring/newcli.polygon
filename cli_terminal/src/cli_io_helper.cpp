@@ -33,7 +33,7 @@ execution_state process_request(std::string const &request, int socketd)
     std::unordered_map<std::string, request_handler_t>::const_iterator iterator = local_handlers.find(request);
     if (local_handlers.end() != iterator)
         return iterator->second(request);
-    send_command(socketd, request, create_signal_mask());
+    process_command(socketd, request, create_signal_mask());
     return EX_CONTINUE;
 }
 
