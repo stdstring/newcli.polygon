@@ -17,6 +17,7 @@
 #include "client_state.h"
 #include "cterm_ptr.h"
 #include "exception_def.h"
+#include "fd_helper.h"
 #include "message.h"
 #include "process_result.h"
 #include "resource_holder.h"
@@ -27,16 +28,11 @@
 
 // TODO (std_string) : think about config port number
 #define PORT 22222
-#define FD_COUNT 2
-#define STDIN_INDEX 0
-#define SOCKETD_INDEX 1
 
 // init
 void initialize();
 std::unordered_map<int, signal_handler_t> get_signal_handlers();
-std::array<struct pollfd, FD_COUNT> create_fdarray(int socketd);
 // cleanup
-void clear_fdarray(std::array<struct pollfd, FD_COUNT> &fdarray);
 void cleanup();
 // readline
 void readline_handler(char *raw_data);
@@ -115,22 +111,6 @@ void initialize()
 std::unordered_map<int, signal_handler_t> get_signal_handlers()
 {
     return {{SIGINT, signal_handler}, {SIGQUIT, signal_handler}, {SIGWINCH, signal_handler}, {SIGTSTP, signal_handler}};
-}
-
-std::array<struct pollfd, FD_COUNT> create_fdarray(int socketd)
-{
-    std::array<struct pollfd, FD_COUNT> fdarray;
-    fdarray[STDIN_INDEX].fd = STDIN_FILENO;
-    fdarray[STDIN_INDEX].events = POLLIN;
-    fdarray[SOCKETD_INDEX].fd = socketd;
-    fdarray[SOCKETD_INDEX].events = POLLIN;
-    return fdarray;
-}
-
-void clear_fdarray(std::array<struct pollfd, FD_COUNT> &fdarray)
-{
-    fdarray[STDIN_INDEX].revents = 0;
-    fdarray[SOCKETD_INDEX].revents = 0;
 }
 
 void cleanup()
