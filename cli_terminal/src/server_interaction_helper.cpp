@@ -18,7 +18,7 @@ std::string retrieve_current_state(int socketd, sigset_t mask)
     signal_safe_executer executer(mask);
     std::function<message_response()> func = [socketd](){ return sync_exchange<current_state_request, message_response>(socketd, current_state_request()); };
     message_response response = executer.execute<message_response>(func);
-    /*if (0 != response.type.compare(CURRENT_STATE))
+    /*if (0 != response.type.compare(CURRENT_STATE_RESPONSE))
         throw bad_message();*/
     return response.data;
 }
@@ -26,7 +26,7 @@ std::string retrieve_current_state(int socketd, sigset_t mask)
 std::string retrieve_current_state(int socketd)
 {
     message_response response = sync_exchange<current_state_request, message_response>(socketd, current_state_request());
-    /*if (0 != response.type.compare(CURRENT_STATE))
+    /*if (0 != response.type.compare(CURRENT_STATE_RESPONSE))
         throw bad_message();*/
     return response.data;
 }

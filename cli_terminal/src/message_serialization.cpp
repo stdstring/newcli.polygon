@@ -47,12 +47,12 @@ byte_array_ptr serialize(interrupt_request const &request)
 
 byte_array_ptr serialize(current_state_request const &request)
 {
-    return serialize(CURRENT_STATE);
+    return serialize(CURRENT_STATE_REQUEST);
 }
 
 byte_array_ptr serialize(extension_request const &request)
 {
-    return serialize(EXTENSION, request.command_line.c_str());
+    return serialize(EXTENSION_REQUEST, request.command_line.c_str());
 }
 
 byte_array_ptr serialize(exit_request const &request)
@@ -86,7 +86,7 @@ template<> extension_response deserialize(byte_array_ptr  const &source_data)
     if (!type)
         throw bad_message();
     std::string type(ERL_ATOM_PTR(type_term.get()));
-    if (type.compare(EXTENSION) != 0)
+    if (type.compare(EXTENSION_RESPONSE) != 0)
         throw bad_message();*/
     eterm_ptr data_term(erl_element(2, eterm.get()));
     /*if (!data)

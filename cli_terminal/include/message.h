@@ -9,8 +9,10 @@
 #define COMMAND_ERR "command_err"
 #define COMMAND_END "end"
 #define COMMAND_STOP "interrupt"
-#define CURRENT_STATE "current_state"
-#define EXTENSION "extension"
+#define CURRENT_STATE_REQUEST "current_state_request"
+#define CURRENT_STATE_RESPONSE "current_state_response"
+#define EXTENSION_REQUEST "extension_request"
+#define EXTENSION_RESPONSE "extension_response"
 #define EXIT "exit"
 
 namespace cli_terminal
