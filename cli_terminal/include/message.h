@@ -61,6 +61,14 @@ public:
     std::string data;
 };
 
+struct current_state_response
+{
+public:
+    current_state_response(std::string const &prompt_value) : prompt(prompt_value) {}
+
+    std::string prompt;
+};
+
 class extension_response
 {
 public:
