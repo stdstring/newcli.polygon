@@ -8,6 +8,7 @@
 #define COMMAND_OUT "command_out"
 #define COMMAND_ERR "command_err"
 #define COMMAND_END "end"
+#define ERROR "error"
 #define COMMAND_STOP "interrupt"
 #define CURRENT_STATE_REQUEST "current_state_request"
 #define CURRENT_STATE_RESPONSE "current_state_response"
