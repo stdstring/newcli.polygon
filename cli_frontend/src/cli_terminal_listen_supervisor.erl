@@ -4,8 +4,6 @@
 
 -behaviour(supervisor).
 
--define(SUPERVISOR_NAME, cli_terminal_listen_supervisor).
-
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -16,7 +14,10 @@
 
 start_link(_ListenSocketConfig) -> ok.
 
-init(_ListenSocketConfig) -> ok.
+init(ListenSocketConfig) ->
+    ChildSpecs =
+        [{cli_terminal_listen, {cli_terminal_listen_endpoint, start_link, [ListenSocketConfig]}, transient, brutal_kill, worker, [cli_terminal_listen_endpoint]}],
+    {ok, {{one_for_one, 1, 60}, ChildSpecs}}.
 
 %% ====================================================================
 %% Internal functions
