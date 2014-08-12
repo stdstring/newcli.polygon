@@ -4,17 +4,26 @@
 
 -behaviour(supervisor).
 
+-include("cli_terminal_common_defs.hrl").
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
--export([start_link/1]).
+-export([start/0, create_endpoint/1]).
 %% supervisor behaviour
 -export([init/1]).
 
-start_link(_SocketConfig) -> ok.
+start() ->
+    supervisor:start_link({local, ?ENDPOINT_SUPERVISOR_NAME}, ?MODULE, []).
 
-init(_SocketConfig) -> ok.
+create_endpoint(TerminalState) ->
+    supervisor:start_child(?ENDPOINT_SUPERVISOR_NAME, [TerminalState]).
+
+init(_Args) ->
+    ChildSpecs =
+        [{cli_terminal_endpoint, {cli_terminal_endpoint, start, []}, temporary, brutal_kill, worker, [cli_terminal_endpoint]}],
+    {ok, {{one_for_one, 1, 60}, ChildSpecs}}.
 
 %% ====================================================================
 %% Internal functions

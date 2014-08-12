@@ -4,19 +4,22 @@
 
 -behaviour(supervisor).
 
+-include("cli_terminal_common_defs.hrl").
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
--export([start_link/1]).
+-export([start/1]).
 %% supervisor behaviour
 -export([init/1]).
 
-start_link(_ListenSocketConfig) -> ok.
+start(Config) ->
+    supervisor:start_link({local, ?LISTEN_SUPERVISOR_NAME}, ?MODULE, [Config]).
 
-init(ListenSocketConfig) ->
+init(Config) ->
     ChildSpecs =
-        [{cli_terminal_listen, {cli_terminal_listen_endpoint, start_link, [ListenSocketConfig]}, transient, brutal_kill, worker, [cli_terminal_listen_endpoint]}],
+        [{cli_terminal_listen, {cli_terminal_listen_endpoint, start, [Config]}, transient, brutal_kill, worker, [cli_terminal_listen_endpoint]}],
     {ok, {{one_for_one, 1, 60}, ChildSpecs}}.
 
 %% ====================================================================

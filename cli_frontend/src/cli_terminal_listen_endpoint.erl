@@ -2,6 +2,8 @@
 
 -module(cli_terminal_listen_endpoint).
 
+-include("cli_terminal_common_defs.hrl").
+
 %% -record(listen_state, {listen_socket = undefined :: 'undefined' | socket()}).
 -record(listen_state, {listen_socket = undefined :: 'undefined' | term()}).
 
@@ -9,13 +11,13 @@
 %% API functions
 %% ====================================================================
 
--export([start_link/1]).
+-export([start/1]).
 -export([init/1]).
 
-start_link(PortNumber) ->
-    proc_lib:start_link(cli_terminal_listen_endpoint, init, [PortNumber]).
+start(Config) ->
+    proc_lib:start_link(cli_terminal_listen_endpoint, init, [Config]).
 
-init(PortNumber) ->
+init(#cli_terminal_config{port_number = PortNumber}) ->
     case gen_tcp:listen(PortNumber, [binary, {packet, 4}, {active, once}]) of
         {ok, ListenSocket} ->
             proc_lib:init_ack({ok, self()}),
