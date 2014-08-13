@@ -6,26 +6,19 @@
 %% API functions
 %% ====================================================================
 
--export([]).
-%% temporary export
--export([process_command/2, process_command/4, add_case/3, join_command_body/1, extra_spaces_cleanup/1, extra_spaces_cleanup/3]).
+-export([create_expand_generator/1]).
 
-%%-export([create_expand_fun/1]).
-
-%%-spec create_expand_fun(ExecutionState :: #execution_state{}) -> fun((string()) -> {'yes' | 'no', string(), [string()]}).
-%%create_expand_fun(ExecutionState) ->
-%%    CommandsInfo = ExecutionState#execution_state.commands_info,
-%%    AccFun = fun({_Name, Body, _Help}, Storage) -> process_command(join_command_body(Body), Storage) end,
-%%    ResultStorage = post_process_commands(lists:foldl(AccFun, dict:new(), CommandsInfo)),
-%%    fun(Input) ->
-%%            PreparedInput = extra_spaces_cleanup(Input),
-%%            case dict:is_key(PreparedInput, ResultStorage) of
-%%                true ->
-%%                    {ok, {CommonPart, CaseList}} = dict:find(PreparedInput, ResultStorage),
-%%                    {yes, CommonPart, CaseList};
-%%                false -> {yes, "", []}
-%%            end
-%%    end.
+-spec create_expand_generator(CommandsBody :: [string()]) -> fun((string()) -> [string()]).
+create_expand_generator(CommandsBody) ->
+    AccFun = fun(Body, Storage) -> process_command(join_command_body(Body), Storage) end,
+    ResultStorage = lists:foldl(AccFun, dict:new(), CommandsBody),
+    fun(Input) ->
+        PreparedInput = extra_spaces_cleanup(Input),
+        case dict:find(PreparedInput, ResultStorage) of
+            {ok, CaseList} -> CaseList;
+            error -> []
+        end
+    end.
 
 %% ====================================================================
 %% Internal functions
@@ -41,6 +34,8 @@ process_command(BodySource, BodyRest, undefined, Storage) ->
     NewKey = "",
     NewStorage = add_case(BodySource, NewKey, Storage),
     process_command(BodySource, BodyRest, NewKey, NewStorage);
+process_command(BodySource, [$\s | BodyRest], Key, Storage) ->
+    process_command(BodySource, BodyRest, Key, Storage);
 process_command(BodySource, [Header | BodyRest], Key, Storage) ->
     NewKey = Key ++ [Header],
     NewStorage = add_case(BodySource, NewKey, Storage),
