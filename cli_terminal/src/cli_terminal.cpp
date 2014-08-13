@@ -70,7 +70,7 @@ void readline_handler(char *raw_data)
 
 char** completion_func(const char *text, int start, int end)
 {
-    std::string line = trim_left(text);
+    std::string line = trim_full(text);
     std::vector<std::string> extensions = retrieve_extensions(cstate.socketd, line, create_signal_mask());
     // NULL terminated array
     size_t extensions_size = extensions.size();
