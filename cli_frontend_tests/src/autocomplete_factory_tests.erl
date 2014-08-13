@@ -19,4 +19,6 @@ process_autocomplete_test_() ->
      {"multiple extensions for set", ?_assertEqual(["set", "set global", "set global var", "set local"], ExtensionsGenerator("set"))},
      {"multiple extensions for set global", ?_assertEqual(["set global", "set global var"], ExtensionsGenerator("set global"))},
      {"single extension for set global var", ?_assertEqual(["set global var"], ExtensionsGenerator("set global var"))},
-     {"single extension for set local", ?_assertEqual(["set local"], ExtensionsGenerator("set local"))}].
+     {"single extension for set local", ?_assertEqual(["set local"], ExtensionsGenerator("set local"))},
+     {"extensions for set with parameters", ?_assertEqual([], ExtensionsGenerator("set -v 33"))},
+     {"multiple extensions for set global with many spaces", ?_assertEqual(["set global", "set global var"], ExtensionsGenerator("set \t\t global\t "))}].

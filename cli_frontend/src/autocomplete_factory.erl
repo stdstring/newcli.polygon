@@ -11,9 +11,9 @@
 -spec create_extensions_generator(CommandsBody :: [[string()]]) -> fun((string()) -> [string()]).
 create_extensions_generator(CommandsBody) ->
     AccFun = fun(Body, Storage) -> process_command(join_command_body(Body), Storage) end,
-    ResultStorage = lists:foldl(AccFun, dict:new(), CommandsBody),
+    ResultStorage = post_process_storage(lists:foldl(AccFun, dict:new(), CommandsBody)),
     fun(Input) ->
-        PreparedInput = extra_spaces_cleanup(Input),
+        PreparedInput = string:strip(extra_spaces_cleanup(Input)),
         case dict:find(PreparedInput, ResultStorage) of
             {ok, CaseList} -> CaseList;
             error -> []
@@ -35,7 +35,8 @@ process_command(BodySource, BodyRest, undefined, Storage) ->
     NewStorage = add_case(BodySource, NewKey, Storage),
     process_command(BodySource, BodyRest, NewKey, NewStorage);
 process_command(BodySource, [$\s | BodyRest], Key, Storage) ->
-    process_command(BodySource, BodyRest, Key, Storage);
+    NewKey = Key ++ [$\s],
+    process_command(BodySource, BodyRest, NewKey, Storage);
 process_command(BodySource, [Header | BodyRest], Key, Storage) ->
     NewKey = Key ++ [Header],
     NewStorage = add_case(BodySource, NewKey, Storage),
@@ -46,6 +47,10 @@ add_case(BodySource, Key, Storage) ->
     InitialValue = [BodySource],
     UpdateFun = fun(OldCaseList) -> [BodySource] ++ OldCaseList end,
     dict:update(Key, UpdateFun, InitialValue, Storage).
+
+-spec post_process_storage(Storage :: dict()) -> dict().
+post_process_storage(Storage) ->
+    dict:map(fun(_Key, CaseList) -> lists:reverse(CaseList) end, Storage).
 
 -spec join_command_body(CommandBodyParts :: [string()]) -> string().
 join_command_body(CommandBodyParts) ->
