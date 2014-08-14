@@ -6,6 +6,7 @@ SOURCE=src/commands/command_behaviour.erl \
        src/commands/login_command.erl \
        src/commands/logout_command.erl \
        src/autocomplete_factory.erl \
+       src/client_handler.erl \
        src/cli_frontend_application.erl \
        src/cli_terminal_endpoint.erl \
        src/cli_terminal_listen_endpoint.erl \
