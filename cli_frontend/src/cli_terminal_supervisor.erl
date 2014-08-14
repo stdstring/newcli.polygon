@@ -17,8 +17,8 @@
 start() ->
     supervisor:start_link({local, ?ENDPOINT_SUPERVISOR_NAME}, ?MODULE, []).
 
-create_endpoint(TerminalState) ->
-    supervisor:start_child(?ENDPOINT_SUPERVISOR_NAME, [TerminalState]).
+create_endpoint(Socket) ->
+    supervisor:start_child(?ENDPOINT_SUPERVISOR_NAME, [Socket]).
 
 init(_Args) ->
     ChildSpecs =

@@ -30,13 +30,24 @@ init(#cli_terminal_config{port_number = PortNumber}) ->
 %% Internal functions
 %% ====================================================================
 
+-spec process_listen(State :: #listen_state{}) -> no_return().
 process_listen(State) ->
     case gen_tcp:accept(State#listen_state.listen_socket) of
-        {ok, _Socket} ->
-            %% create cli_terminal_endpoint
-            ok;
+        {ok, Socket} ->
+            create_endpoint(Socket);
         {error, _Reason} ->
             %% some logging
             ok
     end,
     process_listen(State).
+
+%%-spec create_endpoint(Socket :: socket()) -> 'ok'.
+-spec create_endpoint(Socket :: term()) -> 'ok'.
+create_endpoint(Socket) ->
+    case cli_terminal_supervisor:create_endpoint(Socket) of
+        {ok, Endpoint} ->
+            gen_tcp:controlling_process(Socket, Endpoint);
+        {error, Reason} ->
+            gen_tcp:close(Socket),
+            error({create_endpoint, Reason})
+    end.

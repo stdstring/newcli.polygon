@@ -15,9 +15,11 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-start(_TerminalState) -> ok.
+start(Socket) ->
+    gen_server:start_link(?MODULE, Socket, []).
 
-init(_State) -> ok.
+init(Socket) ->
+    {ok, #cli_terminal_state{socket = Socket}}.
 
 handle_call(_Request, _From, State) -> {stop, enotsup, State}.
 
@@ -40,32 +42,32 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% Internal functions
 %% ====================================================================
 
-process_request(#command{command_line = _CommandLine}, _Socket) -> ok;
-process_request(#interrupt{}, _Socket) ->
+process_request(#command{command_line = _CommandLine}, _State) -> ok;
+process_request(#interrupt{}, _State) ->
     %% we won't do anything now
     no_response;
-process_request(#current_state_request{}, Socket) ->
+process_request(#current_state_request{}, State) ->
     %% some action
     Prompt = "...",
-    process_response(#current_state_response{prompt = Prompt}, Socket);
-process_request(#extension_request{command_line = _CommandLine}, Socket) ->
+    process_response(#current_state_response{prompt = Prompt}, State);
+process_request(#extension_request{command_line = _CommandLine}, State) ->
     %% some action
     ExtensionList = [],
-    process_response(#extension_response{extension_list = ExtensionList}, Socket);
-process_request(#exit{}, _Socket) ->
+    process_response(#extension_response{extension_list = ExtensionList}, State);
+process_request(#exit{}, _State) ->
     %% some action
     no_response.
 
-process_response(no_response, _Socket) -> ok;
-process_response(#command_out{} = Response, Socket) ->
-    gen_tcp:send(Socket, term_to_binary(Response));
-process_response(#command_err{} = Response, Socket) ->
-    gen_tcp:send(Socket, term_to_binary(Response));
-process_response(#'end'{} = Response, Socket) ->
-    gen_tcp:send(Socket, term_to_binary(Response));
-process_response(#error{} = Response, Socket) ->
-    gen_tcp:send(Socket, term_to_binary(Response));
-process_response(#current_state_response{} = Response, Socket) ->
-    gen_tcp:send(Socket, term_to_binary(Response));
-process_response(#extension_response{} = Response, Socket) ->
-    gen_tcp:send(Socket, term_to_binary(Response)).
+process_response(no_response, _State) -> ok;
+process_response(#command_out{} = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
+process_response(#command_err{} = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
+process_response(#'end'{} = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
+process_response(#error{} = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
+process_response(#current_state_response{} = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
+process_response(#extension_response{} = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)).
