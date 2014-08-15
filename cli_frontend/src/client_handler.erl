@@ -7,7 +7,7 @@
 -define(DEVICE_NAME, "CliDemo").
 
 -record(client_handler_state, {config :: #global_config{},
-                               state :: #execution_state{},
+                               execution_state :: #execution_state{},
                                endpoint = undefined :: 'undefined' | pid(),
                                extension_generator = undefined :: 'undefined' | fun((string()) -> [string()])}).
 
@@ -40,10 +40,12 @@ exit(_Handler) -> ok.
 init(_Args) ->
     GlobalConfig = #global_config{},
     ExecutionState = #execution_state{device_name = ?DEVICE_NAME},
-    State = #client_handler_state{config = GlobalConfig, state = ExecutionState},
+    State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState},
     {ok, State}.
 
-handle_call(current_state, _From, State) -> {stop, enotsup, State};
+handle_call(current_state, _From, State) ->
+    Prompt = prompt_factory:generate_prompt(State#client_handler_state.execution_state),
+    {reply, Prompt, State};
 handle_call({extensions, CommandLine}, _From, State) ->
     ExtensionGenerator = State#client_handler_state.extension_generator,
     Extensions = ExtensionGenerator(CommandLine),
