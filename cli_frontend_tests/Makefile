@@ -3,7 +3,8 @@ EBIN=ebin
 SRC_EBIN = ../cli_frontend/ebin
 
 SOURCE=src/autocomplete_factory_tests.erl \
-       src/command_parser_fsm_tests.erl
+       src/command_parser_fsm_tests.erl \
+       src/prompt_factory_tests.erl
 
 INCLUDE_FLAGS=-I include
 
