@@ -12,6 +12,7 @@
 -record(login_info, {login_name = "" :: string(), is_admin = false :: boolean()}).
 
 -record(execution_state, {global_handler = undefined :: 'undefined' | atom() | {atom(), atom()},
+                          device_name = "" :: string(),
                           session = undefined :: 'undefined' | pid(),
                           login_info = undefined :: 'undefined' | #login_info{},
                           commands_info = [] :: [{CommandName :: atom(), CommandBody :: [string()], CommandHelp :: string()}],

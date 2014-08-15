@@ -4,6 +4,8 @@
 
 -include("common_defs.hrl").
 
+-define(DEVICE_NAME, "CliDemo").
+
 -record(client_handler_state, {config :: #global_config{},
                                state :: #execution_state{},
                                endpoint = undefined :: 'undefined' | pid(),
@@ -35,7 +37,11 @@ get_extensions(Handler, CommandLine) ->
 %%exit(Handler) -> gen_server:cast(Handler, exit).
 exit(_Handler) -> ok.
 
-init(_Args) -> {ok, #client_handler_state{}}.
+init(_Args) ->
+    GlobalConfig = #global_config{},
+    ExecutionState = #execution_state{device_name = ?DEVICE_NAME},
+    State = #client_handler_state{config = GlobalConfig, state = ExecutionState},
+    {ok, State}.
 
 handle_call(current_state, _From, State) -> {stop, enotsup, State};
 handle_call({extensions, CommandLine}, _From, State) ->

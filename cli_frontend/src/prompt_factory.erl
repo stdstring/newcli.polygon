@@ -9,7 +9,7 @@
 generate_prompt(ExecutionState) ->
     LoginInfo = ExecutionState#execution_state.login_info,
     LoginPart = logic_utils:ternary_lazy_op(LoginInfo == undefined, ?LAZY(""), ?LAZY(LoginInfo#login_info.login_name)),
-    DeviceName = "CliDemo",
+    DeviceName = ExecutionState#execution_state.device_name,
     CliMode = ExecutionState#execution_state.current_cli_mode,
     CliModePart = logic_utils:ternary_lazy_op((CliMode == undefined) or (CliMode == ""), ?LAZY(""), ?LAZY(" (" ++ CliMode ++ ")")),
     IsAdmin = logic_utils:ternary_lazy_op(LoginInfo == undefined, ?LAZY(false), ?LAZY(LoginInfo#login_info.is_admin)),
