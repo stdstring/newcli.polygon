@@ -1,4 +1,4 @@
-%% @author stdstring
+ %% @author stdstring
 
 -module(command_behaviour).
 

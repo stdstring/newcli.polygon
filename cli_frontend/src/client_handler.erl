@@ -16,7 +16,7 @@
 %% API functions
 %% ====================================================================
 
--export([start/1, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1]).
+-export([start/1, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1, send_output/2, send_error/2, finish_command/3]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -38,6 +38,18 @@ get_current_state(Handler) ->
 -spec get_extensions(Handler :: pid(), CommandLine :: string()) -> [string()].
 get_extensions(Handler, CommandLine) ->
     gen_server:call(Handler, {extensions, CommandLine}).
+
+-spec send_output(Handler :: pid(), Output :: string()) -> 'ok'.
+send_output(Handler, Output) ->
+    gen_server:cast(Handler, {command_out, Output}).
+
+-spec send_error(Handler :: pid(), Error :: string()) -> 'ok'.
+send_error(Handler, Error) ->
+    gen_server:cast(Handler, {command_err, Error}).
+
+-spec finish_command(Handler :: pid(), ExecutionState :: #execution_state{}, ReturnCode :: integer()) -> ok.
+finish_command(Handler, ExecutionState, ReturnCode) ->
+    gen_server:cast(Handler, {command_end, ExecutionState, ReturnCode}).
 
 %%exit(Handler) -> gen_server:cast(Handler, exit).
 exit(_Handler) -> ok.

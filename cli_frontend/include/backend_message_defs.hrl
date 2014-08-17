@@ -1,4 +1,4 @@
-%% message definitions:
+%% backend message definitions:
 
 -record(login, {login_name = "" :: string(), password = <<>> :: binary()}).
 -record(login_success, {login_name = "" :: string(),

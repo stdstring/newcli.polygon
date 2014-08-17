@@ -3,7 +3,7 @@
 -module(cli_frontend_application).
 
 -include("logic_utils_defs.hrl").
--include("message_defs.hrl").
+-include("backend_message_defs.hrl").
 -include("common_defs.hrl").
 
 %% ====================================================================
