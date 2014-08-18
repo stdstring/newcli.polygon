@@ -54,8 +54,8 @@ init(_Args) ->
     State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState},
     {ok, State}.
 
-%%handle_call({process_command, _CommandLine}, _From, #client_handler_state{execution_context = undefined} = State) ->
-%%    {reply, true, State};
+handle_call({process_command, _CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
+    {reply, true, State};
 handle_call({process_command, _CommandLine}, _From, State) ->
     {reply, false, State};
 handle_call(current_state, _From, State) ->
@@ -66,7 +66,9 @@ handle_call({extensions, CommandLine}, _From, State) ->
     Extensions = ExtensionGenerator(CommandLine),
     {reply, Extensions, State}.
 
-handle_cast(interrupt_command, State) -> {stop, enotsup, State}.
+handle_cast(Request, State) ->
+    NewState = command_execution_context:process(Request, State),
+    {noreply, NewState}.
 
 handle_info(_Info, State) -> {stop, enotsup, State}.
 
