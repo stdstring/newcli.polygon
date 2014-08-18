@@ -4,6 +4,8 @@
 
 -include("common_defs.hrl").
 
+-define(HELP, "?").
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -39,10 +41,10 @@ find_command(CommandLine, Commands) ->
                         CommandLine :: string()) ->{CommandName :: atom(), CommandModule :: atom(), ComandLineRest :: string()} | {'false', Reason :: term()}.
 find_command_impl(CommandParserFsm, CommandLine) ->
     %% special case for help command
-    IsHelpCommand = lists:suffix("?", CommandLine),
+    IsHelpCommand = lists:suffix(?HELP, CommandLine),
     if
         IsHelpCommand == true ->
-            HelpCommandRest = lists:sublist(CommandLine, length(CommandLine) - length("?")),
+            HelpCommandRest = lists:sublist(CommandLine, length(CommandLine) - length(?HELP)),
             {help_command, help_command, HelpCommandRest};
         IsHelpCommand == false ->
             find_command_impl(CommandParserFsm, CommandLine, CommandLine, #ambiguous_parse_result{}, undefined)

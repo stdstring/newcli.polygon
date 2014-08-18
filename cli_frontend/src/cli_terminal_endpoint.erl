@@ -23,7 +23,15 @@ init(Socket) ->
 
 handle_call(_Request, _From, State) -> {stop, enotsup, State}.
 
-handle_cast(_Request, State) -> {stop, enotsup, State}.
+handle_cast({command_out, Output}, State) ->
+    process_response(#command_out{data = Output}, State),
+    {noreply, State};
+handle_cast({command_err, Error}, State) ->
+    process_response(#command_err{data = Error}, State),
+    {noreply, State};
+handle_cast({command_end, Prompt}, State) ->
+    process_response(#'end'{prompt = Prompt}, State),
+    {noreply, State}.
 
 handle_info({tcp, Socket, Data}, State) ->
     Request = binary_to_term(Data),
@@ -47,12 +55,12 @@ process_request(#interrupt{}, _State) ->
     %% we won't do anything now
     no_response;
 process_request(#current_state_request{}, State) ->
-    %% some action
-    Prompt = "...",
+    ClientHandler = State#cli_terminal_state.client_handler,
+    Prompt = client_handler:get_current_state(ClientHandler),
     process_response(#current_state_response{prompt = Prompt}, State);
-process_request(#extension_request{command_line = _CommandLine}, State) ->
-    %% some action
-    ExtensionList = [],
+process_request(#extension_request{command_line = CommandLine}, State) ->
+    ClientHandler = State#cli_terminal_state.client_handler,
+    ExtensionList = client_handler:get_extensions(ClientHandler, CommandLine),
     process_response(#extension_response{extension_list = ExtensionList}, State);
 process_request(#exit{}, _State) ->
     %% some action

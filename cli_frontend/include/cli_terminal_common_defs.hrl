@@ -7,4 +7,5 @@
                               max_client_count = 10 :: pos_integer()}).
 
 %% socket = undefined :: 'undefined' | socket()
--record(cli_terminal_state, {socket = undefined :: 'undefined' | term()}).
+-record(cli_terminal_state, {socket = undefined :: 'undefined' | term(),
+                             client_handler = undefined :: 'undefined'  | pid()}).

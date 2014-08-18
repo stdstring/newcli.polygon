@@ -6,12 +6,6 @@
 
 -define(DEVICE_NAME, "CliDemo").
 
--record(client_handler_state, {config :: #global_config{},
-                               execution_state :: #execution_state{},
-                               execution_context = undefined :: 'undefined' | pid(),
-                               endpoint = undefined :: 'undefined' | pid(),
-                               extension_generator = undefined :: 'undefined' | fun((string()) -> [string()])}).
-
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -60,8 +54,8 @@ init(_Args) ->
     State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState},
     {ok, State}.
 
-handle_call({process_command, _CommandLine}, _From, #client_handler_state{execution_context = undefined} = State) ->
-    {reply, true, State};
+%%handle_call({process_command, _CommandLine}, _From, #client_handler_state{execution_context = undefined} = State) ->
+%%    {reply, true, State};
 handle_call({process_command, _CommandLine}, _From, State) ->
     {reply, false, State};
 handle_call(current_state, _From, State) ->
