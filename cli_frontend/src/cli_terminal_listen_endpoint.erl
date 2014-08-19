@@ -12,10 +12,11 @@
 %% ====================================================================
 
 -export([start/1]).
+%% proc_lib export
 -export([init/1]).
 
 start(Config) ->
-    proc_lib:start_link(cli_terminal_listen_endpoint, init, [Config]).
+    proc_lib:start_link(?MODULE, init, [Config]).
 
 init(#cli_terminal_config{port_number = PortNumber}) ->
     case gen_tcp:listen(PortNumber, [binary, {packet, 4}, {active, once}]) of
