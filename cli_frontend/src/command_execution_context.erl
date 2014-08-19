@@ -29,7 +29,9 @@ process({command_end, ExecutionState, ReturnCode}, State) ->
     Prompt = prompt_factory:generate_prompt(ExecutionState),
     cli_terminal_endpoint:handle_end(Endpoint, Prompt),
     State#client_handler_state{execution_state = ExecutionState, command_chain = []};
-process(interrupt_command, State) -> State.
+process(interrupt_command, State) ->
+    %% some real action
+    State.
 
 %% ====================================================================
 %% Internal functions

@@ -54,8 +54,13 @@ init(_Args) ->
     State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState},
     {ok, State}.
 
-handle_call({process_command, _CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
-    {reply, true, State};
+handle_call({process_command, CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
+    GlobalConfig = State#client_handler_state.config,
+    CommandChain = command_parser:parse(CommandLine, GlobalConfig),
+    ExecutionState = State#client_handler_state.execution_state,
+    Request = {command_end, ExecutionState, 0},
+    NewState = command_execution_context:process(Request, State#client_handler_state{command_chain = CommandChain}),
+    {reply, true, NewState};
 handle_call({process_command, _CommandLine}, _From, State) ->
     {reply, false, State};
 handle_call(current_state, _From, State) ->
