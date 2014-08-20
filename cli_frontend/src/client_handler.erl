@@ -5,6 +5,7 @@
 -include("common_defs.hrl").
 
 -define(DEVICE_NAME, "CliDemo").
+-define(PARSER_ERROR, "Command's parsing is failed due to the following: ~w\n").
 
 %% ====================================================================
 %% API functions
@@ -56,11 +57,14 @@ init(_Args) ->
 
 handle_call({process_command, CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
     GlobalConfig = State#client_handler_state.config,
-    CommandChain = command_parser:parse(CommandLine, GlobalConfig),
-    ExecutionState = State#client_handler_state.execution_state,
-    Request = {command_end, ExecutionState, 0},
-    NewState = command_execution_context:process(Request, State#client_handler_state{command_chain = CommandChain}),
-    {reply, true, NewState};
+    case command_parser:parse(CommandLine, GlobalConfig) of
+        {command_parser, Reason} ->
+            NewState = process_parser_error(State, Reason),
+            {reply, true, NewState};
+        CommandChain ->
+            NewState = process_start_command(State, CommandChain),
+            {reply, true, NewState}
+    end;
 handle_call({process_command, _CommandLine}, _From, State) ->
     {reply, false, State};
 handle_call(current_state, _From, State) ->
@@ -84,3 +88,16 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+-spec process_parser_error(State ::  #client_handler_state{}, Reason :: term()) -> #client_handler_state{}.
+process_parser_error(State, Reason) ->
+    Error = lists:flatten(io_lib:format(?PARSER_ERROR, [Reason])),
+    command_helper:send_error(State, Error),
+    command_helper:send_end(State),
+    State.
+
+-spec process_start_command(State :: #client_handler_state{}, CommandChain :: [#command_entry{}]) -> #client_handler_state{}.
+process_start_command(State, CommandChain) ->
+    ExecutionState = State#client_handler_state.execution_state,
+    Request = {command_end, ExecutionState, 0},
+    command_execution_context:process(Request, State#client_handler_state{command_chain = CommandChain}).

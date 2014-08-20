@@ -7,6 +7,7 @@ SOURCE=src/commands/command_behaviour.erl \
        src/commands/logout_command.erl \
        src/autocomplete_factory.erl \
        src/client_handler.erl \
+       src/command_helper.erl \
        src/cli_frontend_application.erl \
        src/cli_terminal_endpoint.erl \
        src/cli_terminal_listen_endpoint.erl \
