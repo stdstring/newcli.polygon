@@ -28,6 +28,7 @@ get_command_body() -> [].
 execute(CommandLineRest, ClientHandler, ExecutionState) ->
     proc_lib:start_link(?MODULE, execute_impl, [CommandLineRest, ClientHandler, ExecutionState]).
 
+-spec execute_impl(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> 'ok'.
 execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
     proc_lib:init_ack(self()),
     case ExecutionState#execution_state.session of
@@ -38,7 +39,8 @@ execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
             {ReturnCode, CliMode} = process_command(Session, CommandLineRest, ClientHandler),
             NewExecutionState = ExecutionState#execution_state{current_cli_mode = CliMode},
             client_handler:finish_command(ClientHandler, NewExecutionState, ReturnCode)
-    end.
+    end,
+    ok.
 
 %% ====================================================================
 %% Internal functions

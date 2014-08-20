@@ -13,6 +13,7 @@ get_first_token(Source) ->
     %% $\s == space character
     get_first_token(Source, $\s).
 
+%% TODO (std_string) : Delimiter must be string
 -spec get_first_token(Source :: string(), Delimiter :: char()) -> {Tokens :: string(), Rest :: string()}.
 get_first_token(Source, Delimiter) ->
     {Token, Rest} = lists:splitwith(fun(Character) -> Character /= Delimiter end, Source),
@@ -23,6 +24,7 @@ get_tokens(Source) ->
     %% delimiter == space
     get_tokens(Source, " ").
 
+%% TODO (std_string) : Delimiter must be string
 -spec get_tokens(Source :: string(), Delimiter :: string()) -> [string()].
 get_tokens(Source, Delimiter) ->
     string:tokens(Source, Delimiter).
@@ -30,4 +32,3 @@ get_tokens(Source, Delimiter) ->
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
-
