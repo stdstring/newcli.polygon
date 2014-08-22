@@ -2,7 +2,7 @@
 
 -module(cli_terminal_listen_endpoint).
 
--include("cli_terminal_common_defs.hrl").
+-include("common_defs.hrl").
 
 %% -record(listen_state, {listen_socket = undefined :: 'undefined' | socket()}).
 -record(listen_state, {listen_socket = undefined :: 'undefined' | term()}).

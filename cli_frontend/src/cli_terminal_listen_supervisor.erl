@@ -4,7 +4,7 @@
 
 -behaviour(supervisor).
 
--include("cli_terminal_common_defs.hrl").
+-include("common_defs.hrl").
 
 %% ====================================================================
 %% API functions

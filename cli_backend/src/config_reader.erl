@@ -21,7 +21,7 @@ read(MainConfigFile) ->
 %% Internal functions
 %% ====================================================================
 
--spec process(Other :: {Key :: atom(), Value :: term()}, Config :: #global_config{}, MainConfigDir :: string()) -> #global_config{}.
+-spec process(Entry :: {Key :: atom(), Value :: term()}, Config :: #global_config{}, MainConfigDir :: string()) -> #global_config{}.
 process({?COMMANDS_CONFIG_KEY, CommandsData}, Config, MainConfigDir) ->
     CommandsSource = config_utils:get_config(CommandsData, ?COMMANDS_DATA_SOURCE, 1, missing_commands_def),
     Commands = erlang_term_utils:read_from_file(filename:absname(CommandsSource, MainConfigDir)),

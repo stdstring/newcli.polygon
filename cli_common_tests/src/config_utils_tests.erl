@@ -22,4 +22,6 @@ get_config_test_() ->
 
 get_config_absent_test_() ->
     [{"single config", ?_assertError(bad_config, config_utils:get_config([{some_key, some_value}], key1, 1, bad_config))},
-     {"multiple config", ?_assertError(bad_config, config_utils:get_config([{some_key, some_value}, {other_key, value1, value2}], key1, 1, bad_config))}].
+     {"multiple config", ?_assertError(bad_config, config_utils:get_config([{some_key, some_value}, {other_key, value1, value2}], key1, 1, bad_config))},
+     {"single config with default value", ?_assertEqual(default_value, config_utils:get_config_with_default([{some_key, some_value}], key1, 1, default_value))},
+     {"multiple config with default value", ?_assertEqual(default_value, config_utils:get_config_with_default([{some_key, some_value}, {other_key, value1, value2}], key1, 1, default_value))}].

@@ -4,7 +4,7 @@
 
 -behaviour(gen_server).
 
--include("cli_terminal_common_defs.hrl").
+-include("common_defs.hrl").
 -include("cli_terminal_message_defs.hrl").
 
 %% ====================================================================
