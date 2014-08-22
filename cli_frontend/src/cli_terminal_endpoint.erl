@@ -11,12 +11,13 @@
 %% API functions
 %% ====================================================================
 
--export([start/1, handle_output/2, handle_error/2, handle_end/2]).
+-export([start/2, handle_output/2, handle_error/2, handle_end/2]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-start(Socket) ->
-    gen_server:start_link(?MODULE, Socket, []).
+-spec start(GlobalConfig :: #global_config{}, Socket :: term()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
+start(GlobalConfig, Socket) ->
+    gen_server:start_link(?MODULE, [GlobalConfig, Socket], []).
 
 -spec handle_output(Endpoint :: pid(), Output :: string()) -> 'ok'.
 handle_output(Endpoint, Output) ->
@@ -30,8 +31,11 @@ handle_error(Endpoint, Error) ->
 handle_end(Endpoint, Prompt) ->
     gen_server:cast(Endpoint, #'end'{prompt = Prompt}).
 
-init(Socket) ->
-    {ok, #cli_terminal_state{socket = Socket}}.
+init([GlobalConfig, Socket]) ->
+    case client_handler:start(GlobalConfig, self()) of
+        {ok, ClientHandler} -> {ok, #cli_terminal_state{socket = Socket, client_handler = ClientHandler}};
+        {error, Reason} -> {stop, {client_handler_init, Reason}}
+    end.    
 
 handle_call(_Request, _From, State) -> {stop, enotsup, State}.
 

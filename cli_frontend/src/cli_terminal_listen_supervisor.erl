@@ -14,6 +14,7 @@
 %% supervisor behaviour
 -export([init/1]).
 
+-spec start(Config :: #cli_terminal_config{}) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(Config) ->
     supervisor:start_link({local, ?LISTEN_SUPERVISOR_NAME}, ?MODULE, [Config]).
 

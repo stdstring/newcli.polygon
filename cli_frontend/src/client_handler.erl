@@ -11,12 +11,13 @@
 %% API functions
 %% ====================================================================
 
--export([start/1, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1, send_output/2, send_error/2, finish_command/3]).
+-export([start/2, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1, send_output/2, send_error/2, finish_command/3]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-start(Socket) ->
-    gen_server:start_link(?MODULE, Socket, []).
+-spec start(GlobalConfig :: #global_config{}, Endpoint :: pid()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
+start(GlobalConfig, Endpoint) ->
+    gen_server:start_link(?MODULE, [GlobalConfig, Endpoint], []).
 
 -spec process_command(Handler :: pid(), CommandLine :: string()) -> boolean().
 process_command(Handler, CommandLine) ->
@@ -49,10 +50,10 @@ finish_command(Handler, ExecutionState, ReturnCode) ->
 %%exit(Handler) -> gen_server:cast(Handler, exit).
 exit(_Handler) -> ok.
 
-init(_Args) ->
-    GlobalConfig = #global_config{},
-    ExecutionState = #execution_state{device_name = ?DEVICE_NAME},
-    State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState},
+init([GlobalConfig, Endpoint]) ->
+    GlobalHandler = GlobalConfig#global_config.global_handler,
+    ExecutionState = #execution_state{device_name = ?DEVICE_NAME, global_handler = GlobalHandler},
+    State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState, endpoint = Endpoint},
     {ok, State}.
 
 handle_call({process_command, CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->

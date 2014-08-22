@@ -15,8 +15,10 @@
 %% proc_lib export
 -export([init/1]).
 
+-spec start(Config :: #cli_terminal_config{}) -> {'ok', Pid :: pid()}.
 start(Config) ->
-    proc_lib:start_link(?MODULE, init, [Config]).
+    Pid = proc_lib:start_link(?MODULE, init, [Config]),
+    {ok, Pid}.
 
 init(#cli_terminal_config{port_number = PortNumber}) ->
     case gen_tcp:listen(PortNumber, [binary, {packet, 4}, {active, once}]) of
