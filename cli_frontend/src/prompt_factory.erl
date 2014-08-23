@@ -18,5 +18,5 @@ generate_prompt(ExecutionState) ->
     CliModePart = logic_utils:ternary_lazy_op((CliMode == undefined) or (CliMode == ""), ?LAZY(""), ?LAZY(" (" ++ CliMode ++ ")")),
     IsAdmin = logic_utils:ternary_lazy_op(LoginInfo == undefined, ?LAZY(false), ?LAZY(LoginInfo#login_info.is_admin)),
     PromptFooter = logic_utils:ternary_op(IsAdmin, ?ADMIN_FOOTER, ?USER_FOOTER),
-    Prompt = io_lib:format(?PROMPT_FORMAT, [LoginPart, DeviceName, CliModePart, PromptFooter]),
+    Prompt = message_helper:format(?PROMPT_FORMAT, [LoginPart, DeviceName, CliModePart, PromptFooter]),
     lists:flatten(Prompt).

@@ -1,3 +1,5 @@
+%% @author stdstring
+
 -module(client_handler).
 
 -behaviour(gen_server).
@@ -92,7 +94,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 -spec process_parser_error(State ::  #client_handler_state{}, Reason :: term()) -> #client_handler_state{}.
 process_parser_error(State, Reason) ->
-    Error = lists:flatten(io_lib:format(?PARSER_ERROR, [Reason])),
+    Error = message_helper:format(?PARSER_ERROR, [Reason]),
     command_helper:send_error(State, Error),
     command_helper:send_end(State),
     State.

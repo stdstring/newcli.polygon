@@ -4,6 +4,8 @@
 
 -include("common_defs.hrl").
 
+-define(EXEC_FAILED, "Command execution failed. Return code is ~w\n").
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -21,7 +23,7 @@ process({command_end, ExecutionState, 0}, State) ->
     NewState = State#client_handler_state{execution_state = ExecutionState},
     process_next_command(NewState);
 process({command_end, ExecutionState, ReturnCode}, State) ->
-    Error = lists:flatten(io_lib:format("Command execution failed. Return code is ~w\n", [ReturnCode])),
+    Error = message_helper:format(?EXEC_FAILED, [ReturnCode]),
     NewState = State#client_handler_state{execution_state = ExecutionState, command_chain = []},
     command_helper:send_error(NewState, Error),
     command_helper:send_end(NewState),

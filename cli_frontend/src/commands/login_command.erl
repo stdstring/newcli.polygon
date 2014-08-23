@@ -73,7 +73,7 @@ process_login_response(Response, ClientHandler, ExecutionState) ->
             NewExecutionState = ExecutionState#execution_state{session = Session, login_info = LoginInfo, current_cli_mode = CliMode},
             {0, NewExecutionState};
         #login_fail{reason = Reason} ->
-            Message = lists:flatten(io_lib:format(?LOGIN_FAILED, [Reason])),
+            Message = message_helper:format(?LOGIN_FAILED, [Reason]),
             client_handler:send_error(ClientHandler, Message),
             {255, ExecutionState}
     end.

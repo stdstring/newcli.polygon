@@ -49,7 +49,7 @@ process_response(ClientHandler) ->
         #command_end{completion_code = ReturnCode, cli_mode = CliMode} ->
             {ReturnCode, CliMode};
         #command_fail{reason = Reason, cli_mode = CliMode} ->
-            Message = lists:flatten(io_lib:format(?EXEC_FAILED, [Reason])),
+            Message = message_helper:format(?EXEC_FAILED, [Reason]),
             client_handler:send_error(ClientHandler, Message),
             {255, CliMode}
     end.
