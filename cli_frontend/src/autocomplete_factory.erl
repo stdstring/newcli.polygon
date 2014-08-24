@@ -6,10 +6,10 @@
 %% API functions
 %% ====================================================================
 
--export([create_extensions_generator/1]).
+-export([create_extension_generator/1]).
 
--spec create_extensions_generator(CommandsBody :: [[string()]]) -> fun((string()) -> [string()]).
-create_extensions_generator(CommandsBody) ->
+-spec create_extension_generator(CommandsBody :: [[string()]]) -> fun((string()) -> [string()]).
+create_extension_generator(CommandsBody) ->
     AccFun = fun(Body, Storage) -> process_command(join_command_body(Body), Storage) end,
     ResultStorage = post_process_storage(lists:foldl(AccFun, dict:new(), CommandsBody)),
     fun(Input) ->

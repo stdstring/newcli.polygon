@@ -53,10 +53,15 @@ finish_command(Handler, ExecutionState, ReturnCode) ->
 exit(_Handler) -> ok.
 
 init([GlobalConfig, Endpoint]) ->
-    GlobalHandler = GlobalConfig#global_config.global_handler,
-    ExecutionState = #execution_state{device_name = ?DEVICE_NAME, global_handler = GlobalHandler},
-    State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState, endpoint = Endpoint},
-    {ok, State}.
+    case create_execution_state(GlobalConfig) of
+        {ok, ExecutionState} ->
+            CommandsInfo = ExecutionState#execution_state.commands_info,
+            CommandsBody = lists:map(fun(_Name, Body, _Help) -> Body end, CommandsInfo),
+            Generator = autocomplete_factory:create_extension_generator(CommandsBody),
+            State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState, endpoint = Endpoint, extension_generator =  Generator},
+            {ok, State};
+        {error, Reason} -> {stop, Reason}
+    end.
 
 handle_call({process_command, CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
     GlobalConfig = State#client_handler_state.config,
@@ -74,8 +79,8 @@ handle_call(current_state, _From, State) ->
     Prompt = prompt_factory:generate_prompt(State#client_handler_state.execution_state),
     {reply, Prompt, State};
 handle_call({extensions, CommandLine}, _From, State) ->
-    ExtensionGenerator = State#client_handler_state.extension_generator,
-    Extensions = ExtensionGenerator(CommandLine),
+    Generator = State#client_handler_state.extension_generator,
+    Extensions = Generator(CommandLine),
     {reply, Extensions, State}.
 
 handle_cast(Request, State) ->
@@ -91,6 +96,17 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+-spec create_execution_state(GlobalConfig :: #global_config{}) ->
+    {'ok', ExecutionState :: #execution_state{}} | {'error', Reason :: term()}.
+create_execution_state(GlobalConfig) ->
+    GlobalHandler = GlobalConfig#global_config.global_handler,
+    case commands_info_helper:retrieve(GlobalHandler) of
+        {ok, CommandsInfo} ->
+            {ok, #execution_state{global_handler = GlobalHandler, commands_info = CommandsInfo, device_name = ?DEVICE_NAME}};
+        {error, Reason} ->
+            {error, Reason}
+    end.
 
 -spec process_parser_error(State ::  #client_handler_state{}, Reason :: term()) -> #client_handler_state{}.
 process_parser_error(State, Reason) ->

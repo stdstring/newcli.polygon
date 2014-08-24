@@ -13,7 +13,7 @@ process_autocomplete_test_() ->
         ["set", "global", "var"],
         ["set", "local"],
         ["clear"]],
-    ExtensionsGenerator = autocomplete_factory:create_extensions_generator(CommandsBody),
+    ExtensionsGenerator = autocomplete_factory:create_extension_generator(CommandsBody),
     [{"extensions for unknown command", ?_assertEqual([], ExtensionsGenerator("do it"))},
      {"single extension for clear", ?_assertEqual(["clear"], ExtensionsGenerator("clear"))},
      {"multiple extensions for set", ?_assertEqual(["set", "set global", "set global var", "set local"], ExtensionsGenerator("set"))},
