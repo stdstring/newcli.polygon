@@ -18,12 +18,12 @@
 
 -spec start(GlobalConfig :: #global_config{}) -> {'ok', Pid :: pid()} | {'error', Reason :: term()} | term().
 start(GlobalConfig) ->
-    supervisor:start_link({local, ?SUPERVISOR_NAME}, ?MODULE, [GlobalConfig]).
+    supervisor:start_link({local, ?SUPERVISOR_NAME}, ?MODULE, GlobalConfig).
 
 create_client(User, ClientOutput) ->
     supervisor:start_child(?SUPERVISOR_NAME, [User, ClientOutput]).
 
-init([GlobalConfig]) ->
+init(GlobalConfig) ->
     ChildSpecification = {client_input_endpoint, {client_input_endpoint, start, [GlobalConfig]}, temporary, 2000, worker, [client_input_endpoint]},
     {ok, {{simple_one_for_one, 0, 1}, [ChildSpecification]}}.
 

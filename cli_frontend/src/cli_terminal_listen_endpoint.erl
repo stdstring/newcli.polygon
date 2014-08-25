@@ -17,8 +17,7 @@
 
 -spec start(Config :: #cli_terminal_config{}) -> {'ok', Pid :: pid()}.
 start(Config) ->
-    Pid = proc_lib:start_link(?MODULE, init, [Config]),
-    {ok, Pid}.
+    proc_lib:start_link(?MODULE, init, [Config]).
 
 init(#cli_terminal_config{port_number = PortNumber}) ->
     case gen_tcp:listen(PortNumber, [binary, {packet, 4}, {active, once}]) of

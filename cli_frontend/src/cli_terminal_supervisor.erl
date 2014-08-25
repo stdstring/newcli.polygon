@@ -23,9 +23,8 @@ create_endpoint(Socket) ->
     supervisor:start_child(?ENDPOINT_SUPERVISOR_NAME, [Socket]).
 
 init(GlobalConfig) ->
-    ChildSpecs =
-        [{cli_terminal_endpoint, {cli_terminal_endpoint, start, [GlobalConfig]}, temporary, brutal_kill, worker, [cli_terminal_endpoint]}],
-    {ok, {{one_for_one, 1, 60}, ChildSpecs}}.
+    ChildSpec = {cli_terminal_endpoint, {cli_terminal_endpoint, start, [GlobalConfig]}, temporary, 2000, worker, [cli_terminal_endpoint]},
+    {ok, {{simple_one_for_one, 0, 1}, [ChildSpec]}}.
 
 %% ====================================================================
 %% Internal functions
