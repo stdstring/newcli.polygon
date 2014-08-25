@@ -28,7 +28,8 @@ start(MainConfigFile) ->
 init(GlobalConfig) ->
     CliTerminalConfig = GlobalConfig#global_config.cli_terminal,
     ChildSpecs =
-        [{cli_terminal_listen_supervisor, {cli_terminal_listen_supervisor, start, [CliTerminalConfig]}, transient, brutal_kill, supervisor, [cli_terminal_listen_supervisor]}],
+        [{cli_terminal_listen_supervisor, {cli_terminal_listen_supervisor, start, [CliTerminalConfig]}, transient, brutal_kill, supervisor, [cli_terminal_listen_supervisor]},
+         {cli_terminal_supervisor, {cli_terminal_supervisor, start, [GlobalConfig]}, transient, brutal_kill, supervisor, [cli_terminal_supervisor]}],
     {ok,{{one_for_one, 1, 60}, ChildSpecs}}.
 
 %% ====================================================================
