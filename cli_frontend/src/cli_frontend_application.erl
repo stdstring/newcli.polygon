@@ -15,7 +15,7 @@
 -export([start/2, stop/1]).
 
 start(_Type, MainConfigFile) ->
-    case cli_frontend_supervisor:start_link(MainConfigFile) of
+    case cli_frontend_supervisor:start(MainConfigFile) of
         {ok, Pid} -> {ok, Pid};
         {error, Reason} -> {error, Reason};
         Reason -> {error, Reason}
