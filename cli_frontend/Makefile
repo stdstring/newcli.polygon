@@ -22,7 +22,8 @@ SOURCE=src/commands/command_behaviour.erl \
        src/message_helper.erl \
        src/prompt_factory.erl
 
-COPY=src/cli_frontend_application.app
+COPY=src/cli_frontend_application.app \
+     src/cli_frontend_start.sh
 
 INCLUDE_FLAGS=-I include
 
