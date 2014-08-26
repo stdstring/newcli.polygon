@@ -19,7 +19,8 @@
 
 -spec start(GlobalConfig :: #global_config{}, Endpoint :: pid()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(GlobalConfig, Endpoint) ->
-    gen_server:start_link(?MODULE, [GlobalConfig, Endpoint], []).
+    io:format("client_handler:start/2 ~n", []),
+    gen_server:start_link(?MODULE, [GlobalConfig, Endpoint], [{log_to_file, "/tmp/frontend.log"}]).
 
 -spec process_command(Handler :: pid(), CommandLine :: string()) -> boolean().
 process_command(Handler, CommandLine) ->
@@ -53,14 +54,19 @@ finish_command(Handler, ExecutionState, ReturnCode) ->
 exit(_Handler) -> ok.
 
 init([GlobalConfig, Endpoint]) ->
+    io:format("client_handler:init/1 ~n", []),
+    io:format("client_handler:init/1 [~p, ~p]~n", [GlobalConfig, Endpoint]),
     case create_execution_state(GlobalConfig) of
         {ok, ExecutionState} ->
+            io:format("client_handler:init/1, ExecutionState: ~p~n", [ExecutionState]),
             CommandsInfo = ExecutionState#execution_state.commands_info,
             CommandsBody = lists:map(fun(_Name, Body, _Help) -> Body end, CommandsInfo),
             Generator = autocomplete_factory:create_extension_generator(CommandsBody),
             State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState, endpoint = Endpoint, extension_generator =  Generator},
             {ok, State};
-        {error, Reason} -> {stop, Reason}
+        {error, Reason} ->
+            io:format("client_handler:init/1 error: ~p~n", [Reason]),
+            {stop, Reason}
     end.
 
 handle_call({process_command, CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
@@ -100,6 +106,9 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 -spec create_execution_state(GlobalConfig :: #global_config{}) ->
     {'ok', ExecutionState :: #execution_state{}} | {'error', Reason :: term()}.
 create_execution_state(GlobalConfig) ->
+    io:format("client_handler:create_execution_state/1 ~n", []),
+    io:format("client_handler:create_execution_state/1, GlobalConfig ~p~n", [GlobalConfig]),
+    io:format("client_handler:create_execution_state/1, GlobalHandler ~p~n", [GlobalConfig#global_config.global_handler]),
     GlobalHandler = GlobalConfig#global_config.global_handler,
     case commands_info_helper:retrieve(GlobalHandler) of
         {ok, CommandsInfo} ->

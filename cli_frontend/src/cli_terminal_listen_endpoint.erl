@@ -36,6 +36,7 @@ init(#cli_terminal_config{port_number = PortNumber}) ->
 process_listen(State) ->
     case gen_tcp:accept(State#listen_state.listen_socket) of
         {ok, Socket} ->
+            io:format("cli_terminal_listen_endpoint:process_listen/1, accept ~n", []),
             create_endpoint(Socket);
         {error, _Reason} ->
             %% some logging
@@ -46,10 +47,13 @@ process_listen(State) ->
 %%-spec create_endpoint(Socket :: socket()) -> 'ok'.
 -spec create_endpoint(Socket :: term()) -> 'ok'.
 create_endpoint(Socket) ->
+    io:format("cli_terminal_listen_endpoint:create_endpoint/1, ~n", []),
     case cli_terminal_supervisor:create_endpoint(Socket) of
         {ok, Endpoint} ->
+            io:format("cli_terminal_listen_endpoint:create_endpoint/1, set controlling process ~n", []),
             gen_tcp:controlling_process(Socket, Endpoint);
         {error, Reason} ->
+            io:format("cli_terminal_listen_endpoint:create_endpoint/1 failed ~p~n", [Reason]),
             gen_tcp:close(Socket),
             error({create_endpoint, Reason})
     end.

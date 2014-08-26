@@ -17,6 +17,7 @@
 
 -spec start(GlobalConfig :: #global_config{}, Socket :: term()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(GlobalConfig, Socket) ->
+    io:format("cli_terminal_endpoint:start/1 ~n", []),
     gen_server:start_link(?MODULE, [GlobalConfig, Socket], []).
 
 -spec handle_output(Endpoint :: pid(), Output :: string()) -> 'ok'.
@@ -32,9 +33,14 @@ handle_end(Endpoint, Prompt) ->
     gen_server:cast(Endpoint, #'end'{prompt = Prompt}).
 
 init([GlobalConfig, Socket]) ->
+    io:format("cli_terminal_endpoint:init/1 ~n", []),
     case client_handler:start(GlobalConfig, self()) of
-        {ok, ClientHandler} -> {ok, #cli_terminal_state{socket = Socket, client_handler = ClientHandler}};
-        {error, Reason} -> {stop, {client_handler_init, Reason}}
+        {ok, ClientHandler} ->
+            io:format("cli_terminal_endpoint:init/1, create client_handler instance ~n", []),
+            {ok, #cli_terminal_state{socket = Socket, client_handler = ClientHandler}};
+        {error, Reason} ->
+            io:format("cli_terminal_endpoint:init/1, create client_handler failed: ~p~n", [Reason]),
+            {stop, {client_handler_init, Reason}}
     end.    
 
 handle_call(_Request, _From, State) -> {stop, enotsup, State}.
