@@ -50,11 +50,12 @@ handle_cast(Request, State) ->
     {noreply, State}.
 
 handle_info({tcp, Socket, Data}, State) ->
+    io:format("State: ~p~n", [State]),
     io:format("Request binary: ~p~n", [Data]),
     Request = binary_to_term(Data),
     io:format("Request: ~p~n", [Request]),
-    Result = process_request(Request, Socket),
-    case process_response(Result, Socket) of
+    Result = process_request(Request, State),
+    case process_response(Result, State) of
         ok ->
             inet:setopts(Socket, [{active, once}]),
             {noreply, State};
@@ -89,11 +90,13 @@ process_request(#interrupt{}, State) ->
 process_request(#current_state_request{}, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     Prompt = client_handler:get_current_state(ClientHandler),
-    process_response(#current_state_response{prompt = Prompt}, State);
+    #current_state_response{prompt = Prompt};
+    %%process_response(#current_state_response{prompt = Prompt}, State);
 process_request(#extension_request{command_line = CommandLine}, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     ExtensionList = client_handler:get_extensions(ClientHandler, CommandLine),
-    process_response(#extension_response{extension_list = ExtensionList}, State);
+    #extension_response{extension_list = ExtensionList};
+    %%process_response(#extension_response{extension_list = ExtensionList}, State);
 process_request(#exit{}, _State) ->
     %% some action
     no_response.

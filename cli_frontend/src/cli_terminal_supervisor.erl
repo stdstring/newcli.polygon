@@ -16,7 +16,7 @@
 
 -spec start(GlobalConfig :: #global_config{}) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(GlobalConfig) ->
-    supervisor:start_link({local, ?ENDPOINT_SUPERVISOR_NAME}, ?MODULE, [GlobalConfig]).
+    supervisor:start_link({local, ?ENDPOINT_SUPERVISOR_NAME}, ?MODULE, GlobalConfig).
 
 -spec create_endpoint(Socket :: term()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 create_endpoint(Socket) ->

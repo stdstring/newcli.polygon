@@ -60,7 +60,7 @@ init([GlobalConfig, Endpoint]) ->
         {ok, ExecutionState} ->
             io:format("client_handler:init/1, ExecutionState: ~p~n", [ExecutionState]),
             CommandsInfo = ExecutionState#execution_state.commands_info,
-            CommandsBody = lists:map(fun(_Name, Body, _Help) -> Body end, CommandsInfo),
+            CommandsBody = lists:map(fun({_Name, Body, _Help}) -> Body end, CommandsInfo),
             Generator = autocomplete_factory:create_extension_generator(CommandsBody),
             State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState, endpoint = Endpoint, extension_generator =  Generator},
             {ok, State};
