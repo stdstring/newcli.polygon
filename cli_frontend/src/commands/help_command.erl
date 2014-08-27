@@ -29,6 +29,7 @@ execute(CommandLineRest, ClientHandler, ExecutionState) ->
 
 -spec execute_impl(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> 'ok'.
 execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
+    proc_lib:init_ack(self()),
     SourceCommands = ExecutionState#execution_state.commands_info,
     HasTrailingSpace = lists:suffix(" ", CommandLineRest),
     if

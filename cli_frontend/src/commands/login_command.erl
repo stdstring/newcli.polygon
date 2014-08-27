@@ -32,6 +32,7 @@ execute(CommandLineRest, ClientHandler, ExecutionState) ->
 
 -spec execute_impl(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> 'ok'.
 execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
+    proc_lib:init_ack(self()),
     case ExecutionState#execution_state.session of
         undefined ->
             {ReturnCode, NewExecutionState} = process_command(CommandLineRest, ClientHandler, ExecutionState),

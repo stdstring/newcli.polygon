@@ -55,7 +55,6 @@ exit(_Handler) -> ok.
 
 init([GlobalConfig, Endpoint]) ->
     io:format("client_handler:init/1 ~n", []),
-    io:format("client_handler:init/1 [~p, ~p]~n", [GlobalConfig, Endpoint]),
     case create_execution_state(GlobalConfig) of
         {ok, ExecutionState} ->
             io:format("client_handler:init/1, ExecutionState: ~p~n", [ExecutionState]),
@@ -70,12 +69,14 @@ init([GlobalConfig, Endpoint]) ->
     end.
 
 handle_call({process_command, CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
+    io:format("client_handler:handle_call/3 with empty command_chain ~n", []),
     GlobalConfig = State#client_handler_state.config,
     case command_parser:parse(CommandLine, GlobalConfig) of
         {command_parser, Reason} ->
             NewState = process_parser_error(State, Reason),
             {reply, true, NewState};
         CommandChain ->
+            io:format("client_handler:handle_call/3, CommandChain: ~p~n", [CommandChain]),
             NewState = process_start_command(State, CommandChain),
             {reply, true, NewState}
     end;
@@ -107,8 +108,6 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
     {'ok', ExecutionState :: #execution_state{}} | {'error', Reason :: term()}.
 create_execution_state(GlobalConfig) ->
     io:format("client_handler:create_execution_state/1 ~n", []),
-    io:format("client_handler:create_execution_state/1, GlobalConfig ~p~n", [GlobalConfig]),
-    io:format("client_handler:create_execution_state/1, GlobalHandler ~p~n", [GlobalConfig#global_config.global_handler]),
     GlobalHandler = GlobalConfig#global_config.global_handler,
     case commands_info_helper:retrieve(GlobalHandler) of
         {ok, CommandsInfo} ->

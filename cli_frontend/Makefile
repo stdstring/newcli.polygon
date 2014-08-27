@@ -2,6 +2,7 @@ EBIN=ebin
 
 SOURCE=src/commands/command_behaviour.erl \
        src/commands/backend_command.erl \
+       src/commands/backend_command_inner.erl \
        src/commands/help_command.erl \
        src/commands/login_command.erl \
        src/commands/logout_command.erl \

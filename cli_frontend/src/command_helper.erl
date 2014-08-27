@@ -8,10 +8,10 @@
 %% API functions
 %% ====================================================================
 
--export([send_ouput/2, send_error/2, send_end/1]).
+-export([send_output/2, send_error/2, send_end/1]).
 
--spec send_ouput(State :: #client_handler_state{}, Output :: string()) -> 'ok'.
-send_ouput(State, Output) when is_record(State, client_handler_state) ->
+-spec send_output(State :: #client_handler_state{}, Output :: string()) -> 'ok'.
+send_output(State, Output) when is_record(State, client_handler_state) ->
     Endpoint = State#client_handler_state.endpoint,
     cli_terminal_endpoint:handle_output(Endpoint, Output).
 

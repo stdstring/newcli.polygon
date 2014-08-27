@@ -30,6 +30,7 @@ execute(CommandLineRest, ClientHandler, ExecutionState) ->
 
 -spec execute_impl(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> 'ok'.
 execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
+    proc_lib:init_ack(self()),
     {ReturnCode, NewExecutionState} = process_command(CommandLineRest, ClientHandler, ExecutionState),
     send_operation_result_message(ReturnCode, ClientHandler),
     client_handler:finish_command(ClientHandler, NewExecutionState, ReturnCode),
