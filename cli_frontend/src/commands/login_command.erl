@@ -28,16 +28,20 @@ get_command_body() -> ["login"].
 
 -spec execute(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> CommandPid :: pid().
 execute(CommandLineRest, ClientHandler, ExecutionState) ->
+    io:format("login_command:execute/3 ~n", []),
     proc_lib:start_link(?MODULE, execute_impl, [CommandLineRest, ClientHandler, ExecutionState]).
 
 -spec execute_impl(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> 'ok'.
 execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
     proc_lib:init_ack(self()),
+    io:format("login_command:execute_impl/3 ~n", []),
     case ExecutionState#execution_state.session of
         undefined ->
+            io:format("login_command:execute_impl/3 without state ~n", []),
             {ReturnCode, NewExecutionState} = process_command(CommandLineRest, ClientHandler, ExecutionState),
             client_handler:finish_command(ClientHandler, NewExecutionState, ReturnCode);
         _Session ->
+            io:format("login_command:execute_impl/3 with state ~n", []),
             client_handler:send_error(ClientHandler, ?ALREADY_LOGGED),
             client_handler:finish_command(ClientHandler, ExecutionState, 255)
     end,
@@ -50,6 +54,7 @@ execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
 -spec process_command(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) ->
     {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 process_command(CommandLineRest, ClientHandler, ExecutionState) ->
+    io:format("login_command:process_command/3 ~n", []),
     case commandline_parser:get_tokens(CommandLineRest) of
         [Login, PwdString] ->
             Pwd = create_pwd_hash(base64:decode_to_string(PwdString)),
@@ -57,6 +62,7 @@ process_command(CommandLineRest, ClientHandler, ExecutionState) ->
             BackendGlobalHandler = ExecutionState#execution_state.global_handler,
             %% TODO (std_string) : in future, create interface layer and use it
             LoginResponse = gen_server:call(BackendGlobalHandler, LoginCommand),
+            io:format("login_command:process_command/3, LoginResponse ~p~n", [LoginResponse]),
             process_login_response(LoginResponse, ClientHandler, ExecutionState);
         _Other ->
             client_handler:send_error(ClientHandler, ?ARG_COUNT_MISMATCH),

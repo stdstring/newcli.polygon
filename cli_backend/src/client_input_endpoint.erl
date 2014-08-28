@@ -36,16 +36,10 @@ init({GlobalConfig, User, ClientOutput}) ->
 handle_call(#command{message = CommandLine}, {From, _Tag}, State) ->
     GlobalConfig = State#client_state.global_config,
     ClientConfig = State#client_state.client_config,
-    ClientOutput = ClientConfig#client_config.output,
-    case From of
-        ClientOutput ->
-            case command_execution_context:execute(CommandLine, GlobalConfig, ClientConfig) of
-                false -> {stop, {shutdown, session_terminated}, session_terminated, State};
-                true -> {reply, command_processed, State}
-            end;
-        _Other ->
-            gen_server:cast(ClientOutput, #command_fail{reason = bad_client}),
-            {reply, bad_client, State}
+    NewClientConfig = ClientConfig#client_config{output = From},
+    case command_execution_context:execute(CommandLine, GlobalConfig, NewClientConfig) of
+        false -> {stop, {shutdown, session_terminated}, session_terminated, State#client_state{client_config = NewClientConfig}};
+        true -> {reply, command_processed, State#client_state{client_config = NewClientConfig}}
     end.
 
 handle_cast(_Request, State) -> {stop, enotsup, State}.
