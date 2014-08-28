@@ -72,14 +72,17 @@ process_command(CommandLineRest, ClientHandler, ExecutionState) ->
 -spec process_login_response(Response :: #login_success{} | #login_fail{}, ClientHandler :: pid(), ExecutionState :: #execution_state{}) ->
     {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 process_login_response(Response, ClientHandler, ExecutionState) ->
+    io:format("login_command:process_login_response/3 ~n", []),
     case Response of
         #login_success{login_name = LoginName, is_admin = IsAdmin, session_pid = Session, greeting = Greeting} ->
+            io:format("login_command:process_login_response/3, login_success ~n", []),
             client_handler:send_output(ClientHandler, Greeting),
             LoginInfo = #login_info{login_name = LoginName, is_admin = IsAdmin},
             CliMode = "",
             NewExecutionState = ExecutionState#execution_state{session = Session, login_info = LoginInfo, current_cli_mode = CliMode},
             {0, NewExecutionState};
         #login_fail{reason = Reason} ->
+            io:format("login_command:process_login_response/3, login_fail ~n", []),
             Message = message_helper:format(?LOGIN_FAILED, [Reason]),
             client_handler:send_error(ClientHandler, Message),
             {255, ExecutionState}
