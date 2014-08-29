@@ -12,20 +12,20 @@
 %% API functions
 %% ====================================================================
 
--export([execute/3]).
+-export([execute/4]).
 
--spec execute(CommandLine :: string(), GlobalConfig :: #global_config{}, ClientConfig :: #client_config{}) -> boolean().
-execute(CommandLine, GlobalConfig, ClientConfig) ->
+-spec execute(CommandLine :: string(), GlobalConfig :: #global_config{}, ClientConfig :: #client_config{}, ClientOutput :: pid()) -> boolean().
+execute(CommandLine, GlobalConfig, ClientConfig, ClientOutput) ->
+    io:format("ClientConfig = ~p~n", [ClientConfig]),
     User = ClientConfig#client_config.user,
     CliFsm = ClientConfig#client_config.cli_fsm,
-    ClientOutput = ClientConfig#client_config.output,
     Endpoint = create_output_endpoint(ClientOutput),
     case command_parser:parse(CommandLine, GlobalConfig, Endpoint) of
         {command_parser, Reason} ->
             send_fail(Endpoint, #parser_fail{command_line = CommandLine, reason = Reason}, CliFsm),
             StateInfo = cli_fsm:get_current_state(CliFsm),
             not StateInfo#cli_fsm_state_info.is_terminal;
-        Commands -> execute(Commands, Endpoint, CliFsm, User)
+        Commands -> execute_impl(Commands, Endpoint, CliFsm, User)
     end.
 
 %% ====================================================================
@@ -39,12 +39,12 @@ create_output_endpoint(ClientOutput) ->
         {error, Reason} -> error({output_endpoint, Reason})
     end.
 
--spec execute(Commands :: [{CommandModule :: atom(), CommandPid :: pid()}], Endpoint :: pid(), CliFsm :: pid(), User :: #user{}) -> boolean().
-execute([], Endpoint, CliFsm, _User) ->
+-spec execute_impl(Commands :: [{CommandModule :: atom(), CommandPid :: pid()}], Endpoint :: pid(), CliFsm :: pid(), User :: #user{}) -> boolean().
+execute_impl([], Endpoint, CliFsm, _User) ->
     #cli_fsm_state_info{current_state_representation = Representation, is_terminal = IsTerminalState} = cli_fsm:get_current_state(CliFsm),
     output_endpoint:send_result(Endpoint, 0, Representation),
     not IsTerminalState;
-execute([{CommandModule, CommandPid} | Commands], Endpoint, CliFsm, User) ->
+execute_impl([{CommandModule, CommandPid} | Commands], Endpoint, CliFsm, User) ->
     CommandName = apply(CommandModule, get_name, []),
     case command_execution_checker:execution_precheck(CommandName, CliFsm, User) of
         {false, Reason} ->
@@ -66,7 +66,7 @@ process_execute(CommandModule, CommandPid, OtherCommands, Endpoint, CliFsm, User
     if
         ReturnCode == 0 ->
             cli_fsm:process_command(CliFsm, CommandName),
-            execute(OtherCommands, Endpoint, CliFsm, User);
+            execute_impl(OtherCommands, Endpoint, CliFsm, User);
         ReturnCode /= 0 ->
             send_error(Endpoint, ReturnCode, CliFsm),
             StateInfo = cli_fsm:get_current_state(CliFsm),

@@ -26,6 +26,7 @@ get_command_body() -> [?LOGOUT].
 
 -spec execute(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> CommandPid :: pid().
 execute(CommandLineRest, ClientHandler, ExecutionState) ->
+    io:format("logout CommandLineRest = ~p~n", [CommandLineRest]),
     proc_lib:start_link(?MODULE, execute_impl, [CommandLineRest, ClientHandler, ExecutionState]).
 
 -spec execute_impl(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> 'ok'.
@@ -43,8 +44,8 @@ execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
 -spec process_command(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) ->
     {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 process_command(CommandLineRest, ClientHandler, ExecutionState) ->
-    case commandline_parser:get_tokens(CommandLineRest) of
-        [?LOGOUT] -> backend_command_inner:execute("logout", ClientHandler, ExecutionState);
+    case CommandLineRest of
+        "" -> backend_command_inner:execute(?LOGOUT, ClientHandler, ExecutionState);
         _Other ->
             client_handler:send_error(ClientHandler, ?ARG_COUNT_MISMATCH),
             {255, ExecutionState}

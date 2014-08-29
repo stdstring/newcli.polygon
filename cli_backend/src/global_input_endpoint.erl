@@ -33,11 +33,10 @@ init(GlobalConfig) ->
     register(?SERVICE_NAME, self()),
     {ok, #global_state{global_config = GlobalConfig}}.
 
-handle_call(#login{login_name = LoginName, password = PasswordHash}, {From, _Tag}, State) ->
+handle_call(#login{login_name = LoginName, password = PasswordHash}, _From, State) ->
     case authentication_service:authenticate(LoginName, PasswordHash) of
         {authentication_complete, User} ->
-            ClientOutput = From,
-            case client_input_supervisor:create_client(User, ClientOutput) of
+            case client_input_supervisor:create_client(User) of
                 {error, Error} ->
                     Reply = #login_fail{reason = {session_creation_error, Error}},
                     {reply, Reply, State};

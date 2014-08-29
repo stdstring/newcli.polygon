@@ -19,9 +19,7 @@
                              commands = [] :: [CommandName :: atom()],
                              is_terminal = false :: boolean()}).
 
--record(client_config, {user = undefined :: 'undefined' | #user{},
-                        cli_fsm = undefined :: 'undefined' | pid(),
-                        output = undefined :: 'undefined' | pid()}).
+-record(client_config, {user = undefined :: 'undefined' | #user{}, cli_fsm = undefined :: 'undefined' | pid()}).
 
 -record(ambiguous_parse_result, {}).
 

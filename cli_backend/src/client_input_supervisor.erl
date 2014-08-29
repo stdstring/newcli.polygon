@@ -12,7 +12,7 @@
 %% API functions
 %% ====================================================================
 
--export([start/1, create_client/2]).
+-export([start/1, create_client/1]).
 %% supervisor behaviour
 -export([init/1]).
 
@@ -20,8 +20,8 @@
 start(GlobalConfig) ->
     supervisor:start_link({local, ?SUPERVISOR_NAME}, ?MODULE, GlobalConfig).
 
-create_client(User, ClientOutput) ->
-    supervisor:start_child(?SUPERVISOR_NAME, [User, ClientOutput]).
+create_client(User) ->
+    supervisor:start_child(?SUPERVISOR_NAME, [User]).
 
 init(GlobalConfig) ->
     ChildSpecification = {client_input_endpoint, {client_input_endpoint, start, [GlobalConfig]}, temporary, 2000, worker, [client_input_endpoint]},
