@@ -45,10 +45,19 @@ execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
     {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 process_command(CommandLineRest, ClientHandler, ExecutionState) ->
     case CommandLineRest of
-        "" -> backend_command_inner:execute(?LOGOUT, ClientHandler, ExecutionState);
+        "" ->
+            process_response(ClientHandler, ExecutionState);
         _Other ->
             client_handler:send_error(ClientHandler, ?ARG_COUNT_MISMATCH),
             {255, ExecutionState}
+    end.
+
+-spec process_response(ClientHandler :: pid(), ExecutionState :: #execution_state{}) ->
+    {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
+process_response(ClientHandler, ExecutionState) ->
+    case backend_command_inner:execute(?LOGOUT, ClientHandler, ExecutionState) of
+        {0, NewExecutionState} -> {0, NewExecutionState#execution_state{session = undefined, login_info = undefined}};
+        {ReturnCode, NewExecutionState} -> {ReturnCode, NewExecutionState}
     end.
 
 -spec send_operation_result_message(ReturnCode :: integer(), ClientHandler :: pid()) -> 'ok'.
