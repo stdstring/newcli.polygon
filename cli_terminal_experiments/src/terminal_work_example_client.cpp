@@ -575,18 +575,18 @@ std::string tobase64(std::string const& source)
     size_t triple_length = 3 * (source.length() / 3);
     for(size_t index = 0; index < triple_length; index += 3)
     {
-        char char1 = source[index];
-        char char2 = source[index + 1];
-        char char3 = source[index + 2];
+        char char1 = source.at(index);
+        char char2 = source.at(index + 1);
+        char char3 = source.at(index + 2);
         process_to_chars(dest, char1, char2, char3);
     }
     switch (source.length() % 3)
     {
         case 1:
-            process_to_chars(dest, source[source.length() - 1]);
+            process_to_chars(dest, source.at(source.length() - 1));
             break;
         case 2:
-            process_to_chars(dest, source[source.length() - 2], source[source.length() - 1]);
+            process_to_chars(dest, source.at(source.length() - 2), source.at(source.length() - 1));
             break;
     }
     return dest;
@@ -602,7 +602,7 @@ void process_from_chars(std::string& dest, char char1, char char2)
     size_t index2 = base64_chars.find(char2);
     /*if (std::string::npos == index2)
         throw bad_format();*/    
-    dest.push_back((index1 << 2) + (index2 >> 4));
+    dest.push_back((index1 << 2) + (index2 >> 4));    
     //dest.push_back(((index2 & 0xf) << 4));
     //dest.push_back((index3 & 0x3) << 6);
 }
@@ -647,10 +647,10 @@ std::string frombase64(std::string const& source)
     std::string dest;
     for(size_t index = 0; index < source.length(); index += 4)
     {
-        char char1 = source[index];
-        char char2 = source[index + 1];
-        char char3 = source[index + 2];
-        char char4 = source[index + 4];
+        char char1 = source.at(index);
+        char char2 = source.at(index + 1);
+        char char3 = source.at(index + 2);
+        char char4 = source.at(index + 3);
         if (('=' == char3) && ('=' == char4))
             process_from_chars(dest, char1, char2);
         else if (('=' != char3) && ('=' == char4))
