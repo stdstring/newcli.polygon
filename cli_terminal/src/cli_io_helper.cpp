@@ -26,7 +26,7 @@ std::unordered_map<std::string, response_handler_t> get_response_handlers()
     return {
         {COMMAND_OUT, [](message_response response, client_state &state){ std::cout << response.data; return ED_COMMAND; }},
         {COMMAND_ERR, [](message_response response, client_state &state){ std::cerr << response.data; return ED_COMMAND; }},
-        {COMMAND_END, [](message_response response, client_state &state){ state.prompt = response.data; return ED_INPUT; }},
+        {COMMAND_END, [](message_response response, client_state &state){ state.set_prompt(response.data); return ED_INPUT; }},
         {ERROR, [](message_response response, client_state &state){ std::cerr << response.data; return ED_INPUT; }}
     };
 }

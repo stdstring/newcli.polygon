@@ -47,7 +47,7 @@ void readline_handler(char *raw_data)
 {
     if (nullptr == raw_data)
     {
-        cstate.ex_state = EX_FINISH;
+        cstate.set_execution_state(EX_FINISH);
         rl_callback_handler_remove();
         return;
     }
@@ -61,17 +61,17 @@ void readline_handler(char *raw_data)
     if (result == 0 || result == 1)
         add_history(expansion);
     std::string request(expansion_ptr.get());
-    execution_state ex_state = process_request(request, cstate.socketd);
+    execution_state ex_state = process_request(request, cstate.get_socketd());
     rl_callback_handler_remove();
     setup_signal_handlers(get_signal_handlers());
-    cstate.ex_state = ex_state;
-    cstate.ed_state = ED_COMMAND;
+    cstate.set_execution_state(ex_state);
+    cstate.set_editor_state(ED_COMMAND);
 }
 
 char** completion_func(const char *text, int start, int end)
 {
     std::string line = trim_full(text);
-    std::vector<std::string> extensions = retrieve_extensions(cstate.socketd, line, create_signal_mask());
+    std::vector<std::string> extensions = retrieve_extensions(cstate.get_socketd(), line, create_signal_mask());
     // NULL terminated array
     size_t extensions_size = extensions.size();
     char** completion_array = (char**) malloc((extensions_size + 1) * sizeof(char*));
@@ -83,17 +83,19 @@ char** completion_func(const char *text, int start, int end)
 
 void handle_sigint()
 {
-    switch (cstate.ed_state)
+    editor_state ed_state = cstate.get_editor_state();
+    std::string prompt = cstate.get_prompt();
+    switch (ed_state)
     {
         case ED_INPUT:
             std::cout << "^C" << std::endl;
             rl_callback_handler_remove();
-            rl_callback_handler_install(cstate.prompt.c_str(), readline_handler);
+            rl_callback_handler_install(prompt.c_str(), readline_handler);
             setup_signal_handlers(get_signal_handlers());
             break;
         case ED_COMMAND:
             std::cout << std::endl;
-            interrupt_command(cstate.socketd);
+            interrupt_command(cstate.get_socketd());
             break;
     }
 }
@@ -106,16 +108,16 @@ void signal_handler(int signo)
             handle_sigint();
             break;
         case SIGQUIT:
-            if (ED_INPUT == cstate.ed_state)
+            if (ED_INPUT == cstate.get_editor_state())
                 std::cout << "^\\" << std::endl;
-            cstate.ex_state = EX_FINISH;
+            cstate.set_execution_state(EX_FINISH);
             break;
         case SIGWINCH:
             break;
         case SIGTSTP:
-            if (ED_INPUT == cstate.ed_state)
+            if (ED_INPUT == cstate.get_editor_state())
                 std::cout << "^Z" << std::endl;
-            cstate.ex_state = EX_FINISH;
+            cstate.set_execution_state(EX_FINISH);
             break;
     }
 }
@@ -154,12 +156,12 @@ int main_impl()
     int socketd = socket_holder.get();
     connect(socketd, PORT);
     std::string init_prompt = retrieve_current_state(socketd);
-    cstate.prompt = init_prompt;
-    cstate.socketd = socketd;
-    cstate.ex_state = EX_CONTINUE;
-    cstate.ed_state = ED_INPUT;
+    cstate.set_prompt(init_prompt);
+    cstate.set_socketd(socketd);
+    cstate.set_execution_state(EX_CONTINUE);
+    cstate.set_editor_state(ED_INPUT);
     std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
-    while(EX_CONTINUE == cstate.ex_state)
+    while(EX_CONTINUE == cstate.get_execution_state())
     {
         clear_fdarray(fdarray);
         int poll_result = poll(fdarray.data(), FD_COUNT, -1);
@@ -171,7 +173,7 @@ int main_impl()
         }
         if (POLLIN == (fdarray[STDIN_INDEX].revents & POLLIN))
         {
-            if (ED_INPUT == cstate.ed_state)
+            if (ED_INPUT == cstate.get_editor_state())
                 rl_callback_read_char();
         }
         if (POLLERR == (fdarray[STDIN_INDEX].revents & POLLERR))
@@ -180,8 +182,8 @@ int main_impl()
         {
             message_responses_t responses = receive_message_responses(socketd, create_signal_mask());
             process_result result = process_responses(responses, cstate);
-            cstate.ex_state = result.ex_state;
-            cstate.ed_state = result.ed_state;
+            cstate.set_execution_state(result.ex_state);
+            cstate.set_editor_state(result.ed_state);
         }
         if (POLLERR == (fdarray[SOCKETD_INDEX].revents & POLLERR))
             throw poll_error();
