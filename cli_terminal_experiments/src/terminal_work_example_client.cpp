@@ -140,9 +140,6 @@ std::string trim_full(std::string const& source);
 sigset_t create_signal_mask();
 void setup_signal_handlers();
 void signal_handler(int signo);
-// base64
-std::string tobase64(std::string const& source);
-std::string frombase64(std::string const& source);
 
 // cstr deleter
 std::function<void (char*)> cstr_deleter = [](char* str){free(str);};
@@ -156,22 +153,6 @@ const char *prompt = "readline usage example >>>";
 int main()
 {
     std::cout << "start terminal_work_example_client" << std::endl;
-    // base64 encode test start
-    std::cout << "test0: for " << "i " << tobase64("i") << std::endl;
-    std::cout << "test1: for " << "idd " << tobase64("idd") << std::endl;
-    std::cout << "test2: for " << "iddq " << tobase64("iddq") << std::endl;
-    std::cout << "test3: for " << "iddqd " << tobase64("iddqd") << std::endl;
-    std::cout << "test4: for " << "iddqdd " << tobase64("iddqdd") << std::endl;
-    std::cout << "test5: for " << "iddqd + idkfa = doom god !!! " << tobase64("iddqd + idkfa = doom god !!!") << std::endl;
-    // base64 encode test finish
-    // base64 decode test start
-    std::cout << "test0: for " << "i " << frombase64(tobase64("i")) << std::endl;
-    std::cout << "test1: for " << "idd " << frombase64(tobase64("idd")) << std::endl;
-    std::cout << "test2: for " << "iddq " << frombase64(tobase64("iddq")) << std::endl;
-    std::cout << "test3: for " << "iddqd " << frombase64(tobase64("iddqd")) << std::endl;
-    std::cout << "test4: for " << "iddqdd " << frombase64(tobase64("iddqdd")) << std::endl;
-    std::cout << "test5: for " << "iddqd + idkfa = doom god !!! " << frombase64(tobase64("iddqd + idkfa = doom god !!!")) << std::endl;
-    // base64 decode test finish
     initialize();
     setup_signal_handlers();
     rl_callback_handler_install(prompt, readline_handler);
@@ -539,124 +520,4 @@ void signal_handler(int signo)
         rl_callback_handler_remove();
         client_state.allow_running = false;
     }
-}
-
-std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-void process_to_chars(std::string& dest, char char1)
-{
-    // char2 = 0, char3 = 0
-    dest.push_back(base64_chars[char1 >> 2]);
-    dest.push_back(base64_chars[(char1 & 0x3) << 4]);
-    dest.push_back('=');
-    dest.push_back('=');
-}
-
-void process_to_chars(std::string& dest, char char1, char char2)
-{
-    //char3 = 0
-    dest.push_back(base64_chars[char1 >> 2]);
-    dest.push_back(base64_chars[((char1 & 0x3) << 4) + (char2 >> 4)]);
-    dest.push_back(base64_chars[(char2 & 0xf) << 2]);
-    dest.push_back('=');
-}
-
-void process_to_chars(std::string& dest, char char1, char char2, char char3)
-{
-    dest.push_back(base64_chars[char1 >> 2]);
-    dest.push_back(base64_chars[((char1 & 0x3) << 4) + (char2 >> 4)]);
-    dest.push_back(base64_chars[((char2 & 0xf) << 2) + (char3 >> 6)]);
-    dest.push_back(base64_chars[char3 & 0x3f]);
-}
-
-std::string tobase64(std::string const& source)
-{
-    std::string dest;
-    size_t triple_length = 3 * (source.length() / 3);
-    for(size_t index = 0; index < triple_length; index += 3)
-    {
-        char char1 = source.at(index);
-        char char2 = source.at(index + 1);
-        char char3 = source.at(index + 2);
-        process_to_chars(dest, char1, char2, char3);
-    }
-    switch (source.length() % 3)
-    {
-        case 1:
-            process_to_chars(dest, source.at(source.length() - 1));
-            break;
-        case 2:
-            process_to_chars(dest, source.at(source.length() - 2), source.at(source.length() - 1));
-            break;
-    }
-    return dest;
-}
-
-class bad_format {};
-
-void process_from_chars(std::string& dest, char char1, char char2)
-{
-    size_t index1 = base64_chars.find(char1);
-    /*if (std::string::npos == index1)
-        throw bad_format();*/
-    size_t index2 = base64_chars.find(char2);
-    /*if (std::string::npos == index2)
-        throw bad_format();*/    
-    dest.push_back((index1 << 2) + (index2 >> 4));    
-    //dest.push_back(((index2 & 0xf) << 4));
-    //dest.push_back((index3 & 0x3) << 6);
-}
-
-void process_from_chars(std::string& dest, char char1, char char2, char char3)
-{
-    size_t index1 = base64_chars.find(char1);
-    /*if (std::string::npos == index1)
-        throw bad_format();*/
-    size_t index2 = base64_chars.find(char2);
-    /*if (std::string::npos == index2)
-        throw bad_format();*/
-    size_t index3 = base64_chars.find(char3);
-    /*if (std::string::npos == index3)
-        throw bad_format();*/
-    dest.push_back((index1 << 2) + (index2 >> 4));
-    dest.push_back(((index2 & 0xf) << 4) + (index3 >> 2));
-    //dest.push_back((index3 & 0x3) << 6);
-}
-
-void process_from_chars(std::string& dest, char char1, char char2, char char3, char char4)
-{
-    size_t index1 = base64_chars.find(char1);
-    /*if (std::string::npos == index1)
-        throw bad_format();*/
-    size_t index2 = base64_chars.find(char2);
-    /*if (std::string::npos == index2)
-        throw bad_format();*/
-    size_t index3 = base64_chars.find(char3);
-    /*if (std::string::npos == index3)
-        throw bad_format();*/
-    size_t index4 = base64_chars.find(char4);
-    /*if (std::string::npos == index4)
-        throw bad_format();*/
-    dest.push_back((index1 << 2) + (index2 >> 4));
-    dest.push_back(((index2 & 0xf) << 4) + (index3 >> 2));
-    dest.push_back(((index3 & 0x3) << 6) + index4);
-}
-
-std::string frombase64(std::string const& source)
-{
-    std::string dest;
-    for(size_t index = 0; index < source.length(); index += 4)
-    {
-        char char1 = source.at(index);
-        char char2 = source.at(index + 1);
-        char char3 = source.at(index + 2);
-        char char4 = source.at(index + 3);
-        if (('=' == char3) && ('=' == char4))
-            process_from_chars(dest, char1, char2);
-        else if (('=' != char3) && ('=' == char4))
-            process_from_chars(dest, char1, char2, char3);
-        else
-            process_from_chars(dest, char1, char2, char3, char4);
-    }
-    return dest;
 }
