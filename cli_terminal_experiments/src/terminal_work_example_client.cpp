@@ -90,18 +90,6 @@ public:
     SignalSafeExecuter(sigset_t mask) : _mask(mask) {}
     ~SignalSafeExecuter() {}
 
-    /*template<class Ret, class... Args> Ret execute(std::function<Ret(Args...)> func, Args... args)
-    {
-        SignalMaskHolder signalHolder(_mask);
-        return func(&args...);
-    }
-
-    template<class... Args> void execute(std::function<void(Args...)> func, Args... args)
-    {
-        SignalMaskHolder signalHolder(_mask);
-        func(&args...);
-    }*/
-
     template<class Ret> Ret execute(std::function<Ret()> func)
     {
         SignalMaskHolder signalHolder(_mask);
@@ -311,11 +299,6 @@ Message read_message(int socketd)
     std::string type(ERL_ATOM_PTR(message_type));
     cstr_unique_ptr data_str(erl_iolist_to_string(message_data.get()), cstr_deleter);
     std::string data(data_str.get());
-    /*
-    int length_data;
-    ssize_t peek_result = recv(socketd, &length_data, 4, MSG_PEEK | MSG_DONTWAIT);
-    std::cout << "peek_result: " << peek_result << std::endl;
-    */
     return Message(type, data);
 }
 
