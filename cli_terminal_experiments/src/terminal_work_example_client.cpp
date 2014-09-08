@@ -13,6 +13,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 // poll
 #include <poll.h>
 // signal
@@ -302,7 +303,7 @@ Message read_message(int socketd)
     return Message(type, data);
 }
 
-void write_message(int socketd, std::string const &message)
+/*void write_message(int socketd, std::string const &message)
 {
     // data serialization
     eterm_unique_ptr message_body(erl_mk_string(message.c_str()), eterm_deleter);
@@ -320,6 +321,37 @@ void write_message(int socketd, std::string const &message)
     memcpy(buffer.get(), &length_binary, 4);
     // write message
     if (send(socketd, buffer.get(), total_length, 0) != total_length)
+    {
+        std::cout << "error in write message" << std::endl;
+        rl_deprep_terminal();
+        std::exit(-1);
+    }
+}*/
+
+void write_message(int socketd, std::string const &message)
+{
+    // data serialization
+    eterm_unique_ptr message_body(erl_mk_string(message.c_str()), eterm_deleter);
+    int length = erl_term_len(message_body.get());
+    std::unique_ptr<unsigned char[]> buffer(new unsigned char[length]);
+    if (erl_encode(message_body.get(), buffer.get()) != length)
+    {
+        std::cout << "error in message encode" << std::endl;
+        rl_deprep_terminal();
+        std::exit(-1);
+    }
+    int length_binary = htonl(length);
+    // write message
+    struct msghdr total_message;
+    memset(&total_message, 0, sizeof(total_message));
+    struct iovec parts[2];
+    parts[0].iov_base = &length_binary;
+    parts[0].iov_len = sizeof(length_binary);
+    parts[1].iov_base = buffer.get();
+    parts[1].iov_len = length;
+    total_message.msg_iov = parts;
+    total_message.msg_iovlen = 2;
+    if (sendmsg(socketd, &total_message, 0) == -1)
     {
         std::cout << "error in write message" << std::endl;
         rl_deprep_terminal();
