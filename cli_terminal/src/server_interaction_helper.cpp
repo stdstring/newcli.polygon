@@ -1,7 +1,6 @@
 #include <functional>
 #include <string>
 #include <vector>
-
 #include <signal.h>
 
 #include "exception_def.h"

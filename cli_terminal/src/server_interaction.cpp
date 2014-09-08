@@ -34,20 +34,17 @@ bool contains_unread_data(int socketd)
 void write_message(int socketd, byte_array_ptr const &serialized_data)
 {
     int length_binary = htonl(serialized_data.size());
-    struct iovec length_msg, data_msg;
+    struct iovec messages[2];
     // length message
-    memset(&length_msg, 0, sizeof(length_msg));
-    length_msg.iov_base = &length_binary;
-    length_msg.iov_len = sizeof(length_binary);
+    messages[0].iov_base = &length_binary;
+    messages[0].iov_len = sizeof(length_binary);
     // data message
-    memset(&data_msg, 0, sizeof(data_msg));
-    data_msg.iov_base = serialized_data.get();
-    data_msg.iov_len = serialized_data.size();
+    messages[1].iov_base = serialized_data.get();
+    messages[1].iov_len = serialized_data.size();
     // msghdr
     struct msghdr prepared_data;
     memset(&prepared_data, 0, sizeof(prepared_data));
-    struct iovec parts[] = {length_msg, data_msg};
-    prepared_data.msg_iov = parts;
+    prepared_data.msg_iov = messages;
     prepared_data.msg_iovlen = 2;
     ssize_t send_result = sendmsg(socketd, &prepared_data, 0);
     if (-1 == send_result)

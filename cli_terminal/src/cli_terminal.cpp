@@ -30,7 +30,7 @@ namespace cli_terminal
 {
 
 // TODO (std_string) : think about config port number
-#define PORT 22222
+#define PORT 6666
 
 // global variables
 client_state cstate;
@@ -145,7 +145,7 @@ void initialize()
     // readline history
     using_history();
     // set cleanup for uncaught exceptions
-    std::set_terminate(cleanup);
+    //std::set_terminate(cleanup);
 }
 
 int main_impl()
@@ -156,6 +156,7 @@ int main_impl()
     int socketd = socket_holder.get();
     connect(socketd, PORT);
     std::string init_prompt = retrieve_current_state(socketd);
+    rl_callback_handler_install(init_prompt.c_str(), readline_handler);
     cstate.set_prompt(init_prompt);
     cstate.set_socketd(socketd);
     cstate.set_execution_state(EX_CONTINUE);

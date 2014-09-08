@@ -14,7 +14,7 @@ enum editor_state {ED_INPUT, ED_COMMAND};
 struct client_state
 {
 public:
-    client_state() : _socketd(-1), _ex_state(EX_CONTINUE), _ed_state(ED_INPUT) {}
+    client_state() : _socketd(-1), _prompt(""), _ex_state(EX_CONTINUE), _ed_state(ED_INPUT) {}
 
     // socket descriptor
     int get_socketd() const { return _socketd; }
@@ -30,7 +30,6 @@ public:
     void set_editor_state(editor_state state) { _ed_state = state; }
     // state parameters
     // ???
-
 
 private:
     int _socketd;
