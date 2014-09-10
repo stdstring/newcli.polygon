@@ -8,10 +8,13 @@ HEADER=include/array_ptr.h\
        include/base64.h\
        include/cli_io_helper.h\
        include/client_state.h\
+       include/command_terminal_behavior.h\
        include/cterm_ptr.h\
        include/eterm_ptr.h\
        include/exception_def.h\
        include/fd_helper.h\
+       include/input_terminal_behavior.h\
+       include/iterminal_behavior.h\
        include/message.h\
        include/message_serialization.h\
        include/process_result.h\
@@ -27,7 +30,9 @@ HEADER=include/array_ptr.h\
 SOURCE=src/base64.cpp\
        src/cli_io_helper.cpp\
        src/cli_terminal.cpp\
+       src/command_terminal_behavior.cpp\
        src/fd_helper.cpp\
+       src/input_terminal_behavior.cpp\
        src/message_serialization.cpp\
        src/server_interaction.cpp\
        src/server_interaction_helper.cpp\
