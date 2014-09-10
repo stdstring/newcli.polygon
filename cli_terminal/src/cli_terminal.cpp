@@ -1,30 +1,26 @@
 #include <array>
 #include <exception>
-#include <iostream>
-#include <cstddef>
+#include <memory>
 #include <string>
-#include <unordered_map>
-#include <vector>
 
 #include <erl_interface.h>
 #include <history.h>
 #include <poll.h>
 #include <readline.h>
-#include <signal.h>
 #include <unistd.h>
 
 #include "cli_io_helper.h"
 #include "client_state.h"
-#include "cterm_ptr.h"
 #include "exception_def.h"
 #include "fd_helper.h"
-#include "message.h"
+#include "input_terminal_behavior.h"
+#include "iterminal_behavior.h"
 #include "process_result.h"
 #include "resource_holder.h"
 #include "server_interaction_helper.h"
 #include "signal_utils.h"
 #include "socket_utils.h"
-#include "string_utils.h"
+//#include "string_utils.h"
 
 namespace cli_terminal
 {
@@ -35,96 +31,10 @@ namespace cli_terminal
 // global variables
 client_state cstate;
 
-std::unordered_map<int, signal_handler_t> get_signal_handlers();
-
 void cleanup()
 {
     rl_callback_handler_remove();
     rl_deprep_terminal();
-}
-
-void readline_handler(char *raw_data)
-{
-    if (nullptr == raw_data)
-    {
-        cstate.set_execution_state(EX_FINISH);
-        rl_callback_handler_remove();
-        return;
-    }
-    cterm_ptr<char> raw_data_ptr(raw_data);
-    std::string line = trim_full(raw_data_ptr.get());
-    if (line.empty())
-        return;
-    char *expansion = nullptr;
-    int result = history_expand(const_cast<char*>(line.c_str()), &expansion);
-    cterm_ptr<char> expansion_ptr(expansion);
-    if (result == 0 || result == 1)
-        add_history(expansion);
-    std::string request(expansion_ptr.get());
-    execution_state ex_state = process_request(request, cstate.get_socketd());
-    rl_callback_handler_remove();
-    setup_signal_handlers(get_signal_handlers());
-    cstate.set_execution_state(ex_state);
-    cstate.set_editor_state(ED_COMMAND);
-}
-
-char** completion_func(const char *text, int start, int end)
-{
-    std::string line = trim_full(text);
-    std::vector<std::string> extensions = retrieve_extensions(cstate.get_socketd(), line, create_signal_mask());
-    // NULL terminated array
-    size_t extensions_size = extensions.size();
-    char** completion_array = (char**) malloc((extensions_size + 1) * sizeof(char*));
-    for(size_t index = 0; index < extensions_size; ++index)
-        completion_array[index] = duplicate_cstr(extensions.at(index));
-    completion_array[extensions_size] = nullptr;
-    return completion_array;
-}
-
-void handle_sigint()
-{
-    editor_state ed_state = cstate.get_editor_state();
-    std::string prompt = cstate.get_prompt();
-    switch (ed_state)
-    {
-        case ED_INPUT:
-            std::cout << "^C" << std::endl;
-            rl_callback_handler_remove();
-            rl_callback_handler_install(prompt.c_str(), readline_handler);
-            setup_signal_handlers(get_signal_handlers());
-            break;
-        case ED_COMMAND:
-            std::cout << std::endl;
-            interrupt_command(cstate.get_socketd());
-            break;
-    }
-}
-
-void signal_handler(int signo)
-{
-    switch (signo)
-    {
-        case SIGINT:
-            handle_sigint();
-            break;
-        case SIGQUIT:
-            if (ED_INPUT == cstate.get_editor_state())
-                std::cout << "^\\" << std::endl;
-            cstate.set_execution_state(EX_FINISH);
-            break;
-        case SIGWINCH:
-            break;
-        case SIGTSTP:
-            if (ED_INPUT == cstate.get_editor_state())
-                std::cout << "^Z" << std::endl;
-            cstate.set_execution_state(EX_FINISH);
-            break;
-    }
-}
-
-std::unordered_map<int, signal_handler_t> get_signal_handlers()
-{
-    return {{SIGINT, signal_handler}, {SIGQUIT, signal_handler}, {SIGWINCH, signal_handler}, {SIGTSTP, signal_handler}};
 }
 
 void initialize()
@@ -133,10 +43,6 @@ void initialize()
     erl_init(NULL, 0);
     // readline
     rl_attempted_completion_over = 1;
-    // completion
-    rl_attempted_completion_function = completion_func;
-    rl_sort_completion_matches = 0;
-    rl_ignore_completion_duplicates = 0;
     // singnals
     rl_catch_signals = 0;
     rl_catch_sigwinch = 0;
@@ -145,22 +51,24 @@ void initialize()
     // readline history
     using_history();
     // set cleanup for uncaught exceptions
-    //std::set_terminate(cleanup);
+    std::set_terminate(cleanup);
 }
 
 int main_impl()
 {
     initialize();
-    setup_signal_handlers(get_signal_handlers());
     resource_holder<int> socket_holder(create_socket(), [](int socketd){ close(socketd); });
     int socketd = socket_holder.get();
     connect(socketd, PORT);
     std::string init_prompt = retrieve_current_state(socketd);
-    rl_callback_handler_install(init_prompt.c_str(), readline_handler);
     cstate.set_prompt(init_prompt);
     cstate.set_socketd(socketd);
     cstate.set_execution_state(EX_CONTINUE);
     cstate.set_editor_state(ED_INPUT);
+    std::shared_ptr<iterminal_behavior> init_behavior(new input_terminal_behavior());
+    cstate.set_behavior(init_behavior);
+    init_behavior->install_signal_action();
+    init_behavior->install_input_action();
     std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
     while(EX_CONTINUE == cstate.get_execution_state())
     {

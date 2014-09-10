@@ -1,8 +1,11 @@
 #ifndef H_CLIENT_STATE
 #define H_CLIENT_STATE
 
+#include <memory>
 #include <string>
 #include <unordered_map>
+
+#include "iterminal_behavior.h"
 
 namespace cli_terminal
 {
@@ -28,6 +31,9 @@ public:
     // editor state
     editor_state get_editor_state() const { return _ed_state; }
     void set_editor_state(editor_state state) { _ed_state = state; }
+    // behavior
+    std::shared_ptr<iterminal_behavior> get_behavior() const { return _behavior; }
+    void set_behavior(std::shared_ptr<iterminal_behavior> behavior) { _behavior = behavior; }
     // state parameters
     // ???
 
@@ -36,6 +42,7 @@ private:
     std::string _prompt;
     execution_state _ex_state;
     editor_state _ed_state;
+    std::shared_ptr<iterminal_behavior> _behavior;
     std::unordered_map<std::string, std::string> _state_params;
 };
 

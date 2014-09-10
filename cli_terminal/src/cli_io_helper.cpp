@@ -5,6 +5,8 @@
 
 #include "cli_io_helper.h"
 #include "client_state.h"
+#include "input_terminal_behavior.h"
+#include "iterminal_behavior.h"
 #include "message.h"
 #include "process_result.h"
 #include "server_interaction_helper.h"
@@ -23,10 +25,19 @@ std::unordered_map<std::string, request_handler_t> get_local_request_handlers()
 
 std::unordered_map<std::string, response_handler_t> get_response_handlers()
 {
+    response_handler_t end_handler = [](message_response response, client_state &state)
+        {
+            state.set_prompt(response.data);
+            std::shared_ptr<iterminal_behavior> behavior(new input_terminal_behavior());
+            state.set_behavior(behavior);
+            behavior->install_signal_action();
+            behavior->install_input_action();
+            return ED_INPUT;
+        };
     return {
         {COMMAND_OUT, [](message_response response, client_state &state){ std::cout << response.data; return ED_COMMAND; }},
         {COMMAND_ERR, [](message_response response, client_state &state){ std::cerr << response.data; return ED_COMMAND; }},
-        {COMMAND_END, [](message_response response, client_state &state){ state.set_prompt(response.data); return ED_INPUT; }},
+        {COMMAND_END, end_handler},
         {ERROR, [](message_response response, client_state &state){ std::cerr << response.data; return ED_INPUT; }}
     };
 }

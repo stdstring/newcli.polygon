@@ -9,8 +9,10 @@
 
 #include "cli_io_helper.h"
 #include "client_state.h"
+#include "command_terminal_behavior.h"
 #include "cterm_ptr.h"
 #include "input_terminal_behavior.h"
+#include "iterminal_behavior.h"
 #include "server_interaction_helper.h"
 #include "signal_utils.h"
 #include "string_utils.h"
@@ -91,9 +93,10 @@ void input_handler(char *raw_data)
     cstate.set_execution_state(ex_state);
     // TODO (std_string) : probably remove
     cstate.set_editor_state(ED_COMMAND);
-    // TODO (std_string) : use changing behavior
-    clear_input_handler();
-    install_signal_handlers();
+    std::shared_ptr<iterminal_behavior> behavior(new command_terminal_behavior());
+    cstate.set_behavior(behavior);
+    behavior->install_signal_action();
+    behavior->install_input_action();
 }
 
 char** completion_func(const char *text, int start, int end)
