@@ -15,6 +15,7 @@ HEADER=include/array_ptr.h\
        include/fd_helper.h\
        include/input_terminal_behavior.h\
        include/iterminal_behavior.h\
+       include/login_command_terminal_behavior.h\
        include/message.h\
        include/message_serialization.h\
        include/process_result.h\
@@ -33,6 +34,7 @@ SOURCE=src/base64.cpp\
        src/command_terminal_behavior.cpp\
        src/fd_helper.cpp\
        src/input_terminal_behavior.cpp\
+       src/login_command_terminal_behavior.cpp\
        src/message_serialization.cpp\
        src/server_interaction.cpp\
        src/server_interaction_helper.cpp\
