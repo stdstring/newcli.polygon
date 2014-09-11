@@ -15,7 +15,6 @@
 #include "fd_helper.h"
 #include "input_terminal_behavior.h"
 #include "iterminal_behavior.h"
-#include "process_result.h"
 #include "resource_holder.h"
 #include "server_interaction_helper.h"
 #include "signal_utils.h"

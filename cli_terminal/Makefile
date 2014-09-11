@@ -18,7 +18,6 @@ HEADER=include/array_ptr.h\
        include/login_command_terminal_behavior.h\
        include/message.h\
        include/message_serialization.h\
-       include/process_result.h\
        include/resource_holder.h\
        include/server_interaction.h\
        include/server_interaction_helper.h\
