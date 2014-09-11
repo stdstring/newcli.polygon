@@ -91,8 +91,6 @@ void input_handler(char *raw_data)
     std::string request(expansion_ptr.get());
     execution_state ex_state = process_request(request, cstate.get_socketd());
     cstate.set_execution_state(ex_state);
-    // TODO (std_string) : probably remove
-    cstate.set_editor_state(ED_COMMAND);
     std::shared_ptr<iterminal_behavior> behavior(new command_terminal_behavior());
     cstate.set_behavior(behavior);
     behavior->install_signal_action();
@@ -128,6 +126,11 @@ void install_input_handler()
     rl_callback_handler_install(prompt.c_str(), input_handler);
 }
 
+void process_char()
+{
+    rl_callback_read_char();
+}
+
 }
 
 void input_terminal_behavior::install_input_action()
@@ -139,6 +142,11 @@ void input_terminal_behavior::install_input_action()
 void input_terminal_behavior::install_signal_action()
 {
     input_terminal_behavior_impl::install_signal_handlers();
+}
+
+void input_terminal_behavior::process_char()
+{
+    input_terminal_behavior_impl::process_char();
 }
 
 }

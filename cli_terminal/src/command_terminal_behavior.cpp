@@ -74,4 +74,9 @@ void command_terminal_behavior::install_signal_action()
     command_terminal_behavior_impl::install_signal_handlers();
 }
 
+void command_terminal_behavior::process_char()
+{
+    // do nothing now
+}
+
 }

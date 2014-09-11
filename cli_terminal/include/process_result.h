@@ -9,10 +9,9 @@ namespace cli_terminal
 class process_result
 {
 public:
-    process_result(execution_state ex_state_value, editor_state ed_state_value) : ex_state(ex_state_value), ed_state(ed_state_value) {}
+    process_result(execution_state ex_state_value) : ex_state(ex_state_value) {}
 
     execution_state ex_state;
-    editor_state ed_state;
 };
 
 }

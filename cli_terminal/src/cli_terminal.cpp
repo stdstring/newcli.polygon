@@ -20,7 +20,6 @@
 #include "server_interaction_helper.h"
 #include "signal_utils.h"
 #include "socket_utils.h"
-//#include "string_utils.h"
 
 namespace cli_terminal
 {
@@ -64,7 +63,6 @@ int main_impl()
     cstate.set_prompt(init_prompt);
     cstate.set_socketd(socketd);
     cstate.set_execution_state(EX_CONTINUE);
-    cstate.set_editor_state(ED_INPUT);
     std::shared_ptr<iterminal_behavior> init_behavior(new input_terminal_behavior());
     cstate.set_behavior(init_behavior);
     init_behavior->install_signal_action();
@@ -81,18 +79,14 @@ int main_impl()
             continue;
         }
         if (POLLIN == (fdarray[STDIN_INDEX].revents & POLLIN))
-        {
-            if (ED_INPUT == cstate.get_editor_state())
-                rl_callback_read_char();
-        }
+            cstate.get_behavior()->process_char();
         if (POLLERR == (fdarray[STDIN_INDEX].revents & POLLERR))
             throw poll_error();
         if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
         {
             message_responses_t responses = receive_message_responses(socketd, create_signal_mask());
-            process_result result = process_responses(responses, cstate);
-            cstate.set_execution_state(result.ex_state);
-            cstate.set_editor_state(result.ed_state);
+            execution_state result = process_responses(responses, cstate);
+            cstate.set_execution_state(result);
         }
         if (POLLERR == (fdarray[SOCKETD_INDEX].revents & POLLERR))
             throw poll_error();

@@ -9,6 +9,7 @@ class iterminal_behavior
 public:
     virtual void install_input_action() = 0;
     virtual void install_signal_action() = 0;
+    virtual void process_char() = 0;
 };
 
 }
