@@ -30,6 +30,7 @@ HEADER=include/array_ptr.h\
 SOURCE=src/base64.cpp\
        src/cli_io_helper.cpp\
        src/cli_terminal.cpp\
+       src/client_state.cpp\
        src/command_terminal_behavior.cpp\
        src/fd_helper.cpp\
        src/input_terminal_behavior.cpp\

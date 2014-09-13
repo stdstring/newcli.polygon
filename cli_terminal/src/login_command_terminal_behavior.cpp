@@ -45,10 +45,7 @@ void sigint_handler(int signo)
     state_params_t &state_params = cstate.get_params();
     state_params.erase(LOGIN_KEY);
     // input terminal behavior
-    std::shared_ptr<iterminal_behavior> behavior(new input_terminal_behavior());
-    cstate.set_behavior(behavior);
-    behavior->install_signal_action();
-    behavior->install_input_action();
+    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
 }
 
 void sigquit_handler(int signo)

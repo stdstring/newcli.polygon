@@ -14,7 +14,7 @@ enum execution_state {EX_CONTINUE, EX_FINISH};
 
 typedef std::unordered_map<std::string, std::string> state_params_t;
 
-struct client_state
+class client_state
 {
 public:
     client_state() : _socketd(-1), _prompt(""), _ex_state(EX_CONTINUE) {}
@@ -41,6 +41,8 @@ private:
     std::shared_ptr<iterminal_behavior> _behavior;
     state_params_t _state_params;
 };
+
+void set_behavior(client_state &state, std::shared_ptr<iterminal_behavior> behavior);
 
 }
 

@@ -1,5 +1,6 @@
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -23,10 +24,7 @@ std::unordered_map<std::string, request_handler_t> get_local_request_handlers()
 {
     request_handler_t login_handler = [](std::string const &request, client_state &state)
         {
-            std::shared_ptr<iterminal_behavior> behavior(new login_command_terminal_behavior());
-            state.set_behavior(behavior);
-            behavior->install_signal_action();
-            behavior->install_input_action();
+            set_behavior(state, std::shared_ptr<iterminal_behavior>(new login_command_terminal_behavior()));
             return EX_CONTINUE;
         };
     return {
@@ -40,10 +38,7 @@ std::unordered_map<std::string, response_handler_t> get_response_handlers()
     response_handler_t end_handler = [](message_response response, client_state &state)
         {
             state.set_prompt(response.data);
-            std::shared_ptr<iterminal_behavior> behavior(new input_terminal_behavior());
-            state.set_behavior(behavior);
-            behavior->install_signal_action();
-            behavior->install_input_action();
+            set_behavior(state, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
             return EX_CONTINUE;
         };
     return {
@@ -61,10 +56,7 @@ execution_state process_request(std::string const &request, client_state &state)
     if (local_handlers.end() != iterator)
         return iterator->second(request, state);
     process_command(state.get_socketd(), request, create_signal_mask());
-    std::shared_ptr<iterminal_behavior> behavior(new command_terminal_behavior());
-    state.set_behavior(behavior);
-    behavior->install_signal_action();
-    behavior->install_input_action();
+    set_behavior(state, std::shared_ptr<iterminal_behavior>(new command_terminal_behavior()));
     return EX_CONTINUE;
 }
 

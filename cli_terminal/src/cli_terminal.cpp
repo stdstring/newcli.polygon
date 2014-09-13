@@ -62,10 +62,7 @@ int main_impl()
     cstate.set_prompt(init_prompt);
     cstate.set_socketd(socketd);
     cstate.set_execution_state(EX_CONTINUE);
-    std::shared_ptr<iterminal_behavior> init_behavior(new input_terminal_behavior());
-    cstate.set_behavior(init_behavior);
-    init_behavior->install_signal_action();
-    init_behavior->install_input_action();
+    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
     std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
     while(EX_CONTINUE == cstate.get_execution_state())
     {
