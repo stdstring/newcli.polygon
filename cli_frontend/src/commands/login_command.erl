@@ -76,7 +76,8 @@ process_login_response(Response, ClientHandler, ExecutionState) ->
     case Response of
         #login_success{login_name = LoginName, is_admin = IsAdmin, session_pid = Session, greeting = Greeting} ->
             io:format("login_command:process_login_response/3, login_success ~n", []),
-            client_handler:send_output(ClientHandler, Greeting),
+            GreetingMessage = string_data_utils:add_trailing_line_feed(Greeting),
+            client_handler:send_output(ClientHandler, GreetingMessage),
             LoginInfo = #login_info{login_name = LoginName, is_admin = IsAdmin},
             CliMode = "",
             NewExecutionState = ExecutionState#execution_state{session = Session, login_info = LoginInfo, current_cli_mode = CliMode},
