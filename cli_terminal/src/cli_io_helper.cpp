@@ -5,7 +5,9 @@
 
 #include "cli_io_helper.h"
 #include "client_state.h"
+#include "command_terminal_behavior.h"
 #include "input_terminal_behavior.h"
+#include "login_command_terminal_behavior.h"
 #include "iterminal_behavior.h"
 #include "message.h"
 #include "server_interaction_helper.h"
@@ -14,12 +16,23 @@
 namespace cli_terminal
 {
 
-typedef std::function<execution_state(std::string const&)> request_handler_t;
+typedef std::function<execution_state(std::string const&, client_state&)> request_handler_t;
 typedef std::function<execution_state(message_response, client_state&)> response_handler_t;
 
 std::unordered_map<std::string, request_handler_t> get_local_request_handlers()
 {
-    return {{"exit", [](std::string const &request){ return EX_FINISH; }}};
+    request_handler_t login_handler = [](std::string const &request, client_state &state)
+        {
+            std::shared_ptr<iterminal_behavior> behavior(new login_command_terminal_behavior());
+            state.set_behavior(behavior);
+            behavior->install_signal_action();
+            behavior->install_input_action();
+            return EX_CONTINUE;
+        };
+    return {
+        {"login", login_handler},
+        {"exit", [](std::string const &request, client_state &state){ return EX_FINISH; }}
+    };
 }
 
 std::unordered_map<std::string, response_handler_t> get_response_handlers()
@@ -41,13 +54,17 @@ std::unordered_map<std::string, response_handler_t> get_response_handlers()
     };
 }
 
-execution_state process_request(std::string const &request, int socketd)
+execution_state process_request(std::string const &request, client_state &state)
 {
     std::unordered_map<std::string, request_handler_t> local_handlers = get_local_request_handlers();
     std::unordered_map<std::string, request_handler_t>::const_iterator iterator = local_handlers.find(request);
     if (local_handlers.end() != iterator)
-        return iterator->second(request);
-    process_command(socketd, request, create_signal_mask());
+        return iterator->second(request, state);
+    process_command(state.get_socketd(), request, create_signal_mask());
+    std::shared_ptr<iterminal_behavior> behavior(new command_terminal_behavior());
+    state.set_behavior(behavior);
+    behavior->install_signal_action();
+    behavior->install_input_action();
     return EX_CONTINUE;
 }
 

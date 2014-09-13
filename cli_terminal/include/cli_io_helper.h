@@ -10,7 +10,7 @@
 namespace cli_terminal
 {
 
-execution_state process_request(std::string const &request, int socketd);
+execution_state process_request(std::string const &request, client_state &state);
 
 execution_state process_responses(message_responses_t const &responses, client_state &state);
 

@@ -9,7 +9,6 @@
 #include "base64.h"
 #include "cli_io_helper.h"
 #include "client_state.h"
-#include "command_terminal_behavior.h"
 #include "cterm_ptr.h"
 #include "input_terminal_behavior.h"
 #include "iterminal_behavior.h"
@@ -110,6 +109,7 @@ void login_input_handler(char *raw_data)
     state_params_t &state_params = cstate.get_params();
     state_params.emplace(LOGIN_KEY, login);
     // install password_input_handler
+    clear_input_handler();
     install_password_input_handler();
 }
 
@@ -130,12 +130,8 @@ void password_input_handler(char *raw_data)
     // form login command
     std::string login_command = create_command(login, password);
     // execute login command
-    execution_state ex_state = process_request(login_command, cstate.get_socketd());
+    execution_state ex_state = process_request(login_command, cstate);
     cstate.set_execution_state(ex_state);
-    std::shared_ptr<iterminal_behavior> behavior(new command_terminal_behavior());
-    cstate.set_behavior(behavior);
-    behavior->install_signal_action();
-    behavior->install_input_action();
 }
 
 void clear_input_handler()
