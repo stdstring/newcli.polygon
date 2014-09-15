@@ -161,9 +161,13 @@ void process_char()
 
 }
 
-void login_command_terminal_behavior::install_input_action()
+void login_command_terminal_behavior::clear_input_action()
 {
     login_command_terminal_behavior_impl::clear_input_handler();
+}
+
+void login_command_terminal_behavior::install_input_action()
+{
     login_command_terminal_behavior_impl::install_input_handler();
 }
 

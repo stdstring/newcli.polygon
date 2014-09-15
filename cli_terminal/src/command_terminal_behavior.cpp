@@ -18,7 +18,6 @@ namespace command_terminal_behavior_impl
 {
 
 void install_signal_handlers();
-void clear_input_handler();
 
 void sigint_handler(int signo)
 {
@@ -57,16 +56,16 @@ void install_signal_handlers()
     setup_signal_handlers(handlers);
 }
 
-void clear_input_handler()
-{
-    rl_callback_handler_remove();
 }
 
+void command_terminal_behavior::clear_input_action()
+{
+    // do nothing now
 }
 
 void command_terminal_behavior::install_input_action()
 {
-    command_terminal_behavior_impl::clear_input_handler();
+    // do nothing now
 }
 
 void command_terminal_behavior::install_signal_action()

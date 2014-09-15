@@ -108,6 +108,8 @@ char** completion_func(const char *text, int start, int end)
 void clear_input_handler()
 {
     rl_callback_handler_remove();
+    // completion
+    rl_attempted_completion_function = nullptr;
 }
 
 void install_input_handler()
@@ -128,9 +130,13 @@ void process_char()
 
 }
 
-void input_terminal_behavior::install_input_action()
+void input_terminal_behavior::clear_input_action()
 {
     input_terminal_behavior_impl::clear_input_handler();
+}
+
+void input_terminal_behavior::install_input_action()
+{
     input_terminal_behavior_impl::install_input_handler();
 }
 
