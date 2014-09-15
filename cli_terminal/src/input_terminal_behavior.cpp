@@ -1,4 +1,5 @@
 #include <iostream>
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -13,6 +14,7 @@
 #include "cterm_ptr.h"
 #include "input_terminal_behavior.h"
 #include "server_interaction_helper.h"
+#include "signal_safe_executer.h"
 #include "signal_utils.h"
 #include "string_utils.h"
 
@@ -70,7 +72,7 @@ void install_signal_handlers()
     setup_signal_handlers(handlers);
 }
 
-void input_handler(char *raw_data)
+void input_handler_impl(char *raw_data)
 {
     if (nullptr == raw_data)
     {
@@ -92,10 +94,17 @@ void input_handler(char *raw_data)
     cstate.set_execution_state(ex_state);
 }
 
-char** completion_func(const char *text, int start, int end)
+void input_handler(char *raw_data)
+{
+    signal_safe_executer executer(create_signal_mask());
+    std::function<void()> func = [raw_data](){ input_handler_impl(raw_data); };
+    executer.execute(func);
+}
+
+char** completion_func_impl(const char *text, int start, int end)
 {
     std::string line = trim_full(text);
-    std::vector<std::string> extensions = retrieve_extensions(cstate.get_socketd(), line, create_signal_mask());
+    std::vector<std::string> extensions = retrieve_extensions(cstate.get_socketd(), line);
     // NULL terminated array
     size_t extensions_size = extensions.size();
     char** completion_array = (char**) malloc((extensions_size + 1) * sizeof(char*));
@@ -103,6 +112,13 @@ char** completion_func(const char *text, int start, int end)
         completion_array[index] = duplicate_cstr(extensions.at(index));
     completion_array[extensions_size] = nullptr;
     return completion_array;
+}
+
+char** completion_func(const char *text, int start, int end)
+{
+    signal_safe_executer executer(create_signal_mask());
+    std::function<char**()> func = [text, start, end](){ return completion_func_impl(text, start, end); };
+    return executer.execute(func);
 }
 
 void clear_input_handler()

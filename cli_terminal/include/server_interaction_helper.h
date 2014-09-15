@@ -18,11 +18,11 @@ std::string retrieve_current_state(int socketd);
 
 message_responses_t receive_message_responses(int socketd, sigset_t mask);
 
-std::vector<std::string> retrieve_extensions(int socketd, std::string const &line, sigset_t mask);
+std::vector<std::string> retrieve_extensions(int socketd, std::string const &line);
 
 void interrupt_command(int socketd);
 
-void process_command(int socketd, std::string const &line, sigset_t mask);
+void process_command(int socketd, std::string const &line);
 
 void end_execution(int socketd, sigset_t mask);
 

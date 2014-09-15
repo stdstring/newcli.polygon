@@ -55,7 +55,7 @@ execution_state process_request(std::string const &request, client_state &state)
     std::unordered_map<std::string, request_handler_t>::const_iterator iterator = local_handlers.find(request);
     if (local_handlers.end() != iterator)
         return iterator->second(request, state);
-    process_command(state.get_socketd(), request, create_signal_mask());
+    process_command(state.get_socketd(), request);
     set_behavior(state, std::shared_ptr<iterminal_behavior>(new command_terminal_behavior()));
     return EX_CONTINUE;
 }

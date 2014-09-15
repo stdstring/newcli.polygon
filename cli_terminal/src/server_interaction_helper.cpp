@@ -32,11 +32,9 @@ message_responses_t receive_message_responses(int socketd, sigset_t mask)
     return executer.execute<message_responses_t>([socketd](){ return read_messages<message_response>(socketd); });
 }
 
-std::vector<std::string> retrieve_extensions(int socketd, std::string const &line, sigset_t mask)
+std::vector<std::string> retrieve_extensions(int socketd, std::string const &line)
 {
-    signal_safe_executer executer(mask);
-    std::function<extension_response()> func = [socketd, &line](){ return sync_exchange<extension_request, extension_response>(socketd, extension_request(line)); };
-    extension_response response = executer.execute<extension_response>(func);
+    extension_response response = sync_exchange<extension_request, extension_response>(socketd, extension_request(line));
     return response.extensions;
 }
 
@@ -45,10 +43,9 @@ void interrupt_command(int socketd)
     write_message(socketd, interrupt_request());
 }
 
-void process_command(int socketd, std::string const &line, sigset_t mask)
+void process_command(int socketd, std::string const &line)
 {
-    signal_safe_executer executer(mask);
-    executer.execute([socketd, &line](){ write_message(socketd, command_request(line)); });
+    write_message(socketd, command_request(line));
 }
 
 void end_execution(int socketd, sigset_t mask)

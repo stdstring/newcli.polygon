@@ -13,6 +13,7 @@
 #include "input_terminal_behavior.h"
 #include "iterminal_behavior.h"
 #include "login_command_terminal_behavior.h"
+#include "signal_safe_executer.h"
 #include "signal_utils.h"
 #include "string_utils.h"
 
@@ -92,7 +93,7 @@ std::string create_command(std::string const &login, std::string const &password
     return command;
 }
 
-void login_input_handler(char *raw_data)
+void login_input_handler_impl(char *raw_data)
 {
     if (nullptr == raw_data)
     {
@@ -110,7 +111,7 @@ void login_input_handler(char *raw_data)
     install_password_input_handler();
 }
 
-void password_input_handler(char *raw_data)
+void password_input_handler_impl(char *raw_data)
 {
     if (nullptr == raw_data)
     {
@@ -129,6 +130,20 @@ void password_input_handler(char *raw_data)
     // execute login command
     execution_state ex_state = process_request(login_command, cstate);
     cstate.set_execution_state(ex_state);
+}
+
+void login_input_handler(char *raw_data)
+{
+    signal_safe_executer executer(create_signal_mask());
+    std::function<void()> func = [raw_data](){ login_input_handler_impl(raw_data); };
+    executer.execute(func);
+}
+
+void password_input_handler(char *raw_data)
+{
+    signal_safe_executer executer(create_signal_mask());
+    std::function<void()> func = [raw_data](){ password_input_handler_impl(raw_data); };
+    executer.execute(func);
 }
 
 void clear_input_handler()
