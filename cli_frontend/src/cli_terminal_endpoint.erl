@@ -114,4 +114,5 @@ process_response(#error{} = Response, State) ->
 process_response(#current_state_response{} = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(#extension_response{} = Response, State) ->
+    io:format("extension_response: ~p~n", [Response]),
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)).

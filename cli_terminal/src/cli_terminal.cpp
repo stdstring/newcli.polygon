@@ -28,11 +28,18 @@ namespace cli_terminal
 
 // global variables
 client_state cstate;
+std::terminate_handler default_terminate_handler;
 
 void cleanup()
 {
     rl_callback_handler_remove();
     rl_deprep_terminal();
+}
+
+void process_uncaught_exception()
+{
+    cleanup();
+    default_terminate_handler();
 }
 
 void initialize()
@@ -49,7 +56,7 @@ void initialize()
     // readline history
     using_history();
     // set cleanup for uncaught exceptions
-    std::set_terminate(cleanup);
+    default_terminate_handler = std::set_terminate(process_uncaught_exception);
 }
 
 int main_impl()

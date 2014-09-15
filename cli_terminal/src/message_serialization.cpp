@@ -119,7 +119,7 @@ template<> extension_response deserialize(byte_array_ptr  const &source_data)
         throw bad_message();
     std::vector<std::string> extension_list(expansion_list_size);
     ETERM *list = data_term.get();
-    while (list != nullptr)
+    while (ERL_IS_CONS(list))
     {
         ETERM *head = ERL_CONS_HEAD(list);
         cterm_ptr<char> extension_data_ptr(erl_iolist_to_string(head));
