@@ -107,6 +107,8 @@ char** completion_func_impl(const char *text, int start, int end)
     std::vector<std::string> extensions = retrieve_extensions(cstate.get_socketd(), line);
     // NULL terminated array
     size_t extensions_size = extensions.size();
+    if (0 == extensions_size)
+        return nullptr;
     char** completion_array = (char**) malloc((extensions_size + 1) * sizeof(char*));
     for(size_t index = 0; index < extensions_size; ++index)
         completion_array[index] = duplicate_cstr(extensions.at(index));

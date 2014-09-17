@@ -1,4 +1,7 @@
+#include <cstring>
 #include <unordered_map>
+
+#include "exception_def.h"
 #include "signal.h"
 #include "signal_utils.h"
 
@@ -27,27 +30,28 @@ void setup_signal_handlers(std::unordered_map<int, signal_handler_t> const &sign
 {
     sigset_t old_mask;
     sigset_t mask = create_signal_mask();
-    pthread_sigmask(SIG_SETMASK, &mask, &old_mask);
-    /*int setmask_result = pthread_sigmask(SIG_SETMASK, &mask, &old_mask);
+    /*pthread_sigmask(SIG_SETMASK, &mask, &old_mask);*/
+    int setmask_result = pthread_sigmask(SIG_SETMASK, &mask, &old_mask);
     if (setmask_result != 0)
-        throw signal_error();*/
+        throw signal_error();
     signal_handlers_iterator_t end = signal_handlers.end();
     for (signal_handlers_iterator_t iterator = signal_handlers.begin(); iterator != end; ++iterator)
     {
         int signal_number = iterator->first;
         signal_handler_t handler = iterator->second;
         struct sigaction signal_action;
+        memset(&signal_action, 0, sizeof(signal_action));
         signal_action.sa_handler = handler;
         signal_action.sa_mask = mask;
-        sigaction(signal_number, &signal_action, nullptr);
-        /*int sigaction_result = sigaction(signal_number, &signal_action, nullptr);
+        /*sigaction(signal_number, &signal_action, nullptr);*/
+        int sigaction_result = sigaction(signal_number, &signal_action, nullptr);
         if (sigaction_result == -1)
-            throw signal_error();*/
+            throw signal_error();
     }
-    pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);
-    /*int restoremask_result = pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);
+    /*pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);*/
+    int restoremask_result = pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);
     if (restoremask_result != 0)
-        throw signal_error();*/
+        throw signal_error();
 }
 
 }

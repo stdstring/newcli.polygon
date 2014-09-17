@@ -16,6 +16,9 @@ class recv_error
 class poll_error
 {};
 
+class signal_error
+{};
+
 class socket_error
 {};
 
