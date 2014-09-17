@@ -457,6 +457,7 @@ void setup_signal_handlers()
         std::exit(-1);
     }
     struct sigaction int_action;
+    memset(&int_action, 0, sizeof(int_action));
     int_action.sa_handler = signal_handler;
     int_action.sa_mask = mask;
     if (sigaction(SIGINT, &int_action, nullptr) == -1)
@@ -466,6 +467,7 @@ void setup_signal_handlers()
         std::exit(-1);
     }
     struct sigaction quit_action;
+    memset(&quit_action, 0, sizeof(quit_action));
     quit_action.sa_handler = signal_handler;
     quit_action.sa_mask = mask;
     if (sigaction(SIGQUIT, &quit_action, nullptr) == -1)
@@ -475,6 +477,7 @@ void setup_signal_handlers()
         std::exit(-1);
     }
     struct sigaction winch_action;
+    memset(&winch_action, 0, sizeof(winch_action));
     winch_action.sa_handler = signal_handler;
     winch_action.sa_mask = mask;
     if (sigaction(SIGWINCH, &winch_action, nullptr) == -1)
@@ -484,6 +487,7 @@ void setup_signal_handlers()
         std::exit(-1);
     }
     struct sigaction tstp_action;
+    memset(&tstp_action, 0, sizeof(tstp_action));
     tstp_action.sa_handler = signal_handler;
     tstp_action.sa_mask = mask;
     if (sigaction(SIGTSTP, &tstp_action, nullptr) == -1)
