@@ -30,7 +30,6 @@ void setup_signal_handlers(std::unordered_map<int, signal_handler_t> const &sign
 {
     sigset_t old_mask;
     sigset_t mask = create_signal_mask();
-    /*pthread_sigmask(SIG_SETMASK, &mask, &old_mask);*/
     int setmask_result = pthread_sigmask(SIG_SETMASK, &mask, &old_mask);
     if (setmask_result != 0)
         throw signal_error();
@@ -43,12 +42,10 @@ void setup_signal_handlers(std::unordered_map<int, signal_handler_t> const &sign
         memset(&signal_action, 0, sizeof(signal_action));
         signal_action.sa_handler = handler;
         signal_action.sa_mask = mask;
-        /*sigaction(signal_number, &signal_action, nullptr);*/
         int sigaction_result = sigaction(signal_number, &signal_action, nullptr);
         if (sigaction_result == -1)
             throw signal_error();
     }
-    /*pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);*/
     int restoremask_result = pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);
     if (restoremask_result != 0)
         throw signal_error();
