@@ -82,6 +82,11 @@ void install_signal_handlers()
     setup_signal_handlers(handlers);
 }
 
+void password_redisplay(void)
+{
+    // do nothing now
+}
+
 std::string create_command(std::string const &login, std::string const &password)
 {
     std::string command(LOGIN_COMMAND_PREFIX);
@@ -149,6 +154,8 @@ void password_input_handler(char *raw_data)
 void clear_input_handler()
 {
     rl_callback_handler_remove();
+    // set default redisplay function
+    rl_redisplay_function = rl_redisplay;
 }
 
 void install_login_input_handler()
@@ -159,6 +166,8 @@ void install_login_input_handler()
 void install_password_input_handler()
 {
     rl_callback_handler_install(PASSWORD_PROMPT, password_input_handler);
+    // set redisplay function for password
+    rl_redisplay_function = password_redisplay;
 }
 
 void install_input_handler()
