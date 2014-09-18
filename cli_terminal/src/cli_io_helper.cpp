@@ -29,7 +29,7 @@ std::unordered_map<std::string, request_handler_t> get_local_request_handlers()
         };
     return {
         {"login", login_handler},
-        {"exit", [](std::string const &request, client_state &state){ return EX_FINISH; }}
+        {"bye", [](std::string const &request, client_state &state){ return EX_FINISH; }}
     };
 }
 
