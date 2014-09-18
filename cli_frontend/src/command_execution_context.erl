@@ -28,9 +28,14 @@ process({command_end, ExecutionState, ReturnCode}, State) ->
     command_helper:send_error(NewState, Error),
     command_helper:send_end(NewState),
     NewState;
+process(interrupt_command, #client_handler_state{current_command = undefined} = State) ->
+    State;
 process(interrupt_command, State) ->
-    %% some real action
-    State.
+    Command = State#client_handler_state.current_command,
+    exit(Command, interrupt),
+    NewState = State#client_handler_state{command_chain = [], current_command = undefined},
+    command_helper:send_end(NewState),
+    NewState.
 
 %% ====================================================================
 %% Internal functions
@@ -41,10 +46,10 @@ process_next_command(State) ->
     case State#client_handler_state.command_chain of
         [] ->
             command_helper:send_end(State),
-            State;
+            State#client_handler_state{command_chain = [], current_command = undefined};
         [#command_entry{module = Module, command_line_rest = CommandLineRest} | Rest] ->
             ClientHandler = self(),
             ExecutionState = State#client_handler_state.execution_state,
-            apply(Module, execute, [CommandLineRest, ClientHandler, ExecutionState]),
-            State#client_handler_state{command_chain = Rest}
+            Command = apply(Module, execute, [CommandLineRest, ClientHandler, ExecutionState]),
+            State#client_handler_state{command_chain = Rest, current_command = Command}
     end.

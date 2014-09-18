@@ -55,6 +55,8 @@ exit(_Handler) -> ok.
 
 init([GlobalConfig, Endpoint]) ->
     io:format("client_handler:init/1 ~n", []),
+    %% for catching exit signals from commands
+    process_flag(trap_exit, true),
     case create_execution_state(GlobalConfig) of
         {ok, ExecutionState} ->
             io:format("client_handler:init/1, ExecutionState: ~p~n", [ExecutionState]),
@@ -94,6 +96,13 @@ handle_cast(Request, State) ->
     NewState = command_execution_context:process(Request, State),
     {noreply, NewState}.
 
+%% command's normal exit
+handle_info({'EXIT', _From, normal}, State) -> {noreply, State};
+%% command's interrupt
+handle_info({'EXIT', _From, interrupt}, State) -> {noreply, State};
+%% command's abnormal exit
+handle_info({'EXIT', _From, _Other}, State) -> {stop, command_exit, State};
+%% other info
 handle_info(_Info, State) -> {stop, enotsup, State}.
 
 terminate(_Reason, _State) -> ok.

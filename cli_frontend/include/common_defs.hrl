@@ -52,5 +52,6 @@
 -record(client_handler_state, {config :: #global_config{},
                                execution_state :: #execution_state{},
                                command_chain = [] :: [#command_entry{}],
+                               current_command = undefined :: 'undefined' | pid(),
                                endpoint = undefined :: 'undefined' | pid(),
                                extension_generator = undefined :: 'undefined' | fun((string()) -> [string()])}).
