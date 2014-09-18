@@ -4,6 +4,9 @@
 namespace cli_terminal
 {
 
+class bad_format
+{};
+
 class bad_message
 {};
 
