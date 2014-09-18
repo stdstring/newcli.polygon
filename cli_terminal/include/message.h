@@ -69,7 +69,7 @@ public:
     std::string prompt;
 };
 
-class extension_response
+struct extension_response
 {
 public:
     extension_response(std::vector<std::string> const &extension_value) : extensions(extension_value) {}

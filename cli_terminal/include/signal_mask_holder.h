@@ -24,6 +24,7 @@ public:
     {
         sigprocmask(SIG_SETMASK, &_old_mask, nullptr);
     }
+
 private:
     sigset_t _old_mask;
 };

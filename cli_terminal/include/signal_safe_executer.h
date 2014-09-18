@@ -20,18 +20,6 @@ public:
     signal_safe_executer(sigset_t mask) : _mask(mask) {}
     ~signal_safe_executer() {}
 
-    /*template<class Ret, class... Args> Ret execute(std::function<Ret(Args...)> func, Args... args)
-    {
-        signal_mask_holder signal_holder(_mask);
-        return func(&args...);
-    }
-
-    template<class... Args> void execute(std::function<void(Args...)> func, Args... args)
-    {
-        signal_mask_holder signal_holder(_mask);
-        func(&args...);
-    }*/
-
     template<class Ret> Ret execute(std::function<Ret()> func)
     {
         signal_mask_holder signal_holder(_mask);
@@ -43,6 +31,7 @@ public:
         signal_mask_holder signal_holder(_mask);
         func();
     }
+
 private:
     sigset_t _mask;
 };

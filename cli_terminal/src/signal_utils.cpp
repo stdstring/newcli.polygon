@@ -43,7 +43,7 @@ void setup_signal_handlers(std::unordered_map<int, signal_handler_t> const &sign
         signal_action.sa_handler = handler;
         signal_action.sa_mask = mask;
         int sigaction_result = sigaction(signal_number, &signal_action, nullptr);
-        if (sigaction_result == -1)
+        if (-1 == sigaction_result)
             throw signal_error();
     }
     int restoremask_result = pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);

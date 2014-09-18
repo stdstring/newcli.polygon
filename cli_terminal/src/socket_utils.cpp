@@ -30,7 +30,7 @@ void connect(int socketd, int port_number)
         throw socket_error();
     server_addr.sin_addr.s_addr = ip_binary;
     int connect_result = connect(socketd, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr));
-    if (connect_result == -1)
+    if (-1 == connect_result)
         throw socket_error();
 }
 
