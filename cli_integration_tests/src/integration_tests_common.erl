@@ -21,10 +21,10 @@ create_tests_entry(Source) ->
     {foreach, fun integration_tests_manager:setup/0, fun integration_tests_manager:cleanup/1, InstantiatorList}.
 
 -spec process(Input :: [string()], ExpectedOutput :: [string()], State :: #integration_test_state{}) -> 'ok' | no_return().
-process(Input, ExpectedOutput, #integration_test_state{frontend_cmd = FrontendCmd}) ->
+process(Input, ExpectedOutput, #integration_test_state{terminal_cmd = TerminalCmd}) ->
     InputData = string:join(Input, "\n") ++ "\n",
     ?assertEqual(ok, file:write_file(?INPUT_DATA, InputData)),
-    OutputData = os:cmd(FrontendCmd),
+    OutputData = os:cmd(TerminalCmd),
     OutputDataParts = string:tokens(OutputData, "\n"),
     ?assertEqual(length(ExpectedOutput)+1, length(OutputDataParts)),
     ActualOutput = lists:sublist(OutputDataParts, length(ExpectedOutput)),

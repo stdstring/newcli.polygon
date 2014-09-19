@@ -2,6 +2,7 @@
 
 -define(LISTEN_SUPERVISOR_NAME, cli_terminal_listen_supervisor).
 -define(ENDPOINT_SUPERVISOR_NAME, cli_terminal_supervisor).
+-define(LISTEN_ENDPOINT_NAME, cli_terminal_listen_endpoint).
 
 -define(CLI_TERMINAL_CONFIG_KEY, cli_terminal).
 -define(PORT_NUMBER_KEY, port_number).

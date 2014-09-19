@@ -10,8 +10,10 @@
 -define(BACKEND_NODE, 'backend_node@polygon-vm').
 -define(BACKEND_PROCESS, global_input_endpoint).
 -define(FRONTEND_NODE, 'frontend_node@polygon-vm').
+-define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
 -define(BACKEND_ARGS, " -noshell -sname ~s -s entry_point start").
--define(FRONTEND_ARGS, " -noshell -sname ~s -pa ./frontend_ebin -run cli_frontend_application main ./frontend_data/frontend.conf -s init stop < " ++ ?INPUT_DATA).
+%%-define(FRONTEND_ARGS, " -noshell -sname ~s -pa ./frontend_ebin -run cli_frontend_application main ./frontend_data/frontend.conf -s init stop < " ++ ?INPUT_DATA).
+-define(FRONTEND_ARGS, " -noshell -sname ~s -s entry_point start").
 
 %% ====================================================================
 %% API functions
@@ -29,11 +31,18 @@ setup() ->
     Backend = open_port({spawn, ErlangExecutablePath ++ BackendArgs}, BackendSettings),
     true = wait_process(?BACKEND_NODE, ?BACKEND_PROCESS, 10, 500),
     FrontendArgs = prepare_args(?FRONTEND_ARGS, ?FRONTEND_NODE),
-    FrontendCmd = ErlangExecutablePath ++ FrontendArgs,
-    #integration_test_state{backend = Backend, frontend_cmd = FrontendCmd}.
+    FrontendDir = filename:join([CurrentDir, "frontend_ebin"]),
+    FrontendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, FrontendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
+    Frontend = open_port({spawn, ErlangExecutablePath ++ FrontendArgs}, FrontendSettings),
+    true = wait_process(?FRONTEND_NODE, ?FRONTEND_PROCESS, 10, 500),
+    TerminalCmd = filename:join([CurrentDir, "cli_terminal_bin", "cli_terminal"]) ++ " < " ++ ?INPUT_DATA,
+    #integration_test_state{backend = Backend, frontend = Frontend, terminal_cmd = TerminalCmd}.
 
 -spec cleanup(State :: #integration_test_state{}) -> 'ok'.
-cleanup(#integration_test_state{backend = Backend}) ->
+cleanup(#integration_test_state{backend = Backend, frontend = Frontend}) ->
+    port_close(Frontend),
+    rpc:call(?FRONTEND_NODE, init, stop, []),
+    wait_node_exit(?FRONTEND_NODE, 10, 500),
     port_close(Backend),
     rpc:call(?BACKEND_NODE, init, stop, []),
     wait_node_exit(?BACKEND_NODE, 10, 500),

@@ -22,6 +22,7 @@ start(Config) ->
 init(#cli_terminal_config{port_number = PortNumber}) ->
     case gen_tcp:listen(PortNumber, [binary, {packet, 4}, {active, once}]) of
         {ok, ListenSocket} ->
+            register(?LISTEN_ENDPOINT_NAME, self()),
             proc_lib:init_ack({ok, self()}),
             process_listen(#listen_state{listen_socket = ListenSocket});
         {error, Reason} ->
