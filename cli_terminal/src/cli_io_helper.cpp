@@ -12,7 +12,6 @@
 #include "iterminal_behavior.h"
 #include "message.h"
 #include "server_interaction_helper.h"
-#include "signal_utils.h"
 
 namespace cli_terminal
 {

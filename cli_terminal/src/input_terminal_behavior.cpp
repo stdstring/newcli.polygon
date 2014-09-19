@@ -143,7 +143,9 @@ void install_input_handler()
 
 void process_char()
 {
-    rl_callback_read_char();
+    signal_safe_executer executer(create_signal_mask());
+    std::function<void()> func = [](){ rl_callback_read_char(); };
+    executer.execute(func);
 }
 
 }
