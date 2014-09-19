@@ -19,8 +19,7 @@
 
 -spec start(GlobalConfig :: #global_config{}, Endpoint :: pid()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(GlobalConfig, Endpoint) ->
-    io:format("client_handler:start/2 ~n", []),
-    gen_server:start_link(?MODULE, [GlobalConfig, Endpoint], [{log_to_file, "/tmp/frontend.log"}]).
+    gen_server:start_link(?MODULE, [GlobalConfig, Endpoint], []).
 
 -spec process_command(Handler :: pid(), CommandLine :: string()) -> boolean().
 process_command(Handler, CommandLine) ->
@@ -54,31 +53,26 @@ finish_command(Handler, ExecutionState, ReturnCode) ->
 exit(_Handler) -> ok.
 
 init([GlobalConfig, Endpoint]) ->
-    io:format("client_handler:init/1 ~n", []),
     %% for catching exit signals from commands
     process_flag(trap_exit, true),
     case create_execution_state(GlobalConfig) of
         {ok, ExecutionState} ->
-            io:format("client_handler:init/1, ExecutionState: ~p~n", [ExecutionState]),
             CommandsInfo = ExecutionState#execution_state.commands_info,
             CommandsBody = lists:map(fun({_Name, Body, _Help}) -> Body end, CommandsInfo),
             Generator = autocomplete_factory:create_extension_generator(CommandsBody),
             State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState, endpoint = Endpoint, extension_generator =  Generator},
             {ok, State};
         {error, Reason} ->
-            io:format("client_handler:init/1 error: ~p~n", [Reason]),
             {stop, Reason}
     end.
 
 handle_call({process_command, CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
-    io:format("client_handler:handle_call/3 with empty command_chain ~n", []),
     GlobalConfig = State#client_handler_state.config,
     case command_parser:parse(CommandLine, GlobalConfig) of
         {command_parser, Reason} ->
             NewState = process_parser_error(State, Reason),
             {reply, true, NewState};
         CommandChain ->
-            io:format("client_handler:handle_call/3, CommandChain: ~p~n", [CommandChain]),
             NewState = process_start_command(State, CommandChain),
             {reply, true, NewState}
     end;
@@ -116,7 +110,6 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 -spec create_execution_state(GlobalConfig :: #global_config{}) ->
     {'ok', ExecutionState :: #execution_state{}} | {'error', Reason :: term()}.
 create_execution_state(GlobalConfig) ->
-    io:format("client_handler:create_execution_state/1 ~n", []),
     GlobalHandler = GlobalConfig#global_config.global_handler,
     case commands_info_helper:retrieve(GlobalHandler) of
         {ok, CommandsInfo} ->

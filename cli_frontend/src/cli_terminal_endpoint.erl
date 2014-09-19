@@ -17,7 +17,6 @@
 
 -spec start(GlobalConfig :: #global_config{}, Socket :: term()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(GlobalConfig, Socket) ->
-    io:format("cli_terminal_endpoint:start/1 ~n", []),
     gen_server:start_link(?MODULE, [GlobalConfig, Socket], []).
 
 -spec handle_output(Endpoint :: pid(), Output :: string()) -> 'ok'.
@@ -33,13 +32,10 @@ handle_end(Endpoint, Prompt) ->
     gen_server:cast(Endpoint, #'end'{prompt = Prompt}).
 
 init([GlobalConfig, Socket]) ->
-    io:format("cli_terminal_endpoint:init/1 ~n", []),
     case client_handler:start(GlobalConfig, self()) of
         {ok, ClientHandler} ->
-            io:format("cli_terminal_endpoint:init/1, create client_handler instance ~n", []),
             {ok, #cli_terminal_state{socket = Socket, client_handler = ClientHandler}};
         {error, Reason} ->
-            io:format("cli_terminal_endpoint:init/1, create client_handler failed: ~p~n", [Reason]),
             {stop, {client_handler_init, Reason}}
     end.    
 
@@ -50,10 +46,7 @@ handle_cast(Request, State) ->
     {noreply, State}.
 
 handle_info({tcp, Socket, Data}, State) ->
-    io:format("State: ~p~n", [State]),
-    io:format("Request binary: ~p~n", [Data]),
     Request = binary_to_term(Data),
-    io:format("Request: ~p~n", [Request]),
     Result = process_request(Request, State),
     case process_response(Result, State) of
         ok ->
@@ -64,8 +57,7 @@ handle_info({tcp, Socket, Data}, State) ->
     end;
 handle_info({tcp_closed, _Socket}, State)->
     {stop, {shutdown, socket_closed}, State};
-handle_info(Other, State) ->
-    io:format("Other: ~p~n", [Other]),
+handle_info(_Other, State) ->
     {noreply, State}.
 
 terminate(_Reason, _State) -> ok.
@@ -91,12 +83,10 @@ process_request(#current_state_request{}, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     Prompt = client_handler:get_current_state(ClientHandler),
     #current_state_response{prompt = Prompt};
-    %%process_response(#current_state_response{prompt = Prompt}, State);
 process_request(#extension_request{command_line = CommandLine}, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     ExtensionList = client_handler:get_extensions(ClientHandler, CommandLine),
     #extension_response{extension_list = ExtensionList};
-    %%process_response(#extension_response{extension_list = ExtensionList}, State);
 process_request(#exit{}, _State) ->
     %% some action
     no_response.
@@ -114,5 +104,4 @@ process_response(#error{} = Response, State) ->
 process_response(#current_state_response{} = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(#extension_response{} = Response, State) ->
-    io:format("extension_response: ~p~n", [Response]),
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)).

@@ -16,7 +16,6 @@
 
 -spec execute(CommandLine :: string(), GlobalConfig :: #global_config{}, ClientConfig :: #client_config{}, ClientOutput :: pid()) -> boolean().
 execute(CommandLine, GlobalConfig, ClientConfig, ClientOutput) ->
-    io:format("ClientConfig = ~p~n", [ClientConfig]),
     User = ClientConfig#client_config.user,
     CliFsm = ClientConfig#client_config.cli_fsm,
     Endpoint = create_output_endpoint(ClientOutput),

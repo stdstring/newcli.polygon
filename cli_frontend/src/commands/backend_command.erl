@@ -22,13 +22,11 @@ get_command_body() -> [].
 
 -spec execute(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> CommandPid :: pid() | {'error', Reason :: term()}.
 execute(CommandLineRest, ClientHandler, ExecutionState) ->
-    io:format("backend_command:execute/3 ~n", []),
     proc_lib:start_link(?MODULE, execute_impl, [CommandLineRest, ClientHandler, ExecutionState]).
 
 -spec execute_impl(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> 'ok'.
 execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
     proc_lib:init_ack(self()),
-    io:format("backend_command:execute_impl/3 ~n", []),
     {ReturnCode, NewExecutionState} = backend_command_inner:execute(CommandLineRest, ClientHandler, ExecutionState),
     client_handler:finish_command(ClientHandler, NewExecutionState, ReturnCode),
     ok.

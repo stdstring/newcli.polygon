@@ -26,7 +26,6 @@ get_command_body() -> [?LOGOUT].
 
 -spec execute(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> CommandPid :: pid().
 execute(CommandLineRest, ClientHandler, ExecutionState) ->
-    io:format("logout CommandLineRest = ~p~n", [CommandLineRest]),
     proc_lib:start_link(?MODULE, execute_impl, [CommandLineRest, ClientHandler, ExecutionState]).
 
 -spec execute_impl(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) -> 'ok'.
