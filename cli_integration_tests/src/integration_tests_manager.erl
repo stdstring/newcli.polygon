@@ -10,6 +10,8 @@
 -define(BACKEND_NODE, 'backend_node@polygon-vm').
 -define(BACKEND_PROCESS, global_input_endpoint).
 -define(FRONTEND_NODE, 'frontend_node@polygon-vm').
+-define(BACKEND_ARGS, " -noshell -sname ~s -s entry_point start").
+-define(FRONTEND_ARGS, " -noshell -sname ~s -pa ./frontend_ebin -run cli_frontend_application main ./frontend_data/frontend.conf -s init stop < " ++ ?INPUT_DATA).
 
 %% ====================================================================
 %% API functions
@@ -21,12 +23,12 @@
 setup() ->
     {ok, CurrentDir} = file:get_cwd(),
     ErlangExecutablePath = os:find_executable("erl"),
-    BackendArgs = prepare_args(" -noshell -sname ~s -s entry_point start", ?BACKEND_NODE),
-    BackendDir = filename:join([CurrentDir, "backend_ebin"]),    
+    BackendArgs = prepare_args(?BACKEND_ARGS, ?BACKEND_NODE),
+    BackendDir = filename:join([CurrentDir, "backend_ebin"]),
     BackendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, BackendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
     Backend = open_port({spawn, ErlangExecutablePath ++ BackendArgs}, BackendSettings),
-    true = wait_process(?BACKEND_PROCESS, 10, 500),
-    FrontendArgs = prepare_args(" -noshell -sname ~s -pa ./frontend_ebin -run cli_frontend_application main ./frontend_data/frontend.conf -s init stop < " ++ ?INPUT_DATA, ?FRONTEND_NODE),
+    true = wait_process(?BACKEND_NODE, ?BACKEND_PROCESS, 10, 500),
+    FrontendArgs = prepare_args(?FRONTEND_ARGS, ?FRONTEND_NODE),
     FrontendCmd = ErlangExecutablePath ++ FrontendArgs,
     #integration_test_state{backend = Backend, frontend_cmd = FrontendCmd}.
 
@@ -34,7 +36,7 @@ setup() ->
 cleanup(#integration_test_state{backend = Backend}) ->
     port_close(Backend),
     rpc:call(?BACKEND_NODE, init, stop, []),
-    wait_node_exit(10, 500),
+    wait_node_exit(?BACKEND_NODE, 10, 500),
     ok.
 
 %% ====================================================================
@@ -45,34 +47,34 @@ cleanup(#integration_test_state{backend = Backend}) ->
 prepare_args(FormatArgsStr, Node) ->
     lists:flatten(io_lib:format(FormatArgsStr, [atom_to_list(Node)])).
 
--spec wait_process(ProcessName :: atom(), Count :: integer(), WaitTime :: integer()) -> boolean().
-wait_process(ProcessName, 0, _WaitTime) ->
-    case rpc:call(?BACKEND_NODE, erlang, whereis, [ProcessName]) of
+-spec wait_process(Node :: atom(), Process :: atom(), Count :: integer(), WaitTime :: integer()) -> boolean().
+wait_process(Node, Process, 0, _WaitTime) ->
+    case rpc:call(Node, erlang, whereis, [Process]) of
         {badrpc,nodedown} -> false;
         unfefined -> false;
         _Pid -> true
     end;
-wait_process(ProcessName, Count, WaitTime) ->
-    case rpc:call(?BACKEND_NODE, erlang, whereis, [ProcessName]) of
+wait_process(Node, Process, Count, WaitTime) ->
+    case rpc:call(Node, erlang, whereis, [Process]) of
         {badrpc,nodedown} ->
             timer:sleep(WaitTime),
-            wait_process(ProcessName, Count-1, WaitTime);
+            wait_process(Node, Process, Count-1, WaitTime);
         unfefined ->
             timer:sleep(WaitTime),
-            wait_process(ProcessName, Count-1, WaitTime);
+            wait_process(Node, Process, Count-1, WaitTime);
         _Pid -> true
     end.
 
--spec wait_node_exit(Count :: integer(), WaitTime :: integer()) -> boolean().
-wait_node_exit(0, _WaitTime) ->
-    case net_adm:ping(?BACKEND_NODE) of
+-spec wait_node_exit(Node :: atom(), Count :: integer(), WaitTime :: integer()) -> boolean().
+wait_node_exit(Node, 0, _WaitTime) ->
+    case net_adm:ping(Node) of
         pang -> true;
         pong -> false
     end;
-wait_node_exit(Count, WaitTime) ->
-    case net_adm:ping(?BACKEND_NODE) of
+wait_node_exit(Node, Count, WaitTime) ->
+    case net_adm:ping(Node) of
         pong ->
             timer:sleep(WaitTime),
-            wait_node_exit(Count-1, WaitTime);
+            wait_node_exit(Node, Count-1, WaitTime);
         pang -> true
     end.

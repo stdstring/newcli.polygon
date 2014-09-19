@@ -2,7 +2,9 @@
 
 -define(INPUT_DATA, "/tmp/input").
 
--record(integration_test_state, {backend = undefined :: 'undefined' | port(), frontend_cmd = "" :: string()}).
+-record(integration_test_state, {backend = undefined :: 'undefined' | port(),
+                                 frontend = undefined :: 'undefined' | port(),
+                                 frontend_cmd = "" :: string()}).
 
 -define(LOGIN, "@CliDemo>login:password:").
 -define(GREETING, "some greeting message").
