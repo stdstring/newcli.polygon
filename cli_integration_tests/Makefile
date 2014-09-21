@@ -2,6 +2,7 @@ EBIN=ebin
 COMMON_EBIN=common_ebin
 BACKEND_EBIN=backend_ebin
 BACKEND_COMMANDS_EBIN=backend_commands_ebin
+FRONTEND_EBIN=frontend_ebin
 
 COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
                 backend_commands/config_terminal_command.erl \
@@ -49,6 +50,7 @@ test: all
 	# prerequisites
 	$(shell cp -f -t $(BACKEND_EBIN) backend_prerequisites/*)
 	$(shell cp -f -t $(BACKEND_EBIN) $(BACKEND_COMMANDS_EBIN)/*)
+	$(shell cp -f -t $(FRONTEND_EBIN) frontend_prerequisites/*)
 	# tests
 	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 
