@@ -32,7 +32,6 @@ chmod 555 /usr/local/bin/cli_backend_start.sh
 chmod 555 /usr/local/bin/cli_frontend_start.sh
 chmod 555 /usr/local/bin/cli_terminal
 # cli_user
-userdel xxx
 userdel cli_user
 useradd -s /usr/local/bin/cli_terminal cli_user
 # set passwd, e.g. password=1
