@@ -20,6 +20,9 @@ DEPLOY_BACKEND_DATA = cli_backend_data
 DEPLOY_FRONTEND_EBIN = cli_frontend_ebin
 DEPLOY_FRONTEND_DATA = cli_frontend_data
 DEPLOY_TERMINAL_BIN = cli_terminal_bin
+DEPLOY_PREREQ = deploy_prerequisites
+DEPLOY_BACKEND_PREREQ = $(DEPLOY_PREREQ)/cli_backend
+DEPLOY_FRONTEND_PREREQ = $(DEPLOY_PREREQ)/cli_frontend
 
 all: build post_build
 	
@@ -60,12 +63,16 @@ deploy: all
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_FRONTEND_DATA))
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_TERMINAL_BIN))
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_BACKEND_EBIN) $(BACKEND_EBIN)/*)
+	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_BACKEND_EBIN) $(DEPLOY_BACKEND_PREREQ)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_BACKEND_DATA) $(BACKEND_DATA)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_FRONTEND_EBIN) $(FRONTEND_EBIN)/*)
+	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_FRONTEND_EBIN) $(DEPLOY_FRONTEND_PREREQ)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_FRONTEND_DATA) $(FRONTEND_DATA)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_TERMINAL_BIN) $(TERMINAL_BIN)/*)
+	$(shell cp -f -t $(DEPLOY)/ $(DEPLOY_PREREQ)/install.sh)
 	$(shell tar -c -f $(DEPLOY)/deploy.tar -C $(DEPLOY) $(DEPLOY_BACKEND_EBIN)/ \
                                                         $(DEPLOY_BACKEND_DATA)/ \
                                                         $(DEPLOY_FRONTEND_EBIN)/ \
                                                         $(DEPLOY_FRONTEND_DATA)/ \
-                                                        $(DEPLOY_TERMINAL_BIN)/)
+                                                        $(DEPLOY_TERMINAL_BIN)/ \
+                                                        ./install.sh)
