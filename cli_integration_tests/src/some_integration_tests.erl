@@ -8,9 +8,7 @@
 -define(BACKEND_ARGS, " -noshell -sname ~s -s entry_point start").
 -define(FRONTEND_NODE, 'frontend_node@polygon-vm').
 -define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
--define(FRONTEND_ARGS, " -noshell -sname ~s -s entry_point start").
-
--export([prepare_args/2, wait_process/4, wait_node_exit/3]).
+-define(FRONTEND_ARGS, " -noshell -sname ~s -s entry_point start >> /tmp/f.out").
 
 example_test() ->
     io:format(user, "~nexample start:~n", []),
@@ -36,6 +34,7 @@ example_test() ->
     Frontend = open_port({spawn, ErlangExecutablePath ++ FrontendArgs}, FrontendSettings),
     true = wait_process(?FRONTEND_NODE, ?FRONTEND_PROCESS, 10, 500),
     io:format(user, "Frontend = ~p~n", [Frontend]),
+    exchange_data(),
     %% cleanup
     port_close(Frontend),
     rpc:call(?FRONTEND_NODE, init, stop, []),
@@ -56,16 +55,16 @@ prepare_args(FormatArgsStr, Node) ->
 -spec wait_process(Node :: atom(), Process :: atom(), Count :: integer(), WaitTime :: integer()) -> boolean().
 wait_process(Node, Process, 0, _WaitTime) ->
     case rpc:call(Node, erlang, whereis, [Process]) of
-        {badrpc,nodedown} -> false;
-        unfefined -> false;
+        {badrpc, nodedown} -> false;
+        undefined -> false;
         _Pid -> true
     end;
 wait_process(Node, Process, Count, WaitTime) ->
     case rpc:call(Node, erlang, whereis, [Process]) of
-        {badrpc,nodedown} ->
+        {badrpc, nodedown} ->
             timer:sleep(WaitTime),
             wait_process(Node, Process, Count-1, WaitTime);
-        unfefined ->
+        undefined ->
             timer:sleep(WaitTime),
             wait_process(Node, Process, Count-1, WaitTime);
         _Pid -> true
@@ -84,3 +83,14 @@ wait_node_exit(Node, Count, WaitTime) ->
             wait_node_exit(Node, Count-1, WaitTime);
         pang -> true
     end.
+
+exchange_data() ->
+    Address = {127, 0, 0, 1},
+    timer:sleep(2000),
+    {ok, Socket} = gen_tcp:connect(Address, 6666, [binary, {packet, 4}, {active, false}]),
+    gen_tcp:send(Socket, term_to_binary({command, "?"})),
+    {ok, OutputPacket} = gen_tcp:recv(Socket, 0),
+    io:format(user, "Output = ~p~n", [OutputPacket]),
+    {ok, EndPacket} = gen_tcp:recv(Socket, 0),
+    io:format(user, "End = ~p~n", [EndPacket]),
+    ok.

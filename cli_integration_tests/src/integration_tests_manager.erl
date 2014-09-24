@@ -59,16 +59,16 @@ prepare_args(FormatArgsStr, Node) ->
 -spec wait_process(Node :: atom(), Process :: atom(), Count :: integer(), WaitTime :: integer()) -> boolean().
 wait_process(Node, Process, 0, _WaitTime) ->
     case rpc:call(Node, erlang, whereis, [Process]) of
-        {badrpc,nodedown} -> false;
-        unfefined -> false;
+        {badrpc, nodedown} -> false;
+        undefined -> false;
         _Pid -> true
     end;
 wait_process(Node, Process, Count, WaitTime) ->
     case rpc:call(Node, erlang, whereis, [Process]) of
-        {badrpc,nodedown} ->
+        {badrpc, nodedown} ->
             timer:sleep(WaitTime),
             wait_process(Node, Process, Count-1, WaitTime);
-        unfefined ->
+        undefined ->
             timer:sleep(WaitTime),
             wait_process(Node, Process, Count-1, WaitTime);
         _Pid -> true
