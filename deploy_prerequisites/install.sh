@@ -22,9 +22,9 @@ cp -t /usr/local/lib/frontend cli_frontend_ebin/*
 rm /usr/local/lib/frontend/cli_frontend_start.sh
 chmod 0444 /usr/local/lib/frontend/*
 # binaries
-rm /usr/local/bin/cli_backend_start.sh
-rm /usr/local/bin/cli_frontend_start.sh
-rm /usr/local/bin/cli_terminal
+rm -f /usr/local/bin/cli_backend_start.sh
+rm -f /usr/local/bin/cli_frontend_start.sh
+rm -f /usr/local/bin/cli_terminal
 cp cli_backend_ebin/cli_backend_start.sh /usr/local/bin
 cp cli_frontend_ebin/cli_frontend_start.sh /usr/local/bin
 cp cli_terminal_bin/cli_terminal /usr/local/bin
@@ -35,4 +35,4 @@ chmod 0555 /usr/local/bin/cli_terminal
 userdel cli_user
 useradd -s /usr/local/bin/cli_terminal cli_user
 # set passwd, e.g. password=1
-# passwd cli_user
+passwd cli_user
