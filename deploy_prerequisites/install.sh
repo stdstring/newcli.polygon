@@ -28,8 +28,8 @@ rm /usr/local/bin/cli_terminal
 cp cli_backend_ebin/cli_backend_start.sh /usr/local/bin
 cp cli_frontend_ebin/cli_frontend_start.sh /usr/local/bin
 cp cli_terminal_bin/cli_terminal /usr/local/bin
-chmod 555 /usr/local/bin/cli_backend_start.sh
-chmod 555 /usr/local/bin/cli_frontend_start.sh
+chmod 755 /usr/local/bin/cli_backend_start.sh
+chmod 755 /usr/local/bin/cli_frontend_start.sh
 chmod 555 /usr/local/bin/cli_terminal
 # cli_user
 userdel cli_user
