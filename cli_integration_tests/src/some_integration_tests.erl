@@ -1,19 +1,17 @@
 -module(some_integration_tests).
 
-%%-include_lib("eunit/include/eunit.hrl").
+-include_lib("eunit/include/eunit.hrl").
 
 -define(MAX_LINE_LENGTH, 1000).
 -define(BACKEND_NODE, 'backend_node@polygon-vm').
 -define(BACKEND_PROCESS, global_input_endpoint).
 %%-define(BACKEND_ARGS, " -noshell -sname ~s -s entry_point start").
--define(BACKEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_backend_application)\" >> /tmp/b").
+-define(BACKEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_backend_application)\"").
 -define(FRONTEND_NODE, 'frontend_node@polygon-vm').
-%%-define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
--define(FRONTEND_PROCESS, cli_terminal_listen_supervisor).
+-define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
+%%-define(FRONTEND_PROCESS, cli_terminal_listen_supervisor).
 %%-define(FRONTEND_ARGS, " -noshell -sname ~s -s entry_point start").
--define(FRONTEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_frontend_application)\" >> /tmp/f").
-
--export([example_test/0]).
+-define(FRONTEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_frontend_application)\"").
 
 example_test() ->
     io:format(user, "~nexample start:~n", []),
