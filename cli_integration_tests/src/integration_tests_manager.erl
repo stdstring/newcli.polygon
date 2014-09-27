@@ -11,9 +11,8 @@
 -define(BACKEND_PROCESS, global_input_endpoint).
 -define(FRONTEND_NODE, 'frontend_node@polygon-vm').
 -define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
--define(BACKEND_ARGS, " -noshell -sname ~s -s entry_point start").
-%%-define(FRONTEND_ARGS, " -noshell -sname ~s -pa ./frontend_ebin -run cli_frontend_application main ./frontend_data/frontend.conf -s init stop < " ++ ?INPUT_DATA).
--define(FRONTEND_ARGS, " -noshell -sname ~s -s entry_point start").
+-define(BACKEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_backend_application)\"").
+-define(FRONTEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_frontend_application)\"").
 
 %% ====================================================================
 %% API functions
