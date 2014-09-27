@@ -1,14 +1,19 @@
 -module(some_integration_tests).
 
--include_lib("eunit/include/eunit.hrl").
+%%-include_lib("eunit/include/eunit.hrl").
 
 -define(MAX_LINE_LENGTH, 1000).
 -define(BACKEND_NODE, 'backend_node@polygon-vm').
 -define(BACKEND_PROCESS, global_input_endpoint).
--define(BACKEND_ARGS, " -noshell -sname ~s -s entry_point start").
+%%-define(BACKEND_ARGS, " -noshell -sname ~s -s entry_point start").
+-define(BACKEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_backend_application)\" >> /tmp/b").
 -define(FRONTEND_NODE, 'frontend_node@polygon-vm').
--define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
--define(FRONTEND_ARGS, " -noshell -sname ~s -s entry_point start >> /tmp/f.out").
+%%-define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
+-define(FRONTEND_PROCESS, cli_terminal_listen_supervisor).
+%%-define(FRONTEND_ARGS, " -noshell -sname ~s -s entry_point start").
+-define(FRONTEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_frontend_application)\" >> /tmp/f").
+
+-export([example_test/0]).
 
 example_test() ->
     io:format(user, "~nexample start:~n", []),
@@ -90,7 +95,7 @@ exchange_data() ->
     {ok, Socket} = gen_tcp:connect(Address, 6666, [binary, {packet, 4}, {active, false}]),
     gen_tcp:send(Socket, term_to_binary({command, "?"})),
     {ok, OutputPacket} = gen_tcp:recv(Socket, 0),
-    io:format(user, "Output = ~p~n", [OutputPacket]),
+    io:format(user, "Output = ~p~n", [binary_to_term(OutputPacket)]),
     {ok, EndPacket} = gen_tcp:recv(Socket, 0),
-    io:format(user, "End = ~p~n", [EndPacket]),
+    io:format(user, "End = ~p~n", [binary_to_term(EndPacket)]),
     ok.
