@@ -13,7 +13,14 @@
 %%-define(FRONTEND_ARGS, " -noshell -sname ~s -s entry_point start").
 -define(FRONTEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_frontend_application)\"").
 
-example_test() ->
+-record(state, {backend = undefined :: 'undefined' | pid(), frontend = undefined :: 'undefined' | pid()}).
+
+%%-export([setup/0, cleanup/1]).
+
+example_test_() ->
+    {foreach, fun() -> setup() end, fun(State) -> cleanup(State) end, [{"example", fun() -> test_example() end}]}.
+
+setup() ->
     io:format(user, "~nexample start:~n", []),
     {ok, CurrentDir} = file:get_cwd(),
     io:format(user, "~nCurrentDir = ~p~n", [CurrentDir]),
@@ -37,14 +44,19 @@ example_test() ->
     Frontend = open_port({spawn, ErlangExecutablePath ++ FrontendArgs}, FrontendSettings),
     true = wait_process(?FRONTEND_NODE, ?FRONTEND_PROCESS, 10, 500),
     io:format(user, "Frontend = ~p~n", [Frontend]),
-    exchange_data(),
-    %% cleanup
+    #state{backend = Backend, frontend = Frontend}.
+
+cleanup(#state{backend = Backend, frontend = Frontend}) ->
     port_close(Frontend),
     rpc:call(?FRONTEND_NODE, init, stop, []),
     wait_node_exit(?FRONTEND_NODE, 10, 500),
     port_close(Backend),
     rpc:call(?BACKEND_NODE, init, stop, []),
     wait_node_exit(?BACKEND_NODE, 10, 500),
+    ok.
+
+test_example() ->
+    exchange_data(),
     ok.
 
 %% ====================================================================
