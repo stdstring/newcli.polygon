@@ -16,29 +16,18 @@ example_test_() ->
     {foreach, fun() -> setup() end, fun(State) -> cleanup(State) end, [{"example", fun() -> test_example() end}]}.
 
 setup() ->
-    io:format(user, "~nexample start:~n", []),
     {ok, CurrentDir} = file:get_cwd(),
-    io:format(user, "~nCurrentDir = ~p~n", [CurrentDir]),
     ErlangExecutablePath = os:find_executable("erl"),
-    io:format(user, "ErlangExecutablePath = ~p~n", [ErlangExecutablePath]),
     BackendArgs = prepare_args(?BACKEND_ARGS, ?BACKEND_NODE),
-    io:format(user, "BackendArgs = ~p~n", [BackendArgs]),
     BackendDir = filename:join([CurrentDir, "backend_ebin"]),
-    io:format(user, "BackendDir = ~p~n", [BackendDir]),
     BackendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, BackendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
     Backend = open_port({spawn, ErlangExecutablePath ++ BackendArgs}, BackendSettings),
     true = wait_process(?BACKEND_NODE, ?BACKEND_PROCESS, 10, 500),
-    io:format(user, "Backend = ~p~n", [Backend]),
-    CommandsInfo = gen_server:call({?BACKEND_PROCESS, ?BACKEND_NODE}, {commands_info}),
-    io:format(user, "CommandsInfo = ~p~n", [CommandsInfo]),
     FrontendArgs = prepare_args(?FRONTEND_ARGS, ?FRONTEND_NODE),
-    io:format(user, "FrontendArgs = ~p~n", [FrontendArgs]),
     FrontendDir = filename:join([CurrentDir, "frontend_ebin"]),
-    io:format(user, "FrontendDir = ~p~n", [FrontendDir]),
     FrontendSettings = [{line, ?MAX_LINE_LENGTH}, {cd, FrontendDir}, stream, use_stdio, exit_status, stderr_to_stdout],
     Frontend = open_port({spawn, ErlangExecutablePath ++ FrontendArgs}, FrontendSettings),
     true = wait_process(?FRONTEND_NODE, ?FRONTEND_PROCESS, 10, 500),
-    io:format(user, "Frontend = ~p~n", [Frontend]),
     #state{backend = Backend, frontend = Frontend}.
 
 cleanup(#state{backend = Backend, frontend = Frontend}) ->
