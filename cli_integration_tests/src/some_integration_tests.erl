@@ -5,17 +5,12 @@
 -define(MAX_LINE_LENGTH, 1000).
 -define(BACKEND_NODE, 'backend_node@polygon-vm').
 -define(BACKEND_PROCESS, global_input_endpoint).
-%%-define(BACKEND_ARGS, " -noshell -sname ~s -s entry_point start").
 -define(BACKEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_backend_application)\"").
 -define(FRONTEND_NODE, 'frontend_node@polygon-vm').
 -define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
-%%-define(FRONTEND_PROCESS, cli_terminal_listen_supervisor).
-%%-define(FRONTEND_ARGS, " -noshell -sname ~s -s entry_point start").
 -define(FRONTEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_frontend_application)\"").
 
 -record(state, {backend = undefined :: 'undefined' | pid(), frontend = undefined :: 'undefined' | pid()}).
-
-%%-export([setup/0, cleanup/1]).
 
 example_test_() ->
     {foreach, fun() -> setup() end, fun(State) -> cleanup(State) end, [{"example", fun() -> test_example() end}]}.

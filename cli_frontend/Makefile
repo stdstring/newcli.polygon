@@ -21,7 +21,6 @@ SOURCE=src/commands/command_behaviour.erl \
        src/command_parser_fsm.erl \
        src/commands_info_helper.erl \
        src/config_reader.erl \
-       src/entry_point.erl \
        src/message_helper.erl \
        src/prompt_factory.erl
 
