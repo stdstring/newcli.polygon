@@ -6,7 +6,6 @@
                                  frontend = undefined :: 'undefined' | port(),
                                  terminal_cmd = "" :: string()}).
 
-%%-define(LOGIN, "@CliDemo>login:password:").
 -define(ADMIN_LOGIN, ["@CliDemo>login", "login:root", "password:"]).
 -define(GUEST_LOGIN, ["@CliDemo>login", "login:guest", "password:"]).
 -define(GREETING, "some greeting message").
@@ -18,3 +17,7 @@
 -define(PING_BAD_ARGS, "Command's execution is failed due to the following: {parser_fail,[112,105,110,103],{ping,creation_error,bad_args}}").
 -define(ACCESS_DENIED, "Command's execution is failed due to the following: {precondition_check_fail,access_denied}").
 -define(UNSUITABLE_COMMAND, "Command's execution is failed due to the following: {precondition_check_fail,unsuitable_command}").
+-define(CONFIG_TERM, "root@CliDemo#configure terminal").
+-define(INTERFACE, "root@CliDemo (config)#interface someinterface 0/1").
+-define(INTERFACE_RANGE, "root@CliDemo (config)#interface range someinterface 0/1,3-5").
+-define(VLAN, "root@CliDemo (config)#vlan 666").

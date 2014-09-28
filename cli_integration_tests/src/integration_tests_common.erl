@@ -14,7 +14,7 @@
 
 -export([create_tests_entry/1, check_normal_execution/0, process/3]).
 
--spec create_tests_entry(Source :: {Input :: [string()], Output :: [string()], Description :: string()}) ->
+-spec create_tests_entry(Source :: {Description :: string(), Input :: [string()], Output :: [string()]}) ->
     {'foreach', fun(() -> #integration_test_state{}), fun((#integration_test_state{}) -> 'ok'), [fun((#integration_test_state{}) -> 'ok')]}.
 create_tests_entry(Source) ->
     MapFun = fun({Description, Input, Output}) -> create_tests_instantiator(Description, Input, Output) end,
@@ -28,7 +28,7 @@ process(Input, ExpectedOutput, #integration_test_state{terminal_cmd = TerminalCm
     OutputData = os:cmd(TerminalCmd),
     io:format(user, "Output = ~p~n", [OutputData]),
     OutputDataParts = string:tokens(OutputData, "\n"),
-    ?assertEqual(length(ExpectedOutput)+1, length(OutputDataParts)),
+    ?assertEqual(length(ExpectedOutput), length(OutputDataParts)),
     ActualOutput = lists:sublist(OutputDataParts, length(ExpectedOutput)),
     ?assertEqual(ExpectedOutput, ActualOutput),
     check_normal_execution(),
