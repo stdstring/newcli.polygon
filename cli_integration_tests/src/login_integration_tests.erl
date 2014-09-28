@@ -6,10 +6,9 @@
 
 integration_test_() ->
     integration_tests_common:create_tests_entry([
-        {["login", "guest", "idclip", "logout"],
-         %"@CliDemo>login\nlogin:guest\npassword:\nsome greeting message\nguest@CliDemo>logout\nYou are logged out\n@CliDemo>"
-         [?LOGIN, ?GREETING, ?GUEST_LOGOUT],
-         "login: user login and logout"},
+        {"login: user login and logout",
+         ["login", "guest", "idclip", "logout"],
+         ?GUEST_LOGIN ++ [?GREETING] ++ ?GUEST_LOGOUT},
         {["login", "root", "iddqd", "logout"],
          %"@CliDemo>login\nlogin:root\npassword:\nsome greeting message\nroot@CliDemo#logout\nYou are logged out\n@CliDemo>"
          [?LOGIN, ?GREETING, ?ADMIN_LOGOUT],
