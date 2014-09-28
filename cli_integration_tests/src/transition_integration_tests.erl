@@ -46,7 +46,7 @@ integration_test_() ->
          ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, ?INTERFACE_RANGE, "root@CliDemo (config-if-range)#end"] ++ ?ADMIN_LOGOUT},
         {"transition: end vlan configuration mode",
          ["login", "root", "iddqd", "configure terminal", "vlan 666", "end", "logout"],
-         ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, ?VLAN "root@CliDemo (config-vlan)#end"] ++ ?ADMIN_LOGOUT},
+         ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, ?VLAN, "root@CliDemo (config-vlan)#end"] ++ ?ADMIN_LOGOUT},
         {"transition: end global configuration mode",
          ["login", "root", "iddqd", "configure terminal", "end", "logout"],
          ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, "root@CliDemo (config)#end"] ++ ?ADMIN_LOGOUT},

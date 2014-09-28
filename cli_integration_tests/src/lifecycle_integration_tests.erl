@@ -21,8 +21,8 @@ integration_test_() ->
         ?GUEST_LOGIN ++ [?GREETING, "guest@CliDemo>ping", ?PING_BAD_ARGS, ?COMMAND_FAIL, "guest@CliDemo>ping 192.168.0.1"] ++ ?PING_OUTPUT ++ ["guest@CliDemo>configure terminal", ?ACCESS_DENIED, ?COMMAND_FAIL] ++ ?GUEST_LOGOUT),
      create_integration_test(
         "lifecycle: big example for admin",
-        ["login", "root", "iddqd", "vlan 666", "configure terminal", "vlan 666", "name somename", "exit", "interface somedevice 0/1", "show vlan", "no switchport access vlan", "logout"],
-        ?ADMIN_LOGIN ++ [?GREETING, "root@CliDemo#vlan 666", ?UNSUITABLE_COMMAND, ?COMMAND_FAIL, ?CONFIG_TERM, ?VLAN, "root@CliDemo (config-vlan)#name somename", "root@CliDemo (config-vlan)#exit", ?INTERFACE, "root@CliDemo (config-if)#show vlan", ?SHOW_VLAN_OUTPUT, "root@CliDemo (config-if)#no switchport access vlan", "root@CliDemo (config-if)#logout"] ++ ?LOGOUT_RESULT)].
+        ["login", "root", "iddqd", "vlan 666", "configure terminal", "vlan 666", "name somename", "exit", "interface someinterface 0/1", "show vlan", "no switchport access vlan", "logout"],
+        ?ADMIN_LOGIN ++ [?GREETING, "root@CliDemo#vlan 666", ?UNSUITABLE_COMMAND, ?COMMAND_FAIL, ?CONFIG_TERM, ?VLAN, "root@CliDemo (config-vlan)#name somename", "root@CliDemo (config-vlan)#exit", ?INTERFACE, "root@CliDemo (config-if)#show vlan"] ++ ?SHOW_VLAN_OUTPUT ++ ["root@CliDemo (config-if)#no switchport access vlan", "root@CliDemo (config-if)#logout"] ++ ?LOGOUT_RESULT)].
 
 -spec create_integration_test(Description :: string(), Input :: [string()], Output :: [string()]) ->
     {Description :: string(), fun(() -> 'ok')}.
