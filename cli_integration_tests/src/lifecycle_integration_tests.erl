@@ -38,9 +38,9 @@ integration_test_() ->
                               "root@CliDemo (config-if)#root@CliDemo (config-if)#You are logged out."],
                              "lifecycle: big example for admin")].
 
--spec create_integration_test(Input :: [string()], Output :: [string()], Description :: string()) ->
+-spec create_integration_test(Description :: string(), Input :: [string()], Output :: [string()]) ->
     {Description :: string(), fun(() -> 'ok')}.
-create_integration_test(Input, Output, Description) ->
+create_integration_test(Description, Input, Output) ->
     {Description, fun() -> test_common_body(Input, Output) end}.
 
 -spec test_common_body(Input :: [string()], Output :: [string()]) -> 'ok'.

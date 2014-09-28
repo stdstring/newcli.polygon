@@ -17,7 +17,8 @@
 -spec create_tests_entry(Source :: {Input :: [string()], Output :: [string()], Description :: string()}) ->
     {'foreach', fun(() -> #integration_test_state{}), fun((#integration_test_state{}) -> 'ok'), [fun((#integration_test_state{}) -> 'ok')]}.
 create_tests_entry(Source) ->
-    InstantiatorList = lists:map(fun({Input, Output, Description}) -> create_tests_instantiator(Input, Output, Description) end, Source),
+    MapFun = fun({Description, Input, Output}) -> create_tests_instantiator(Description, Input, Output) end,
+    InstantiatorList = lists:map(MapFun, Source),
     {foreach, fun integration_tests_manager:setup/0, fun integration_tests_manager:cleanup/1, InstantiatorList}.
 
 -spec process(Input :: [string()], ExpectedOutput :: [string()], State :: #integration_test_state{}) -> 'ok' | no_return().
@@ -45,6 +46,7 @@ check_normal_execution() ->
 %% Internal functions
 %% ====================================================================
 
--spec create_tests_instantiator(Input :: [string()], Output :: [string()], Description :: string()) -> fun((#integration_test_state{}) -> 'ok').
-create_tests_instantiator(Input, Output, Description) ->
+-spec create_tests_instantiator(Description :: string(), Input :: [string()], Output :: [string()]) ->
+    fun((#integration_test_state{}) -> 'ok').
+create_tests_instantiator(Description, Input, Output) ->
     fun(State) -> [{Description, fun() -> process(Input, Output, State) end}] end.
