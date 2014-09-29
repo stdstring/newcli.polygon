@@ -85,7 +85,6 @@ wait_node_exit(Node, Count, WaitTime) ->
 
 exchange_data() ->
     Address = {127, 0, 0, 1},
-    timer:sleep(2000),
     {ok, Socket} = gen_tcp:connect(Address, 6666, [binary, {packet, 4}, {active, false}]),
     gen_tcp:send(Socket, term_to_binary({command, "?"})),
     {ok, OutputPacket} = gen_tcp:recv(Socket, 0),

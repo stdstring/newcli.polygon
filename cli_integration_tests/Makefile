@@ -22,7 +22,8 @@ COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
                 backend_commands/vlan_command.erl
 SOURCE=src/integration_tests_common.erl \
        src/integration_tests_manager.erl
-TEST_SOURCE=src/command_integration_tests.erl \
+TEST_SOURCE=src/cli_service_integration_tests.erl \
+            src/command_integration_tests.erl \
             src/help_integration_tests.erl \
             src/lifecycle_integration_tests.erl \
             src/login_integration_tests.erl \

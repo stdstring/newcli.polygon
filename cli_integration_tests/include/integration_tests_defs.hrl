@@ -5,7 +5,15 @@
 -record(integration_test_state, {backend = undefined :: 'undefined' | port(),
                                  frontend = undefined :: 'undefined' | port(),
                                  terminal_cmd = "" :: string()}).
+%% component defs
+-define(BACKEND_NODE, 'backend_node@polygon-vm').
+-define(BACKEND_PROCESS, global_input_endpoint).
+-define(FRONTEND_NODE, 'frontend_node@polygon-vm').
+-define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
+-define(FRONTEND_ENDPOINT_ADDRESS, {127, 0, 0, 1}).
+-define(FRONTEND_ENDPOINT_PORT, 6666).
 
+%% common output
 -define(ADMIN_LOGIN, ["@CliDemo>login", "login:root", "password:"]).
 -define(GUEST_LOGIN, ["@CliDemo>login", "login:guest", "password:"]).
 -define(GREETING, "some greeting message").

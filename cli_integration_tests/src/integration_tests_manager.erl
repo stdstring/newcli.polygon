@@ -7,10 +7,10 @@
 -include("integration_tests_defs.hrl").
 
 -define(MAX_LINE_LENGTH, 1000).
--define(BACKEND_NODE, 'backend_node@polygon-vm').
--define(BACKEND_PROCESS, global_input_endpoint).
--define(FRONTEND_NODE, 'frontend_node@polygon-vm').
--define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
+%%-define(BACKEND_NODE, 'backend_node@polygon-vm').
+%%-define(BACKEND_PROCESS, global_input_endpoint).
+%%-define(FRONTEND_NODE, 'frontend_node@polygon-vm').
+%%-define(FRONTEND_PROCESS, cli_terminal_listen_endpoint).
 -define(BACKEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_backend_application)\"").
 -define(FRONTEND_ARGS, " -noshell -sname ~s -eval \"application:start(cli_frontend_application)\"").
 
