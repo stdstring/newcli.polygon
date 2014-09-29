@@ -4,8 +4,12 @@
 
 -include("integration_tests_defs.hrl").
 
+%% TODO (std_string) : try use include files from cli_backend
+-define(BACKEND_COMMAND, {commands_info}).
 %% TODO (std_string) : try use include files from cli_frontend
 -define(FRONTEND_COMMAND, {command, "?"}).
+
+-define(EXPECTED_COMMANDS, ["login", "logout", "configure terminal", "interface", "interface range", "vlan", "no vlan", "ping", "switchport access vlan", "no switchport access vlan", "name", "no name", "end", "exit", "show vlan"]).
 
 integration_test_() ->
     Tests = [{"interaction with backend", fun() -> check_backend() end}, {"interaction with frontend", fun() -> check_frontend() end}],
@@ -13,18 +17,31 @@ integration_test_() ->
 
 check_backend() ->
     CommandsInfo = backend_interact(),
-    io:format(user, "CommandsInfo = ~p~n", [CommandsInfo]),
+    ?assertEqual(length(?EXPECTED_COMMANDS), length(CommandsInfo)),
+    lists:foreach(fun(Command) -> ?assert(is_backend_command_exist(CommandsInfo, Command)) end, ?EXPECTED_COMMANDS),
     ok.
+
+is_backend_command_exist(CommandsInfo, ExpectedCommand) ->
+    %% TODO (std_string) : try use include files from cli_backend
+    Pred = fun({command_info, _Name, Body, _Help}) -> string:join(Body, " ") == ExpectedCommand end,
+    lists:any(Pred, CommandsInfo).
 
 check_frontend() ->
     {OutputResponse, EndResponse} = frontend_interact(),
-    io:format(user, "Output = ~p~n", [OutputResponse]),
-    io:format(user, "End = ~p~n", [EndResponse]),
+    %% TODO (std_string) : try use include files from cli_frontend
+    {command_out, CommandOut} = OutputResponse,
+    Commands = string:tokens(string:strip(CommandOut, right, $\n), "\t"),
+    lists:foreach(fun(Command) -> ?assert(is_frontend_command_exist(Commands, Command)) end, ?EXPECTED_COMMANDS),
+    ?assertEqual({'end',"@CliDemo>"}, EndResponse),
     ok.
+
+is_frontend_command_exist(Commands, ExpectedCommand) ->
+    lists:any(fun(Command) -> Command == ExpectedCommand end, Commands).
+
 
 backend_interact() ->
     %% TODO (std_string) : try use include files from cli_backend
-    {commands_info_result, CommandsInfo} = gen_server:call({?BACKEND_PROCESS, ?BACKEND_NODE}, {commands_info}),
+    {commands_info_result, CommandsInfo} = gen_server:call({?BACKEND_PROCESS, ?BACKEND_NODE}, ?BACKEND_COMMAND),
     CommandsInfo.
 
 frontend_interact() ->
