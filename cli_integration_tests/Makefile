@@ -27,8 +27,7 @@ TEST_SOURCE=src/cli_service_integration_tests.erl \
             src/help_integration_tests.erl \
             src/lifecycle_integration_tests.erl \
             src/login_integration_tests.erl \
-            src/transition_integration_tests.erl \
-            src/some_integration_tests.erl
+            src/transition_integration_tests.erl
 
 BACKEND_COMMANDS_INCLUDE_FLAGS=-I backend_commands_include
 INCLUDE_FLAGS=-I include
@@ -55,7 +54,6 @@ test: all
 	$(shell cp -f -t $(FRONTEND_EBIN) frontend_prerequisites/*)
 	# tests
 	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
-	#erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([some_integration_tests], [verbose])" -s init stop
 
 pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
