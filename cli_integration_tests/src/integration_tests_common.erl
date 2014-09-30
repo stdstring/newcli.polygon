@@ -7,12 +7,13 @@
 -include("integration_tests_defs.hrl").
 
 -define(CRASH_DUMP_FILE, "erl_crash.dump").
+-define(CRASH_DUMP_FILES, ["./" ++ ?CRASH_DUMP_FILE, "./backend_ebin/" ++ ?CRASH_DUMP_FILE, "./frontend_ebin/" ++ ?CRASH_DUMP_FILE]).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
--export([create_tests_entry/1, check_normal_execution/0, process/3]).
+-export([create_tests_entry/1, check_normal_execution/0, clear_abnormal_execution/0, process/3]).
 
 -spec create_tests_entry(Source :: {Description :: string(), Input :: [string()], Output :: [string()]}) ->
     {'foreach', fun(() -> #integration_test_state{}), fun((#integration_test_state{}) -> 'ok'), [fun((#integration_test_state{}) -> 'ok')]}.
@@ -35,11 +36,13 @@ process(Input, ExpectedOutput, #integration_test_state{terminal_cmd = TerminalCm
 
 -spec check_normal_execution() -> 'ok'.
 check_normal_execution() ->
-    ?assertNot(filelib:is_regular("./"  ++ ?CRASH_DUMP_FILE)),
-    ?assertNot(filelib:is_regular("./backend_ebin/"  ++ ?CRASH_DUMP_FILE)),
-    ?assertNot(filelib:is_regular("./frontend_ebin/"  ++ ?CRASH_DUMP_FILE)),
+    lists:foreach(fun(Filename) -> ?assertNot(filelib:is_regular(Filename)) end, ?CRASH_DUMP_FILES),
     ok.
 
+-spec clear_abnormal_execution() -> 'ok'.
+clear_abnormal_execution() ->
+    lists:foreach(fun(Filename) -> file:delete(Filename) end, ?CRASH_DUMP_FILES),
+    ok.
 
 %% ====================================================================
 %% Internal functions
