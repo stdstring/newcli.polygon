@@ -25,6 +25,7 @@ DEPLOY_BACKEND_PREREQ = $(DEPLOY_PREREQ)/cli_backend
 DEPLOY_FRONTEND_PREREQ = $(DEPLOY_PREREQ)/cli_frontend
 DEPLOY_DOCS = docs
 
+# documentation for deploy
 DOCS=docs/CLI_Architecture.docx\
      docs/CLI_Future.docx\
      docs/CLI_service_description.docx\
@@ -79,8 +80,9 @@ deploy: all
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_TERMINAL_BIN) $(TERMINAL_BIN)/*)
 	$(shell cp -f -t $(DEPLOY)/ $(DEPLOY_PREREQ)/install.sh)
 	# documentation
-	for document in $(DOCS); do libreoffice --headless -convert-to pdf $$document -outdir $(DEPLOY)/$(DEPLOY_DOCS); done
+	for document in $(DOCS); do libreoffice --headless --convert-to pdf $$document --outdir $(DEPLOY)/$(DEPLOY_DOCS); done
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_DOCS) docs/*.pdf)
+	# create tar
 	tar -c -f $(DEPLOY)/deploy.tar -C $(DEPLOY) $(DEPLOY_BACKEND_EBIN)/ \
                                                 $(DEPLOY_BACKEND_DATA)/ \
                                                 $(DEPLOY_FRONTEND_EBIN)/ \
