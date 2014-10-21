@@ -23,6 +23,13 @@ DEPLOY_TERMINAL_BIN = cli_terminal_bin
 DEPLOY_PREREQ = deploy_prerequisites
 DEPLOY_BACKEND_PREREQ = $(DEPLOY_PREREQ)/cli_backend
 DEPLOY_FRONTEND_PREREQ = $(DEPLOY_PREREQ)/cli_frontend
+DEPLOY_DOCS = docs
+
+DOCS=docs/CLI_Architecture.docx\
+     docs/CLI_Future.docx\
+     docs/CLI_service_description.docx\
+     docs/CLI_terminal_comm_protocol.docx\
+     docs/CLI_terminal_description
 
 all: build post_build
 	
@@ -62,6 +69,7 @@ deploy: all
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_FRONTEND_EBIN))
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_FRONTEND_DATA))
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_TERMINAL_BIN))
+	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_DOCS))
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_BACKEND_EBIN) $(BACKEND_EBIN)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_BACKEND_EBIN) $(DEPLOY_BACKEND_PREREQ)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_BACKEND_DATA) $(BACKEND_DATA)/*)
@@ -70,9 +78,13 @@ deploy: all
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_FRONTEND_DATA) $(FRONTEND_DATA)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_TERMINAL_BIN) $(TERMINAL_BIN)/*)
 	$(shell cp -f -t $(DEPLOY)/ $(DEPLOY_PREREQ)/install.sh)
-	$(shell tar -c -f $(DEPLOY)/deploy.tar -C $(DEPLOY) $(DEPLOY_BACKEND_EBIN)/ \
-                                                        $(DEPLOY_BACKEND_DATA)/ \
-                                                        $(DEPLOY_FRONTEND_EBIN)/ \
-                                                        $(DEPLOY_FRONTEND_DATA)/ \
-                                                        $(DEPLOY_TERMINAL_BIN)/ \
-                                                        ./install.sh)
+	# documentation
+	for document in $(DOCS); do libreoffice --headless -convert-to pdf $$document -outdir $(DEPLOY)/$(DEPLOY_DOCS); done
+	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_DOCS) docs/*.pdf)
+	tar -c -f $(DEPLOY)/deploy.tar -C $(DEPLOY) $(DEPLOY_BACKEND_EBIN)/ \
+                                                $(DEPLOY_BACKEND_DATA)/ \
+                                                $(DEPLOY_FRONTEND_EBIN)/ \
+                                                $(DEPLOY_FRONTEND_DATA)/ \
+                                                $(DEPLOY_TERMINAL_BIN)/ \
+                                                $(DEPLOY_DOCS)/ \
+                                                ./install.sh
