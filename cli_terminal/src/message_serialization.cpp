@@ -84,8 +84,6 @@ template<> current_state_response deserialize(byte_array_ptr const &source_data)
     eterm_ptr eterm(erl_decode(source_data.get()));
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
-    if (!ERL_IS_TUPLE(eterm.get()))
-        throw bad_message();
     eterm_ptr type_term(erl_element(1, eterm.get()));
     if (!type_term)
         throw bad_message();
