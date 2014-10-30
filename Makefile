@@ -27,8 +27,10 @@ DEPLOY_DOCS = docs
 
 # documentation for deploy
 DOCS=docs/CLI_Architecture.docx\
+     docs/CLI_Autocomplete.docx\
      docs/CLI_Dependencies.docx\
      docs/CLI_Future.docx\
+     docs/CLI_service_command_parser.docx\
      docs/CLI_service_description.docx\
      docs/CLI_terminal_comm_protocol.docx\
      docs/CLI_terminal_description
