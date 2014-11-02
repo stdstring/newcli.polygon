@@ -1,7 +1,8 @@
 EBIN=ebin
 
 SOURCE=src/dynamic_module_tests.erl \
-       src/syntax_analyzer.erl
+       src/syntax_analyzer.erl \
+       src/syntax_analyzer_tests.erl
 
 INCLUDE_FLAGS=-I include
 
@@ -17,6 +18,7 @@ pre_build: clean
 
 test: all
 	erl -noshell -pa $(EBIN) -eval "eunit:test([dynamic_module_tests], [verbose])" -s init stop
+	erl -noshell -pa $(EBIN) -eval "eunit:test([syntax_analyzer_tests], [verbose])" -s init stop
 
 clean:
 	$(shell rm -rf $(EBIN)/*)

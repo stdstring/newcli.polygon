@@ -1,14 +1,12 @@
 %% @author std-string
 
--module(syntax_analyzer).
+-module(syntax_analyzer_tests).
 
--export([process/3]).
+-include_lib("eunit/include/eunit.hrl").
 
 %% ====================================================================
-%% API functions
+%% Test functions
 %% ====================================================================
-
-process(_TokenList, _SyntaxTable, _CommandTable) -> ok.
 
 %% ====================================================================
 %% Internal functions
