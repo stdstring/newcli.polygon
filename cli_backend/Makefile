@@ -45,7 +45,6 @@ $(EBIN)/%.beam: %.erl
 	erlc -pa $(EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
 all: pre_build $(TARGETS) post_build
-	
 
 pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
@@ -54,7 +53,6 @@ post_build:
 	$(shell cp -f -t $(EBIN) $(COPY))
 
 test: all
-
 
 clean:
 	$(shell rm -rf $(EBIN)/*)

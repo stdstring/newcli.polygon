@@ -13,5 +13,6 @@ cli_integration_tests/frontend_ebin/
 cli_integration_tests/cli_terminal_bin/
 cli_terminal/bin/
 cli_terminal_prototype/bin/
+cli_command_parser_prototype/ebin/
 deploy/
 untitled.sublime-workspace
