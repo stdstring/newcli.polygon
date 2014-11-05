@@ -2,7 +2,7 @@
 
 -module(syntax_analyzer).
 
--export([process/2]).
+-export([process/3]).
 
 -include("common_defs.hrl").
 
@@ -12,18 +12,18 @@
 %% API functions
 %% ====================================================================
 
-process(TokenList, SyntaxTable) ->
-    process(TokenList, [], SyntaxTable).
+process(TokenList, SyntaxTable, StartSymbol) ->
+    process_impl(TokenList, [StartSymbol], SyntaxTable).
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
-process([], [], _SyntaxTable) -> ok;
-process([], _ProcessStack, _SyntaxTable) -> bad_token;
-process(TokenList, ProcessStack, SyntaxTable) ->
+process_impl([], [], _SyntaxTable) -> ok;
+process_impl([], _ProcessStack, _SyntaxTable) -> bad_token;
+process_impl(TokenList, ProcessStack, SyntaxTable) ->
     case process_token(TokenList, ProcessStack, SyntaxTable) of
-        #process_state{token_list = NewTokenList, process_stack = NewProcessStack} -> process(NewTokenList, NewProcessStack, SyntaxTable);
+        #process_state{token_list = NewTokenList, process_stack = NewProcessStack} -> process_impl(NewTokenList, NewProcessStack, SyntaxTable);
         bad_token -> bad_token
     end.
 
@@ -32,14 +32,14 @@ process_token([Token | TokenListRest], [#terminal{type = Type, value = Value} | 
     case check_terminal(Token, #terminal{type = Type, value = Value}) of
         true ->
             %% add processed token to some state
-            io:format("process terminal (type = ~p, value = ~p)~n", [Type, Value]),
+            io:format(user, "process terminal (type = ~p, value = ~p)~n", [Type, Value]),
             #process_state{token_list = TokenListRest, process_stack = ProcessStackRest};
         false -> bad_token
     end;
 process_token([Token | TokenListRest], [#nonterminal{name = Name} | ProcessStackRest], SyntaxTable) ->
     case find_production(#nonterminal{name = Name}, Token, SyntaxTable) of
         {ok, Production} ->
-            io:format("process nonterminal (name = ~p)~n", [Name]),
+            io:format(user, "process nonterminal (name = ~p)~n", [Name]),
             NewProcessStack = process_production(Production, ProcessStackRest),
             #process_state{token_list = TokenListRest, process_stack = NewProcessStack};
         not_found -> bad_token
