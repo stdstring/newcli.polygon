@@ -13,6 +13,7 @@
 -define(END_TOKEN, #token{type = "End", value = ''}).
 -define(WORD_TERM, #terminal{type = "Word", value = undefined}).
 -define(STRING_TERM, #terminal{type = "String", value = undefined}).
+-define(END_TERM, #terminal{type = "End", value = ''}).
 
 %% ====================================================================
 %% Test functions
@@ -22,9 +23,10 @@
 %%    SyntaxTable = create_syntax_table(),
 %%    [].
 
-syntax_analyzer_process_test_() ->
+syntax_analyzer_process_test() ->
     SyntaxTable = create_syntax_table(),
-    syntax_analyzer:process([#token{type = "Word", value = "ping"}, #token{type = "Word", value = "192.168.0.1"}, ?END_TOKEN], SyntaxTable, ?COMMAND).
+    ok = syntax_analyzer:process([#token{type = "Word", value = "ping"}, #token{type = "Word", value = "192.168.0.1"}, ?END_TOKEN], SyntaxTable, ?COMMAND),
+    ok = syntax_analyzer:process([#token{type = "Word", value = "exit"}, ?END_TOKEN], SyntaxTable, ?COMMAND).
 
 %% ====================================================================
 %% Internal functions
@@ -34,5 +36,5 @@ create_syntax_table() ->
     Table =[{{?COMMAND, ?WORD_TOKEN}, [?WORD_TERM, ?ARGS]},
             {{?ARGS, ?WORD_TOKEN}, [?WORD_TERM, ?ARGS]},
             {{?ARGS, ?STRING_TOKEN}, [?STRING_TERM, ?ARGS]},
-            {{?ARGS, ?END_TOKEN}, [?END_TOKEN]}],
+            {{?ARGS, ?END_TOKEN}, []}],
     dict:from_list(Table).
