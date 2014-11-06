@@ -23,10 +23,18 @@
 %%    SyntaxTable = create_syntax_table(),
 %%    [].
 
-syntax_analyzer_process_test() ->
+simple_syntax_analysis_test() ->
     SyntaxTable = create_syntax_table(),
+    io:format(user, "~nparse 'ping 192.168.0.1' :~n", []),
     ok = syntax_analyzer:process([#token{type = "Word", value = "ping"}, #token{type = "Word", value = "192.168.0.1"}, ?END_TOKEN], SyntaxTable, ?COMMAND),
-    ok = syntax_analyzer:process([#token{type = "Word", value = "exit"}, ?END_TOKEN], SyntaxTable, ?COMMAND).
+    io:format(user, "~nparse 'exit' :~n", []),
+    ok = syntax_analyzer:process([#token{type = "Word", value = "exit"}, ?END_TOKEN], SyntaxTable, ?COMMAND),
+    io:format(user, "~nparse 'call \"iddqd idkfa\"' :~n", []),
+    ok = syntax_analyzer:process([#token{type = "Word", value = "call"}, #token{type = "String", value = "iddqd idkfa"}, ?END_TOKEN], SyntaxTable, ?COMMAND),
+    io:format(user, "~ntry parse '\"iddqd idkfa\"' :~n", []),
+    bad_token = syntax_analyzer:process([#token{type = "String", value = "iddqd idkfa"}, ?END_TOKEN], SyntaxTable, ?COMMAND),
+    io:format(user, "~nparse 'call 666' with unknown token :~n", []),
+    bad_token = syntax_analyzer:process([#token{type = "Word", value = "call"}, #token{type = "Integer", value = 666}, ?END_TOKEN], SyntaxTable, ?COMMAND).
 
 %% ====================================================================
 %% Internal functions
@@ -36,5 +44,5 @@ create_syntax_table() ->
     Table =[{{?COMMAND, ?WORD_TOKEN}, [?WORD_TERM, ?ARGS]},
             {{?ARGS, ?WORD_TOKEN}, [?WORD_TERM, ?ARGS]},
             {{?ARGS, ?STRING_TOKEN}, [?STRING_TERM, ?ARGS]},
-            {{?ARGS, ?END_TOKEN}, []}],
+            {{?ARGS, ?END_TOKEN}, [?END_TERM]}],
     dict:from_list(Table).

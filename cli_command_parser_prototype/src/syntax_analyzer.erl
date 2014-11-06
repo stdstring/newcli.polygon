@@ -13,7 +13,6 @@
 %% ====================================================================
 
 process(TokenList, SyntaxTable, StartSymbol) ->
-    io:format(user, "Source token list : ~p~n", [TokenList]),
     process_impl(TokenList, [StartSymbol], SyntaxTable).
 
 %% ====================================================================
@@ -38,12 +37,12 @@ process_token([Token | TokenListRest], [#terminal{type = Type, value = Value} | 
             #process_state{token_list = TokenListRest, process_stack = ProcessStackRest};
         false -> bad_token
     end;
-process_token([Token | TokenListRest], [#nonterminal{name = Name} | ProcessStackRest], SyntaxTable) ->
+process_token([Token | _] = TokenList, [#nonterminal{name = Name} | ProcessStackRest], SyntaxTable) ->
     io:format(user, "process nonterminal (name = ~p)~n", [Name]),
     case find_production(#nonterminal{name = Name}, Token, SyntaxTable) of
         {ok, Production} ->
             NewProcessStack = process_production(Production, ProcessStackRest),
-            #process_state{token_list = TokenListRest, process_stack = NewProcessStack};
+            #process_state{token_list = TokenList, process_stack = NewProcessStack};
         not_found -> bad_token
     end.
 
