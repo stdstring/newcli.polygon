@@ -6,25 +6,30 @@
 
 -include("common_defs.hrl").
 
--record(process_state, {token_list = [], process_stack = []}).
+%%-record(process_result, {token_list = [], process_stack = []}).
+%%-record(command_frame_item, {value= undefined, type = undefined}).
+%%-record(command_frame, {items = []}).
+-record(process_state, {current_frame = undefined}).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
 process(TokenList, SyntaxTable, StartSymbol) ->
-    process_impl(TokenList, [StartSymbol], SyntaxTable).
+    process_impl(TokenList, [StartSymbol], SyntaxTable, #process_state{}).
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
-process_impl([], [], _SyntaxTable) -> ok;
-process_impl([], _ProcessStack, _SyntaxTable) -> bad_token;
-process_impl(TokenList, ProcessStack, SyntaxTable) ->
+process_impl([], [], _SyntaxTable, ProcessState) ->
+    io:format(user, "current frame : ~p~n", [ProcessState#process_state.current_frame]),
+    {ok, []};
+process_impl([], _ProcessStack, _SyntaxTable, _ProcessState) -> bad_token;
+process_impl(TokenList, ProcessStack, SyntaxTable, ProcessState) ->
     io:format(user, "ProcessStack : ~p~n", [ProcessStack]),
     case process_token(TokenList, ProcessStack, SyntaxTable) of
-        #process_state{token_list = NewTokenList, process_stack = NewProcessStack} -> process_impl(NewTokenList, NewProcessStack, SyntaxTable);
+        {NewTokenList, NewProcessStack} -> process_impl(NewTokenList, NewProcessStack, SyntaxTable, ProcessState);
         bad_token -> bad_token
     end.
 
@@ -34,7 +39,7 @@ process_token([Token | TokenListRest], [#terminal{type = Type, value = Value} | 
     case check_terminal(Token, #terminal{type = Type, value = Value}) of
         true ->
             %% add processed token to some state
-            #process_state{token_list = TokenListRest, process_stack = ProcessStackRest};
+            {TokenListRest, ProcessStackRest};
         false -> bad_token
     end;
 process_token([Token | _] = TokenList, [#nonterminal{name = Name} | ProcessStackRest], SyntaxTable) ->
@@ -42,7 +47,7 @@ process_token([Token | _] = TokenList, [#nonterminal{name = Name} | ProcessStack
     case find_production(#nonterminal{name = Name}, Token, SyntaxTable) of
         {ok, Production} ->
             NewProcessStack = process_production(Production, ProcessStackRest),
-            #process_state{token_list = TokenList, process_stack = NewProcessStack};
+            {TokenList, NewProcessStack};
         not_found -> bad_token
     end.
 
