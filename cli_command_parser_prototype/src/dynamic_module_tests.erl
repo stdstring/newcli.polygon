@@ -40,6 +40,18 @@ regenerate_module_test_() ->
      {"zero case", ?_assertEqual(?ZERO_OTHER, ?MODULE_NAME:?FUNCTION_NAME(0))},
      {"negative case", ?_assertEqual(?NEGATIVE_OTHER, ?MODULE_NAME:?FUNCTION_NAME(-13))}].
 
+generate_term_list_test() ->
+    %% fun() -> lists:sum([1,2,3,4])
+    List = {cons, 0, {integer, 0, 11}, {cons, 0, {integer, 0, 22}, {cons, 0, {integer, 0, 33}, {nil, 0}}}},
+    Body = {call, 0, {remote, 0, {atom, 0, lists}, {atom, 0, sum}}, [List]},
+    Clause = {clause, 0, [], [], [Body]},
+    ModuleForm = {attribute, 0, module, ?MODULE_NAME},
+    ExportForm = {attribute, 0, export, [{?FUNCTION_NAME, 0}]},
+    FunForm = {function, 0, ?FUNCTION_NAME, 0, [Clause]},
+    {ok, ?MODULE_NAME, ModuleBinary} = compile:forms([ModuleForm, ExportForm, FunForm]),
+    {module, ?MODULE_NAME} = code:load_binary(?MODULE_NAME, [], ModuleBinary),
+    ?assertEqual(66, ?MODULE_NAME:?FUNCTION_NAME()).
+
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
