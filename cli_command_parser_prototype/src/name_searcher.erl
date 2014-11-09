@@ -15,6 +15,12 @@ search_best(Words, Table) ->
 %% Table = [{Condition, Module :: atom(), Function :: atom()}]
 search(_Words, []) -> false;
 search(Words, Table) ->
+    %%io:format(user, "search(Words = ~p)~n", [Words]),
+    %%FMatch = search_full_match(Words, Table),
+    %%io:format(user, "full match ~p~n", [FMatch]),
+    %%IMatch = search_incomplete_match(Words, Table),
+    %%io:format(user, "incomplete match ~p~n", [IMatch]),
+    %%create_search_result(FMatch, IMatch).
     create_search_result(search_full_match(Words, Table), search_incomplete_match(Words, Table)).
 
 %% ====================================================================
@@ -25,14 +31,23 @@ search_best_impl(_WordsUsed, [], undefined, _Rows) -> false;
 search_best_impl(_WordsUsed, [], {Module, Func, Rest}, _Rows) -> {true, Module, Func, Rest};
 search_best_impl(_WordsUsed, _WordsRest, undefined, []) -> false;
 search_best_impl(_WordsUsed, _WordsRest, {Module, Func, Rest}, []) -> {true, Module, Func, Rest};
-search_best_impl(WordsUsed, [Word | Rest], Recognized, Rows) ->
+search_best_impl(WordsUsed, [Word | Rest], undefined, Rows) ->
     NewWordsUsed = WordsUsed ++ [Word],
     case search(NewWordsUsed, Rows) of
         {true, Module, Func, RowsRest} ->
-            NewRecognized = {Module, Func, RowsRest},
+            NewRecognized = {Module, Func, Rest},
             search_best_impl(NewWordsUsed, Rest, NewRecognized, RowsRest);
-        {incomplete, RowsRest} -> search_best_impl(NewWordsUsed, Rest, Recognized, RowsRest);
+        {incomplete, RowsRest} -> search_best_impl(NewWordsUsed, Rest, undefined, RowsRest);
         false -> false
+    end;
+search_best_impl(WordsUsed, [Word | Rest], {RecModule, RecFunc, RecRest}, Rows) ->
+    NewWordsUsed = WordsUsed ++ [Word],
+    case search(NewWordsUsed, Rows) of
+        {true, Module, Func, RowsRest} ->
+            NewRecognized = {Module, Func, Rest},
+            search_best_impl(NewWordsUsed, Rest, NewRecognized, RowsRest);
+        {incomplete, RowsRest} -> search_best_impl(NewWordsUsed, Rest, {RecModule, RecFunc, RecRest}, RowsRest);
+        false -> {true, RecModule, RecFunc, RecRest}
     end.
 
 create_search_result(false, false) -> false;
