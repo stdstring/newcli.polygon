@@ -15,12 +15,6 @@ search_best(Words, Table) ->
 %% Table = [{Condition, Module :: atom(), Function :: atom()}]
 search(_Words, []) -> false;
 search(Words, Table) ->
-    %%io:format(user, "search(Words = ~p)~n", [Words]),
-    %%FMatch = search_full_match(Words, Table),
-    %%io:format(user, "full match ~p~n", [FMatch]),
-    %%IMatch = search_incomplete_match(Words, Table),
-    %%io:format(user, "incomplete match ~p~n", [IMatch]),
-    %%create_search_result(FMatch, IMatch).
     create_search_result(search_full_match(Words, Table), search_incomplete_match(Words, Table)).
 
 %% ====================================================================
