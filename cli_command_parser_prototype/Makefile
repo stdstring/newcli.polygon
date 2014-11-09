@@ -1,6 +1,8 @@
 EBIN=ebin
 
 SOURCE=src/dynamic_module_tests.erl \
+       src/name_searcher.erl \
+       src/name_searcher_tests.erl \
        src/syntax_analyzer.erl \
        src/syntax_analyzer_tests.erl
 
@@ -18,6 +20,7 @@ pre_build: clean
 
 test: all
 	erl -noshell -pa $(EBIN) -eval "eunit:test([dynamic_module_tests], [verbose])" -s init stop
+	erl -noshell -pa $(EBIN) -eval "eunit:test([name_searcher_tests], [verbose])" -s init stop
 	erl -noshell -pa $(EBIN) -eval "eunit:test([syntax_analyzer_tests], [verbose])" -s init stop
 
 clean:
