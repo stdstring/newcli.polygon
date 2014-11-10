@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(name_searcher).
+-module(name_search).
 
 -export([search_best/2, search/2]).
 

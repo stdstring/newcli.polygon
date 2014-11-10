@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(name_searcher_tests).
+-module(name_search_tests).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -149,10 +149,10 @@ create_name_table() ->
      {[{"show", 2}, {"vlan", 1}], ?SHOW_VLAN_MODULE, ?FUNCTION}].
 
 success_check(Description, Module, Args, Words, NameTable) ->
-    {Description, ?_assertEqual({true, Module, ?FUNCTION, Args}, name_searcher:search_best(Words, NameTable))}.
+    {Description, ?_assertEqual({true, Module, ?FUNCTION, Args}, name_search:search_best(Words, NameTable))}.
 
 fail_check(Description, Words, NameTable) ->
-    {Description, ?_assertEqual(false, name_searcher:search_best(Words, NameTable))}.
+    {Description, ?_assertEqual(false, name_search:search_best(Words, NameTable))}.
 
 %%show_args(Args) ->
 %%    io:format(user, "arguments: ~p~n", [Args]).

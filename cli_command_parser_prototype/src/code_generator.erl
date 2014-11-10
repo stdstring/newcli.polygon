@@ -1,3 +1,5 @@
+%% @author std-string
+
 -module(code_generator).
 
 -export([generate/3]).
