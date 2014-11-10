@@ -51,14 +51,14 @@ create_syntax_table() ->
     dict:from_list(Table).
 
 command_action(#process_state{current_frame = undefined}, #token{type = word, value = Word}) ->
-    CommandFrame = #command_frame{items = [#command_frame_item{type = word, value = Word}]},
+    CommandFrame = #command_frame{items = [#frame_item{type = word, value = Word}]},
     #process_state{current_frame = CommandFrame}.
 
 args_action(#process_state{current_frame = #command_frame{items = Items}}, #token{type = word, value = Word}) ->
-    NewCommandFrame = #command_frame{items = [#command_frame_item{type = word, value = Word}] ++ Items},
+    NewCommandFrame = #command_frame{items = [#frame_item{type = word, value = Word}] ++ Items},
     #process_state{current_frame = NewCommandFrame};
 args_action(#process_state{current_frame = #command_frame{items = Items}}, #token{type = string, value = String}) ->
-    NewCommandFrame = #command_frame{items = [#command_frame_item{type = string, value = String}] ++ Items},
+    NewCommandFrame = #command_frame{items = [#frame_item{type = string, value = String}] ++ Items},
     #process_state{current_frame = NewCommandFrame};
 args_action(#process_state{current_frame = #command_frame{items = Items}}, ?END_TOKEN) ->
     io:format(user, "CommandFrame : ~p~n", [lists:reverse(Items)]),

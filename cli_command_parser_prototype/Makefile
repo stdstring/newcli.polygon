@@ -1,6 +1,7 @@
 EBIN=ebin
 
-SOURCE=src/dynamic_module_tests.erl \
+SOURCE=src/code_generator.erl \
+       src/dynamic_module_tests.erl \
        src/name_searcher.erl \
        src/name_searcher_tests.erl \
        src/syntax_analyzer.erl \
