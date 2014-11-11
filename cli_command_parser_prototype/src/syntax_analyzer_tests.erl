@@ -61,5 +61,4 @@ args_action(#process_state{current_frame = #command_frame{items = Items}}, #toke
     NewCommandFrame = #command_frame{items = [#frame_item{type = string, value = String}] ++ Items},
     #process_state{current_frame = NewCommandFrame};
 args_action(#process_state{current_frame = #command_frame{items = Items}}, ?END_TOKEN) ->
-    io:format(user, "CommandFrame : ~p~n", [lists:reverse(Items)]),
     #process_state{current_frame = undefined}.
