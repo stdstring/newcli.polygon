@@ -10,14 +10,29 @@
 %% API functions
 %% ====================================================================
 
--spec generate(ModuleName :: atom(), FunctionName :: atom(), Args :: [#frame_item{}]) -> tuple().
-generate(ModuleName, FunctionName, Args) ->
-    ArgsList = generate_arg_list(Args),
-    {call, 0, {remote, 0, {atom, 0, ModuleName}, {atom, 0, FunctionName}}, [ArgsList]}.
+-spec generate(ModuleName :: atom(), FunctionName :: atom(), {CommandModule :: atom(), CommandFunction :: atom(), CommandArgs :: [#frame_item{}]}) ->
+    {'ok', ModuleName :: atom(), ModuleBinary :: binary()} | 'false'.
+generate(ModuleName, FunctionName, {CommandModule, CommandFunction, CommandArgs}) ->
+    CommandExec = generate_command_execution(CommandModule, CommandFunction, CommandArgs),
+    Body = [CommandExec],
+    Clause = {clause, 0, [], [], [Body]},
+    ModuleForm = {attribute, 0, module, ModuleName},
+    ExportForm = {attribute, 0, export, [{FunctionName, 0}]},
+    FunForm = {function, 0, FunctionName, 0, [Clause]},
+    case compile:forms([ModuleForm, ExportForm, FunForm]) of
+        {ok, ModuleName, ModuleBinary} -> {ok, ModuleName, ModuleBinary};
+        _Other -> false
+    end.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+-spec generate_command_execution(ModuleName :: atom(), FunctionName :: atom(), Args :: [#frame_item{}]) -> tuple().
+generate_command_execution(ModuleName, FunctionName, Args) ->
+    ArgsList = generate_arg_list(Args),
+    {call, 0, {remote, 0, {atom, 0, ModuleName}, {atom, 0, FunctionName}}, [ArgsList]}.
+
 
 -spec generate_arg_list(Args :: [#frame_item{}]) -> tuple().
 generate_arg_list(Args) ->
