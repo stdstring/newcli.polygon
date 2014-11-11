@@ -2,14 +2,11 @@
 
 -module(name_search).
 
--export([search_best/2, search/2]).
+-export([search/2]).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
-
-search_best(Words, Table) ->
-    search_best_impl([], Words, undefined, Table).
 
 %% Condition = [{Word :: string(), MinPrefixLength :: pos_integer()}]
 %% Table = [{Condition, Module :: atom(), Function :: atom()}]
@@ -20,29 +17,6 @@ search(Words, Table) ->
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
-
-search_best_impl(_WordsUsed, [], undefined, _Rows) -> false;
-search_best_impl(_WordsUsed, [], {Module, Func, Rest}, _Rows) -> {true, Module, Func, Rest};
-search_best_impl(_WordsUsed, _WordsRest, undefined, []) -> false;
-search_best_impl(_WordsUsed, _WordsRest, {Module, Func, Rest}, []) -> {true, Module, Func, Rest};
-search_best_impl(WordsUsed, [Word | Rest], undefined, Rows) ->
-    NewWordsUsed = WordsUsed ++ [Word],
-    case search(NewWordsUsed, Rows) of
-        {true, Module, Func, RowsRest} ->
-            NewRecognized = {Module, Func, Rest},
-            search_best_impl(NewWordsUsed, Rest, NewRecognized, RowsRest);
-        {incomplete, RowsRest} -> search_best_impl(NewWordsUsed, Rest, undefined, RowsRest);
-        false -> false
-    end;
-search_best_impl(WordsUsed, [Word | Rest], {RecModule, RecFunc, RecRest}, Rows) ->
-    NewWordsUsed = WordsUsed ++ [Word],
-    case search(NewWordsUsed, Rows) of
-        {true, Module, Func, RowsRest} ->
-            NewRecognized = {Module, Func, Rest},
-            search_best_impl(NewWordsUsed, Rest, NewRecognized, RowsRest);
-        {incomplete, RowsRest} -> search_best_impl(NewWordsUsed, Rest, {RecModule, RecFunc, RecRest}, RowsRest);
-        false -> {true, RecModule, RecFunc, RecRest}
-    end.
 
 create_search_result(false, false) -> false;
 create_search_result({true, Module, Func}, false) -> {true, Module, Func, []};
