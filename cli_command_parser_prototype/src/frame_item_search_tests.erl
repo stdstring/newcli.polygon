@@ -26,6 +26,7 @@
 
 -define(WORD(Value), #frame_item{type = word, value = Value}).
 -define(STRING(Value), #frame_item{type = string, value = Value}).
+-define(FRAME_ITEM(Type, Value), #frame_item{type = Type, value = Value}).
 
 %% ====================================================================
 %% Test functions
@@ -36,6 +37,8 @@ search_best_test_() ->
     [success_check("search ping XXX", ?PING_MODULE, [?WORD("XXX")], [?WORD("ping"), ?WORD("XXX")], NameTable),
      success_check("search p XXX", ?PING_MODULE, [?WORD("XXX")], [?WORD("p"), ?WORD("XXX")], NameTable),
      fail_check("search png XXX", [?WORD("png"), ?WORD("XXX")], NameTable),
+     success_check("search ping \"XXX\"", ?PING_MODULE, [?STRING("XXX")], [?WORD("ping"), ?STRING("XXX")], NameTable),
+     fail_check("search \"ping\" XXX", [?STRING("ping"), ?WORD("XXX")], NameTable),
      success_check("search configure terminal", ?CONF_TERM_MODULE, [], [?WORD("configure"), ?WORD("terminal")], NameTable),
      success_check("search c terminal", ?CONF_TERM_MODULE, [], [?WORD("c"), ?WORD("terminal")], NameTable),
      success_check("search c t", ?CONF_TERM_MODULE, [], [?WORD("c"), ?WORD("t")], NameTable),
@@ -50,7 +53,8 @@ search_best_test_() ->
      fail_check("search n IDDQD", [?WORD("n"), ?WORD("IDDQD")], NameTable),
      success_check("search no name", ?NONAME_MODULE, [], [?WORD("no"), ?WORD("name")], NameTable),
      fail_check("search n name", [?WORD("n"), ?WORD("name")], NameTable),
-     fail_check("search unknown_command IDDQD", [?WORD("unknown_command"), ?WORD("IDDQD")], NameTable)].
+     fail_check("search unknown_command IDDQD", [?WORD("unknown_command"), ?WORD("IDDQD")], NameTable),
+     fail_check("search 666 IDDQD", [?FRAME_ITEM(integer, 666), ?WORD("IDDQD")], NameTable)].
 
 %% ====================================================================
 %% Internal functions
