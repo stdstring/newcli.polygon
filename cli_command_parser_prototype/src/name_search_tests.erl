@@ -4,7 +4,7 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--include("common_defs.hrl").
+-include("command_module_defs.hrl").
 
 %% ====================================================================
 %% Test functions

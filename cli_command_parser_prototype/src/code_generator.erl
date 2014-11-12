@@ -15,7 +15,7 @@
 generate(ModuleName, FunctionName, {CommandModule, CommandFunction, CommandArgs}) ->
     CommandExec = generate_command_execution(CommandModule, CommandFunction, CommandArgs),
     Body = [CommandExec],
-    Clause = {clause, 0, [], [], [Body]},
+    Clause = {clause, 0, [], [], Body},
     ModuleForm = {attribute, 0, module, ModuleName},
     ExportForm = {attribute, 0, export, [{FunctionName, 0}]},
     FunForm = {function, 0, FunctionName, 0, [Clause]},
@@ -31,6 +31,7 @@ generate(ModuleName, FunctionName, {CommandModule, CommandFunction, CommandArgs}
 -spec generate_command_execution(ModuleName :: atom(), FunctionName :: atom(), Args :: [#frame_item{}]) -> tuple().
 generate_command_execution(ModuleName, FunctionName, Args) ->
     ArgsList = generate_arg_list(Args),
+    io:format(user, "ArgsList: ~p~n", [ArgsList]),
     {call, 0, {remote, 0, {atom, 0, ModuleName}, {atom, 0, FunctionName}}, [ArgsList]}.
 
 

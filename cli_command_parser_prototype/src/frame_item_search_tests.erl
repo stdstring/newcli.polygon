@@ -4,6 +4,7 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+-include("command_module_defs.hrl").
 -include("common_defs.hrl").
 
 -define(WORD(Value), #frame_item{type = word, value = Value}).

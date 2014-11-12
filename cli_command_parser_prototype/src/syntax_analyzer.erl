@@ -6,30 +6,30 @@
 
 -include("common_defs.hrl").
 
-%%-record(process_result, {token_list = [], process_stack = []}).
-
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
-process(TokenList, SyntaxTable, StartSymbol) ->
-    process_impl(TokenList, [StartSymbol], SyntaxTable, #process_state{}).
+-spec process(TokenList :: [#token{}], StartSymbol :: #nonterminal{}, GlobalState :: #global_state{}) ->
+    {'true', ModuleBinary :: binary()} | {'false', Reason :: term()}.
+process(TokenList, StartSymbol, GlobalState) ->
+    process_impl(TokenList, [StartSymbol], GlobalState, #process_state{}).
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
-process_impl([], [], _SyntaxTable, _ProcessState) -> {ok, []};
-process_impl([], _ProcessStack, _SyntaxTable, _ProcessState) -> bad_token;
-process_impl(TokenList, ProcessStack, SyntaxTable, ProcessState) ->
+process_impl([], [], _GlobalState, _ProcessState) -> {true, []};
+process_impl([], _ProcessStack, _GlobalState, _ProcessState) -> {false, bad_token};
+process_impl(TokenList, ProcessStack, GlobalState, ProcessState) ->
     io:format(user, "ProcessStack : ~p~n", [ProcessStack]),
-    case process_token(TokenList, ProcessStack, ProcessState, SyntaxTable) of
-        {NewTokenList, NewProcessStack, NewProcessState} -> process_impl(NewTokenList, NewProcessStack, SyntaxTable, NewProcessState);
-        bad_token -> bad_token
+    case process_token(TokenList, ProcessStack, GlobalState, ProcessState) of
+        {NewTokenList, NewProcessStack, NewProcessState} -> process_impl(NewTokenList, NewProcessStack, GlobalState, NewProcessState);
+        bad_token -> {false, bad_token}
     end.
 
 %% SyntaxTable = dict({nonterminal.Name, token.Type, token.Value | undefined} -> {Production, Action} | error)
-process_token([Token | TokenListRest], [#terminal{type = Type, value = Value} | ProcessStackRest], ProcessState, _SyntaxTable) ->
+process_token([Token | TokenListRest], [#terminal{type = Type, value = Value} | ProcessStackRest], _GlobalState, ProcessState) ->
     io:format(user, "process terminal (type = ~p, value = ~p)~n", [Type, Value]),
     case check_terminal(Token, #terminal{type = Type, value = Value}) of
         true ->
@@ -37,11 +37,13 @@ process_token([Token | TokenListRest], [#terminal{type = Type, value = Value} | 
             {TokenListRest, ProcessStackRest, ProcessState};
         false -> bad_token
     end;
-process_token([Token | _] = TokenList, [#nonterminal{name = Name} | ProcessStackRest], ProcessState, SyntaxTable) ->
+process_token([Token | _] = TokenList, [#nonterminal{name = Name} | ProcessStackRest], GlobalState, ProcessState) ->
     io:format(user, "process nonterminal (name = ~p)~n", [Name]),
+    SyntaxTable = GlobalState#global_state.syntax_table,
+    NameTable = GlobalState#global_state.name_table,
     case find_production(#nonterminal{name = Name}, Token, SyntaxTable) of
         {ok, Production} ->
-            {NewProcessStack, NewProcessState} = process_production(Token, Production, ProcessStackRest, ProcessState),
+            {NewProcessStack, NewProcessState} = process_production(Token, Production, ProcessStackRest, NameTable, ProcessState),
             {TokenList, NewProcessStack, NewProcessState};
         not_found -> bad_token
     end.
@@ -60,7 +62,7 @@ find_production(Nonterminal, Token, SyntaxTable) ->
             end
     end.
 
-process_production(Token, {Production, Action}, ProcessStackRest, ProcessState) ->
-    NewProcessState = Action(ProcessState, Token),
+process_production(Token, {Production, Action}, ProcessStackRest, NameTable, ProcessState) ->
+    NewProcessState = Action(NameTable, ProcessState, Token),
     ProcessStack = Production ++ ProcessStackRest,
     {ProcessStack, NewProcessState}.
