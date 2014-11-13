@@ -83,9 +83,14 @@ args_action(_NameTable, #process_state{current_frame = #command_frame{items = It
 args_action(_NameTable, #process_state{current_frame = #command_frame{items = Items}}, #token{type = string, value = String}) ->
     NewCommandFrame = #command_frame{items = [#frame_item{type = string, value = String}] ++ Items},
     #process_state{current_frame = NewCommandFrame};
-args_action(NameTable, #process_state{current_frame = #command_frame{items = ReversedItems}}, ?END_TOKEN) ->
-    Items = lists:reverse(ReversedItems),
-    Result = frame_item_search:search_best(Items, NameTable),
-    {true, CommandModule, CommandFunction, CommandArgs} = Result,
-    {ok, ?EXEC_CONTEXT_MODULE, _Binary} = code_generator:generate(?EXEC_CONTEXT_MODULE, ?EXEC_CONTEXT_FUNCTION, {CommandModule, CommandFunction, CommandArgs}),
-    #process_state{current_frame = undefined}.
+args_action(NameTable, #process_state{current_frame = #command_frame{items = Items}}, ?END_TOKEN) ->
+    Binary = generate_code(lists:reverse(Items), NameTable),
+    #process_state{current_frame = undefined, binary_code = Binary}.
+
+generate_code(Items, NameTable) ->
+    case frame_item_search:search_best(Items, NameTable) of
+        {true, CommandModule, CommandFunction, CommandArgs} ->
+            {ok, ?EXEC_CONTEXT_MODULE, Binary} = code_generator:generate(?EXEC_CONTEXT_MODULE, ?EXEC_CONTEXT_FUNCTION, {CommandModule, CommandFunction, CommandArgs}),
+            Binary;
+        false -> undefined
+    end.

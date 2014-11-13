@@ -19,7 +19,7 @@ process(TokenList, StartSymbol, GlobalState) ->
 %% Internal functions
 %% ====================================================================
 
-process_impl([], [], _GlobalState, _ProcessState) -> {true, []};
+process_impl([], [], _GlobalState, #process_state{binary_code = Binary}) -> {true, Binary};
 process_impl([], _ProcessStack, _GlobalState, _ProcessState) -> {false, bad_token};
 process_impl(TokenList, ProcessStack, GlobalState, ProcessState) ->
     io:format(user, "ProcessStack : ~p~n", [ProcessStack]),
