@@ -30,7 +30,6 @@ process_impl(TokenList, ProcessStack, GlobalState, ProcessState) ->
 
 %% SyntaxTable = dict({nonterminal.Name, token.Type, token.Value | undefined} -> {Production, Action} | error)
 process_token([Token | TokenListRest], [#terminal{type = Type, value = Value} | ProcessStackRest], _GlobalState, ProcessState) ->
-    %%io:format(user, "process terminal (type = ~p, value = ~p)~n", [Type, Value]),
     case check_terminal(Token, #terminal{type = Type, value = Value}) of
         true ->
             %% add processed token to some state
@@ -38,7 +37,6 @@ process_token([Token | TokenListRest], [#terminal{type = Type, value = Value} | 
         false -> bad_token
     end;
 process_token([Token | _] = TokenList, [#nonterminal{name = Name} | ProcessStackRest], GlobalState, ProcessState) ->
-    %%io:format(user, "process nonterminal (name = ~p)~n", [Name]),
     SyntaxTable = GlobalState#global_state.syntax_table,
     NameTable = GlobalState#global_state.name_table,
     case find_production(#nonterminal{name = Name}, Token, SyntaxTable) of
