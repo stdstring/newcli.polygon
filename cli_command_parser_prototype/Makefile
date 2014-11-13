@@ -1,6 +1,7 @@
 EBIN=ebin
 
 SOURCE=src/code_generator.erl \
+       src/commands_example.erl \
        src/dynamic_module_tests.erl \
        src/frame_item_search.erl \
        src/frame_item_search_tests.erl \

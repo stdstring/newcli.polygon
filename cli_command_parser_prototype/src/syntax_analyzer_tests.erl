@@ -35,15 +35,15 @@ simple_syntax_analysis_test() ->
     NameTable = create_name_table(),
     GlobalState = #global_state{syntax_table = SyntaxTable, name_table = NameTable},
     io:format(user, "~nparse 'ping 192.168.0.1' :~n", []),
-    {true, _} = syntax_analyzer:process([#token{type = word, value = "ping"}, #token{type = word, value = "192.168.0.1"}, ?END_TOKEN], ?COMMAND, GlobalState),
+    success_execution([#token{type = word, value = "ping"}, #token{type = word, value = "192.168.0.1"}, ?END_TOKEN], GlobalState),
     io:format(user, "~nparse 'exit' :~n", []),
-    {true, _} = syntax_analyzer:process([#token{type = word, value = "exit"}, ?END_TOKEN], ?COMMAND, GlobalState),
+    success_execution([#token{type = word, value = "exit"}, ?END_TOKEN], GlobalState),
     io:format(user, "~nparse 'call \"iddqd idkfa\"' :~n", []),
-    {true, _} = syntax_analyzer:process([#token{type = word, value = "call"}, #token{type = string, value = "iddqd idkfa"}, ?END_TOKEN], ?COMMAND, GlobalState),
+    fail_execution([#token{type = word, value = "call"}, #token{type = string, value = "iddqd idkfa"}, ?END_TOKEN], GlobalState),
     io:format(user, "~ntry parse '\"iddqd idkfa\"' :~n", []),
-    {false, bad_token} = syntax_analyzer:process([#token{type = string, value = "iddqd idkfa"}, ?END_TOKEN], ?COMMAND, GlobalState),
+    fail_execution([#token{type = string, value = "iddqd idkfa"}, ?END_TOKEN], GlobalState),
     io:format(user, "~nparse 'call 666' with unknown token :~n", []),
-    {false, bad_token} = syntax_analyzer:process([#token{type = word, value = "call"}, #token{type = integer, value = 666}, ?END_TOKEN], ?COMMAND, GlobalState).
+    fail_execution([#token{type = word, value = "call"}, #token{type = integer, value = 666}, ?END_TOKEN], GlobalState).
 
 %% ====================================================================
 %% Internal functions
@@ -94,3 +94,13 @@ generate_code(Items, NameTable) ->
             Binary;
         false -> undefined
     end.
+
+success_execution(TokenList, GlobalState) ->
+    {true, Binary} = syntax_analyzer:process(TokenList, ?COMMAND, GlobalState),
+    {module, ?EXEC_CONTEXT_MODULE} = code:load_binary(?EXEC_CONTEXT_MODULE, [], Binary),
+    Result = ?EXEC_CONTEXT_MODULE:?EXEC_CONTEXT_FUNCTION(),
+    io:format(user, "Result: ~p~n", [Result]).
+
+fail_execution(TokenList, GlobalState) ->
+    {false, Reason} = syntax_analyzer:process(TokenList, ?COMMAND, GlobalState),
+    io:format(user, "Reason: ~p~n", [Reason]).
