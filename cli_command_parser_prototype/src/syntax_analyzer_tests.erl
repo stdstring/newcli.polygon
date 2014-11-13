@@ -9,12 +9,18 @@
 
 -define(COMMAND, #nonterminal{name = command}).
 -define(ARGS, #nonterminal{name = args}).
--define(WORD_TOKEN, #token{type = word, value = undefined}).
--define(STRING_TOKEN, #token{type = string, value = undefined}).
--define(END_TOKEN, #token{type = 'end', value = ''}).
+
 -define(WORD_TERM, #terminal{type = word, value = undefined}).
 -define(STRING_TERM, #terminal{type = string, value = undefined}).
 -define(END_TERM, #terminal{type = 'end', value = ''}).
+
+-define(WORD_TOKEN, #token{type = word, value = undefined}).
+-define(STRING_TOKEN, #token{type = string, value = undefined}).
+-define(END_TOKEN, #token{type = 'end', value = ''}).
+
+-define(WORD(Value), #token{type = word, value = Value}).
+-define(STRING(Value), #token{type = string, value = Value}).
+-define(TOKEN(Type, Value), #token{type = Type, value = Value}).
 
 -define(COMMAND_ACTION, fun(NameTable, ProcessState, Token) -> command_action(NameTable, ProcessState, Token) end).
 -define(ARGS_ACTION, fun(NameTable, ProcessState, Token) -> args_action(NameTable, ProcessState, Token) end).
@@ -26,24 +32,15 @@
 %% Test functions
 %% ====================================================================
 
-%%syntax_analyzer_process_test_() ->
-%%    SyntaxTable = create_syntax_table(),
-%%    [].
-
-simple_syntax_analysis_test() ->
+syntax_analyzer_process_test_() ->
     SyntaxTable = create_syntax_table(),
     NameTable = create_name_table(),
     GlobalState = #global_state{syntax_table = SyntaxTable, name_table = NameTable},
-    io:format(user, "~nparse 'ping 192.168.0.1' :~n", []),
-    success_execution([#token{type = word, value = "ping"}, #token{type = word, value = "192.168.0.1"}, ?END_TOKEN], GlobalState),
-    io:format(user, "~nparse 'exit' :~n", []),
-    success_execution([#token{type = word, value = "exit"}, ?END_TOKEN], GlobalState),
-    io:format(user, "~nparse 'call \"iddqd idkfa\"' :~n", []),
-    fail_execution([#token{type = word, value = "call"}, #token{type = string, value = "iddqd idkfa"}, ?END_TOKEN], GlobalState),
-    io:format(user, "~ntry parse '\"iddqd idkfa\"' :~n", []),
-    fail_execution([#token{type = string, value = "iddqd idkfa"}, ?END_TOKEN], GlobalState),
-    io:format(user, "~nparse 'call 666' with unknown token :~n", []),
-    fail_execution([#token{type = word, value = "call"}, #token{type = integer, value = 666}, ?END_TOKEN], GlobalState).
+    [{"parse 'ping 192.168.0.1'", ?_assertEqual("ping \"192.168.0.1\"", success_execution([?WORD("ping"), ?WORD("192.168.0.1"), ?END_TOKEN], GlobalState))},
+     {"parse 'exit'", ?_assertEqual("exit", success_execution([?WORD("exit"), ?END_TOKEN], GlobalState))},
+     {"try parse 'call \"iddqd idkfa\"'", ?_assertEqual(command_not_found, fail_execution([?WORD("CALL"), ?STRING("iddqd idkfa"), ?END_TOKEN], GlobalState))},
+     {"try parse '\"iddqd idkfa\"'", ?_assertEqual(bad_token, fail_execution([?STRING("iddqd idkfa"), ?END_TOKEN], GlobalState))},
+     {"try parse 'call 666' with unknown token", ?_assertEqual(bad_token, fail_execution([?WORD("call"), ?TOKEN(integer, 666), ?END_TOKEN], GlobalState))}].
 
 %% ====================================================================
 %% Internal functions
@@ -75,17 +72,19 @@ create_name_table() ->
 
 command_action(_NameTable, #process_state{current_frame = undefined}, #token{type = word, value = Word}) ->
     CommandFrame = #command_frame{items = [#frame_item{type = word, value = Word}]},
-    #process_state{current_frame = CommandFrame}.
+    {true, #process_state{current_frame = CommandFrame}}.
 
 args_action(_NameTable, #process_state{current_frame = #command_frame{items = Items}}, #token{type = word, value = Word}) ->
     NewCommandFrame = #command_frame{items = [#frame_item{type = word, value = Word}] ++ Items},
-    #process_state{current_frame = NewCommandFrame};
+    {true, #process_state{current_frame = NewCommandFrame}};
 args_action(_NameTable, #process_state{current_frame = #command_frame{items = Items}}, #token{type = string, value = String}) ->
     NewCommandFrame = #command_frame{items = [#frame_item{type = string, value = String}] ++ Items},
-    #process_state{current_frame = NewCommandFrame};
+    {true, #process_state{current_frame = NewCommandFrame}};
 args_action(NameTable, #process_state{current_frame = #command_frame{items = Items}}, ?END_TOKEN) ->
-    Binary = generate_code(lists:reverse(Items), NameTable),
-    #process_state{current_frame = undefined, binary_code = Binary}.
+    case generate_code(lists:reverse(Items), NameTable) of
+        undefined -> {false, command_not_found};
+        Binary -> {true, #process_state{current_frame = undefined, binary_code = Binary}}
+    end.
 
 generate_code(Items, NameTable) ->
     case frame_item_search:search_best(Items, NameTable) of
@@ -98,9 +97,8 @@ generate_code(Items, NameTable) ->
 success_execution(TokenList, GlobalState) ->
     {true, Binary} = syntax_analyzer:process(TokenList, ?COMMAND, GlobalState),
     {module, ?EXEC_CONTEXT_MODULE} = code:load_binary(?EXEC_CONTEXT_MODULE, [], Binary),
-    Result = ?EXEC_CONTEXT_MODULE:?EXEC_CONTEXT_FUNCTION(),
-    io:format(user, "Result: ~p~n", [Result]).
+    ?EXEC_CONTEXT_MODULE:?EXEC_CONTEXT_FUNCTION().
 
 fail_execution(TokenList, GlobalState) ->
     {false, Reason} = syntax_analyzer:process(TokenList, ?COMMAND, GlobalState),
-    io:format(user, "Reason: ~p~n", [Reason]).
+    Reason.

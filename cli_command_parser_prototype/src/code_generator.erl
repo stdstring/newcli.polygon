@@ -31,7 +31,7 @@ generate(ModuleName, FunctionName, {CommandModule, CommandFunction, CommandArgs}
 -spec generate_command_execution(ModuleName :: atom(), FunctionName :: atom(), Args :: [#frame_item{}]) -> tuple().
 generate_command_execution(ModuleName, FunctionName, Args) ->
     ArgsList = generate_arg_list(Args),
-    io:format(user, "ArgsList: ~p~n", [ArgsList]),
+    %%io:format(user, "ArgsList: ~p~n", [ArgsList]),
     {call, 0, {remote, 0, {atom, 0, ModuleName}, {atom, 0, FunctionName}}, [ArgsList]}.
 
 
