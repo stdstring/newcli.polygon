@@ -7,6 +7,10 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+-define(WORD(Value), #token{type = word, value = Value}).
+-define(STRING(Value), #token{type = string, value = Value}).
+-define(TOKEN(Type, Value), #token{type = Type, value = Value}).
+
 -define(COMMAND, #nonterminal{name = command}).
 -define(ARGS, #nonterminal{name = args}).
 
@@ -14,13 +18,9 @@
 -define(STRING_TERM, #terminal{type = string, value = undefined}).
 -define(END_TERM, #terminal{type = 'end', value = ''}).
 
--define(WORD_TOKEN, #token{type = word, value = undefined}).
--define(STRING_TOKEN, #token{type = string, value = undefined}).
--define(END_TOKEN, #token{type = 'end', value = ''}).
-
--define(WORD(Value), #token{type = word, value = Value}).
--define(STRING(Value), #token{type = string, value = Value}).
--define(TOKEN(Type, Value), #token{type = Type, value = Value}).
+-define(WORD_TOKEN, ?WORD(undefined)).
+-define(STRING_TOKEN, ?STRING(undefined)).
+-define(END_TOKEN, ?TOKEN('end', '')).
 
 -define(COMMAND_ACTION, fun(NameTable, ProcessState, Token) -> command_action(NameTable, ProcessState, Token) end).
 -define(ARGS_ACTION, fun(NameTable, ProcessState, Token) -> args_action(NameTable, ProcessState, Token) end).
@@ -37,6 +37,8 @@ syntax_analyzer_process_test_() ->
     NameTable = create_name_table(),
     GlobalState = #global_state{syntax_table = SyntaxTable, name_table = NameTable},
     [{"parse 'ping 192.168.0.1'", ?_assertEqual("ping \"192.168.0.1\"", success_execution([?WORD("ping"), ?WORD("192.168.0.1"), ?END_TOKEN], GlobalState))},
+     {"parse 'p 192.168.0.1'", ?_assertEqual("ping \"192.168.0.1\"", success_execution([?WORD("p"), ?WORD("192.168.0.1"), ?END_TOKEN], GlobalState))},
+     {"parse 'interface \"some interface\"'", ?_assertEqual("interface \"some interface\"", success_execution([?WORD("interface"), ?STRING("some interface"), ?END_TOKEN], GlobalState))},
      {"parse 'exit'", ?_assertEqual("exit", success_execution([?WORD("exit"), ?END_TOKEN], GlobalState))},
      {"try parse 'call \"iddqd idkfa\"'", ?_assertEqual(command_not_found, fail_execution([?WORD("CALL"), ?STRING("iddqd idkfa"), ?END_TOKEN], GlobalState))},
      {"try parse '\"iddqd idkfa\"'", ?_assertEqual(bad_token, fail_execution([?STRING("iddqd idkfa"), ?END_TOKEN], GlobalState))},
@@ -82,16 +84,16 @@ args_action(_NameTable, #process_state{current_frame = #command_frame{items = It
     {true, #process_state{current_frame = NewCommandFrame}};
 args_action(NameTable, #process_state{current_frame = #command_frame{items = Items}}, ?END_TOKEN) ->
     case generate_code(lists:reverse(Items), NameTable) of
-        undefined -> {false, command_not_found};
-        Binary -> {true, #process_state{current_frame = undefined, binary_code = Binary}}
+        {true, Binary} -> {true, #process_state{current_frame = undefined, binary_code = Binary}};
+        false -> {false, command_not_found}
     end.
 
 generate_code(Items, NameTable) ->
     case frame_item_search:search_best(Items, NameTable) of
         {true, CommandModule, CommandFunction, CommandArgs} ->
             {ok, ?EXEC_CONTEXT_MODULE, Binary} = code_generator:generate(?EXEC_CONTEXT_MODULE, ?EXEC_CONTEXT_FUNCTION, {CommandModule, CommandFunction, CommandArgs}),
-            Binary;
-        false -> undefined
+            {true, Binary};
+        false -> false
     end.
 
 success_execution(TokenList, GlobalState) ->
