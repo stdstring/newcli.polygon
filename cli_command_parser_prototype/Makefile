@@ -1,6 +1,8 @@
 EBIN=ebin
 
-SOURCE=src/code_generator.erl \
+SOURCE=src/char_category.erl \
+       src/char_category_tests.erl \
+       src/code_generator.erl \
        src/commands_example.erl \
        src/dynamic_module_tests.erl \
        src/frame_item_search.erl \
@@ -10,7 +12,8 @@ SOURCE=src/code_generator.erl \
        src/name_search.erl \
        src/name_search_tests.erl \
        src/syntax_analyzer.erl \
-       src/syntax_analyzer_tests.erl
+       src/syntax_analyzer_tests.erl \
+       src/token_parser.erl
 
 INCLUDE_FLAGS=-I include
 
@@ -25,6 +28,7 @@ pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
 
 test: all
+	erl -noshell -pa $(EBIN) -eval "eunit:test([char_category_tests], [verbose])" -s init stop
 	erl -noshell -pa $(EBIN) -eval "eunit:test([dynamic_module_tests], [verbose])" -s init stop
 	erl -noshell -pa $(EBIN) -eval "eunit:test([frame_item_search_tests], [verbose])" -s init stop
 	erl -noshell -pa $(EBIN) -eval "eunit:test([lex_analyzer_tests], [verbose])" -s init stop
