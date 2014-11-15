@@ -10,15 +10,22 @@
 %% API functions
 %% ====================================================================
 
-%%-spec parse(ParserState :: atom(), Char :: byte(), ParserConfig :: #token_parser_config{}) ->
-%%    {'true', #token_parser_result{}} | 'false'.
-%%parse(ParserState, Char, #token_parser_config{transitions = TransitionTable, final_states = FinalStates}) ->
-%%    case find_transition(ParserState, Char, TransitionTable) of
-%%        {true, ToState, Appender} ->
-%%            IsFinal = lists:member(ToState, FinalStates),
-%%            {true, #token_parser_result{to_state = ToState, is_final = IsFinal}};
-%%        false -> false
-%%    end.
+-spec parse(ParserState :: #token_parser_state{}, Char :: byte(), ParserConfig :: #token_parser_config{}) ->
+    {'true', #token_parser_result{}} | 'false'.
+parse(ParserState, Char, ParserConfig) ->
+    CurrentState = ParserState#token_parser_state.current_state,
+    TransitionTable = ParserConfig#token_parser_config.transitions,
+    case find_transition(CurrentState, Char, TransitionTable) of
+        {true, ToState, Appender} ->
+            CurrentBuffer = ParserState#token_parser_state.recognized_buffer,
+            NewBuffer = Appender(Char, CurrentBuffer),
+            NewState = #token_parser_state{current_state = ToState, recognized_buffer = NewBuffer},
+            FinalStates = ParserConfig#token_parser_config.final_states,
+            TokenFactory = ParserConfig#token_parser_config.token_factory,
+            Token = create_token(NewState, FinalStates, TokenFactory),
+            {true, #token_parser_result{token = Token, state = NewState}};
+        false -> false
+    end.
 
 %% ====================================================================
 %% Internal functions
@@ -33,4 +40,11 @@ find_transition(CurrentState, Char, TransitionTable) ->
     case lists:filter(FilterFun, TransitionTable) of
         [#transition{to_state = ToState, char_appender = Appender}] -> {true, ToState, Appender};
         _Other -> false
+    end.
+
+create_token(ParserState, FinalStates, TokenBuilder) ->
+    State = ParserState#token_parser_state.current_state,
+    case lists:member(State, FinalStates) of
+        true -> TokenBuilder(ParserState);
+        false -> undefined
     end.
