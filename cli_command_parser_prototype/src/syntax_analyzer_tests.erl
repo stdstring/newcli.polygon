@@ -4,23 +4,19 @@
 
 -include("common_defs.hrl").
 -include("command_function_defs.hrl").
+-include("token_defs.hrl").
 
 -include_lib("eunit/include/eunit.hrl").
-
--define(WORD(Value), #token{type = word, value = Value}).
--define(STRING(Value), #token{type = string, value = Value}).
--define(TOKEN(Type, Value), #token{type = Type, value = Value}).
 
 -define(COMMAND, #nonterminal{name = command}).
 -define(ARGS, #nonterminal{name = args}).
 
 -define(WORD_TERM, #terminal{type = word, value = undefined}).
 -define(STRING_TERM, #terminal{type = string, value = undefined}).
--define(END_TERM, #terminal{type = 'end', value = ''}).
+-define(END_TERM, #terminal{type = 'end', value = ""}).
 
 -define(WORD_TOKEN, ?WORD(undefined)).
 -define(STRING_TOKEN, ?STRING(undefined)).
--define(END_TOKEN, ?TOKEN('end', '')).
 
 -define(COMMAND_ACTION, fun(NameTable, ProcessState, Token) -> command_action(NameTable, ProcessState, Token) end).
 -define(ARGS_ACTION, fun(NameTable, ProcessState, Token) -> args_action(NameTable, ProcessState, Token) end).

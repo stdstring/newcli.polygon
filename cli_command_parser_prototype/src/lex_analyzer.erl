@@ -15,7 +15,7 @@
 parse(Source, ConfigList, SkipWhitespaces) ->
     case process_string(Source, ConfigList) of
         {true, TokenList} ->
-            {true, lists:reverse([#token{type = 'end', value = ''}] ++ filter_tokens(TokenList, SkipWhitespaces))};
+            {true, lists:reverse([#token{type = 'end', value = ""}] ++ filter_tokens(TokenList, SkipWhitespaces))};
         {false, Reason} -> {false, Reason}
     end.
 

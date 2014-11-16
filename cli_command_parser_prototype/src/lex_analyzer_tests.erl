@@ -5,6 +5,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 -include("common_defs.hrl").
+-include("token_defs.hrl").
 
 -define(APPENDER, fun(Char, Buffer) -> [Char] ++ Buffer end).
 -define(EMPTY_APPENDER, fun(_Char, Buffer) -> Buffer end).
@@ -26,17 +27,26 @@
 %% Test functions
 %% ====================================================================
 
-parse_test() ->
+parse_test_() ->
     ConfigList = create_config(),
-    ResultWithWhitespaces = lex_analyzer:parse("ping XXX \"iddqd idkfa\"", ConfigList, false),
-    io:format(user, "result with whitespaces: ~p~n", [ResultWithWhitespaces]),
-    ResultWithoutWhitespaces = lex_analyzer:parse("ping XXX \"iddqd idkfa\"", ConfigList, true),
-    io:format(user, "result without whitespaces: ~p~n", [ResultWithoutWhitespaces]),
-    ok.
+    [check_success("ping XXX", [?WORD("ping"), ?WHITESPACE, ?WORD("XXX"), ?END_TOKEN], ConfigList, false),
+     check_success("ping XXX", [?WORD("ping"), ?WORD("XXX"), ?END_TOKEN], ConfigList, true)].
+
+%%parse_test() ->
+%%    ConfigList = create_config(),
+%%    ResultWithWhitespaces = lex_analyzer:parse("ping XXX \"iddqd idkfa\"", ConfigList, false),
+%%    io:format(user, "result with whitespaces: ~p~n", [ResultWithWhitespaces]),
+%%    ResultWithoutWhitespaces = lex_analyzer:parse("ping XXX \"iddqd idkfa\"", ConfigList, true),
+%%    io:format(user, "result without whitespaces: ~p~n", [ResultWithoutWhitespaces]),
+%%    ok.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+check_success(Source, Expected, ConfigList, SkipWhitespaces) ->
+    Description = lists:flatten(io_lib:format("parse ~p", [Source])),
+    {Description, ?_assertEqual({true, Expected}, lex_analyzer:parse(Source, ConfigList, SkipWhitespaces))}.
 
 create_word_config() ->
     TransitionTable = [#transition{from_state = ?WORD_INIT_STATE,
