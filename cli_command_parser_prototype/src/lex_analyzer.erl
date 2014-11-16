@@ -2,7 +2,7 @@
 
 -module(lex_analyzer).
 
--export([parse/2]).
+-export([parse/3]).
 
 -include("common_defs.hrl").
 
@@ -10,18 +10,23 @@
 %% API functions
 %% ====================================================================
 
--spec parse(Source :: string(), ConfigList :: [#token_parser_config{}]) ->
+-spec parse(Source :: string(), ConfigList :: [#token_parser_config{}], SkipWhitespaces :: boolean()) ->
     {'true', TokenList :: [#token{}]} | {'false', Reason :: term()}.
-parse(Source, ConfigList) ->
+parse(Source, ConfigList, SkipWhitespaces) ->
     case process_string(Source, ConfigList) of
         {true, TokenList} ->
-            {true, lists:reverse([#token{type = 'end', value = ''}] ++ TokenList)};
+            {true, lists:reverse([#token{type = 'end', value = ''}] ++ filter_tokens(TokenList, SkipWhitespaces))};
         {false, Reason} -> {false, Reason}
     end.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+-spec filter_tokens(TokenList :: [#token{}], SkipWhitespaces :: boolean()) -> [#token{}].
+filter_tokens(TokenList, false) -> TokenList;
+filter_tokens(TokenList, true) ->
+    lists:filter(fun(#token{type = Type}) -> Type /= whitespace end, TokenList).
 
 -spec process_string(Source :: [byte()], ConfigList :: [#token_parser_config{}]) ->
     {true, TokenList :: [#token{}]} | {false, Reason :: term()}.
@@ -41,8 +46,7 @@ process_string([], _ConfigList, _ParserList, {Token, []}, TokenList) ->
     {true, [Token] ++ TokenList};
 process_string([], _ConfigList, _ParserList, {_Token, _Rest}, _TokenList) ->
     {false, bad_input};
-process_string(Source, _ConfigList, [], {undefined, []}, _TokenList) ->
-    io:format(user, "source for unsuitable char : ~p~n", [Source]),
+process_string(_Source, _ConfigList, [], {undefined, []}, _TokenList) ->
     {false, unsuitable_char};
 process_string(_Source, ConfigList, [], {Token, TokenRest}, TokenList) ->
     ParserList = init_parser_list(ConfigList),

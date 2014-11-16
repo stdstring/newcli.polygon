@@ -28,9 +28,10 @@
 
 parse_test() ->
     ConfigList = create_config(),
-    Result = lex_analyzer:parse("ping XXX \"iddqd idkfa\"", ConfigList),
-    %%Result = lex_analyzer:parse("ping XXX", ConfigList),
-    io:format(user, "result: ~p~n", [Result]),
+    ResultWithWhitespaces = lex_analyzer:parse("ping XXX \"iddqd idkfa\"", ConfigList, false),
+    io:format(user, "result with whitespaces: ~p~n", [ResultWithWhitespaces]),
+    ResultWithoutWhitespaces = lex_analyzer:parse("ping XXX \"iddqd idkfa\"", ConfigList, true),
+    io:format(user, "result without whitespaces: ~p~n", [ResultWithoutWhitespaces]),
     ok.
 
 %% ====================================================================
@@ -88,7 +89,7 @@ create_space_config() ->
                                    char_appender = ?EMPTY_APPENDER}],
     FinalStates = [?SPACE_BODY_STATE],
     TokenFactory = fun(#token_parser_state{current_state = ?SPACE_BODY_STATE}) ->
-        #token{type = space, value = ""}
+        #token{type = whitespace, value = ""}
     end,
     #token_parser_config{init_state = ?SPACE_INIT_STATE,
                          transitions = TransitionTable,
