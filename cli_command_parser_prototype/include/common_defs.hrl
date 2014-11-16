@@ -14,7 +14,7 @@
 -record(token_parser_state, {current_state = undefined :: 'undefined' | atom(),
                              recognized_buffer = [] :: [byte()]}).
 -record(transition, {from_state = undefined :: 'undefined' | atom(),
-                     chars = [] :: [byte()],
+                     char_predicate = undefined :: 'undefined' | fun((byte()) -> boolean()),
                      to_state = undefined :: 'undefined' | atom(),
                      char_appender = undefined :: 'undefined' | fun((byte(), [byte()]) -> [byte()])}).
 -record(token_parser_config, {init_state = undefined :: 'undefined' | atom(),

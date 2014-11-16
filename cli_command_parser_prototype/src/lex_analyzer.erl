@@ -41,7 +41,8 @@ process_string([], _ConfigList, _ParserList, {Token, []}, TokenList) ->
     {true, [Token] ++ TokenList};
 process_string([], _ConfigList, _ParserList, {_Token, _Rest}, _TokenList) ->
     {false, bad_input};
-process_string(_Source, _ConfigList, [], {undefined, []}, _TokenList) ->
+process_string(Source, _ConfigList, [], {undefined, []}, _TokenList) ->
+    io:format(user, "source for unsuitable char : ~p~n", [Source]),
     {false, unsuitable_char};
 process_string(_Source, ConfigList, [], {Token, TokenRest}, TokenList) ->
     ParserList = init_parser_list(ConfigList),

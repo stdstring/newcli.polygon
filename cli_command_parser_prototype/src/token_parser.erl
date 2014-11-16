@@ -34,8 +34,8 @@ parse(ParserState, Char, ParserConfig) ->
 -spec find_transition(CurrentState :: atom(), Char :: byte(), TransitionTable :: [#transition{}]) ->
     {'true', ToState :: atom()} | 'false'.
 find_transition(CurrentState, Char, TransitionTable) ->
-    FilterFun = fun(#transition{from_state = FromState, chars = Chars}) ->
-        FromState == CurrentState and lists:member(Char, Chars)
+    FilterFun = fun(#transition{from_state = FromState, char_predicate = Predicate}) ->
+        (FromState == CurrentState) and Predicate(Char)
     end,
     case lists:filter(FilterFun, TransitionTable) of
         [#transition{to_state = ToState, char_appender = Appender}] -> {true, ToState, Appender};
