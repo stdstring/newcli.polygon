@@ -3,6 +3,7 @@ EBIN=ebin
 SOURCE=src/char_category.erl \
        src/char_category_tests.erl \
        src/code_generator.erl \
+       src/command_parser_tests.erl \
        src/commands_example.erl \
        src/dynamic_module_tests.erl \
        src/frame_item_search.erl \
@@ -29,6 +30,7 @@ pre_build: clean
 
 test: all
 	erl -noshell -pa $(EBIN) -eval "eunit:test([char_category_tests], [verbose])" -s init stop
+	erl -noshell -pa $(EBIN) -eval "eunit:test([command_parser_tests], [verbose])" -s init stop
 	erl -noshell -pa $(EBIN) -eval "eunit:test([dynamic_module_tests], [verbose])" -s init stop
 	erl -noshell -pa $(EBIN) -eval "eunit:test([frame_item_search_tests], [verbose])" -s init stop
 	erl -noshell -pa $(EBIN) -eval "eunit:test([lex_analyzer_tests], [verbose])" -s init stop

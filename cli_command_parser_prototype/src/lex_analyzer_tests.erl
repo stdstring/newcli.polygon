@@ -7,14 +7,6 @@
 -include("common_defs.hrl").
 -include("token_defs.hrl").
 
--define(APPENDER, fun(Char, Buffer) -> [Char] ++ Buffer end).
--define(EMPTY_APPENDER, fun(_Char, Buffer) -> Buffer end).
-
--define(WORD_PREDICATE, fun(Char) -> word_body_predicate(Char) end).
--define(STR_BODY_PREDICATE, fun(Char) -> Char /= $" end).
--define(STR_QUOTE_PREDICATE, fun(Char) -> Char == $" end).
--define(SPACE_PREDICATE, fun(Char) -> lists:member(Char, " \t") end).
-
 -define(WORD_INIT_STATE, word_init_state).
 -define(WORD_BODY_STATE, word_body_state).
 -define(STR_INIT_STATE, str_init_state).
@@ -59,13 +51,13 @@ check_success(Description, Source, Expected, ConfigList, SkipWhitespaces) ->
 
 create_word_config() ->
     TransitionTable = [#transition{from_state = ?WORD_INIT_STATE,
-                                   char_predicate = ?WORD_PREDICATE,
+                                   char_predicate = fun(Char) -> word_body_predicate(Char) end,
                                    to_state = ?WORD_BODY_STATE,
-                                   char_appender = ?APPENDER},
+                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end},
                        #transition{from_state = ?WORD_BODY_STATE,
-                                   char_predicate = ?WORD_PREDICATE,
+                                   char_predicate = fun(Char) -> word_body_predicate(Char) end,
                                    to_state = ?WORD_BODY_STATE,
-                                   char_appender = ?APPENDER}],
+                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end}],
     FinalStates = [?WORD_BODY_STATE],
     TokenFactory = fun(#token_parser_state{current_state = ?WORD_BODY_STATE, recognized_buffer = Buffer}) ->
         #token{type = word, value = lists:reverse(Buffer)}
@@ -77,17 +69,17 @@ create_word_config() ->
 
 create_string_config() ->
     TransitionTable = [#transition{from_state = ?STR_INIT_STATE,
-                                   char_predicate = ?STR_QUOTE_PREDICATE,
+                                   char_predicate = fun(Char) -> Char == $" end,
                                    to_state = ?STR_BODY_STATE,
-                                   char_appender = ?EMPTY_APPENDER},
+                                   char_appender = fun(_Char, Buffer) -> Buffer end},
                        #transition{from_state = ?STR_BODY_STATE,
-                                   char_predicate = ?STR_BODY_PREDICATE,
+                                   char_predicate = fun(Char) -> Char /= $" end,
                                    to_state = ?STR_BODY_STATE,
-                                   char_appender = ?APPENDER},
+                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end},
                        #transition{from_state = ?STR_BODY_STATE,
-                                   char_predicate = ?STR_QUOTE_PREDICATE,
+                                   char_predicate = fun(Char) -> Char == $" end,
                                    to_state = ?STR_FINAL_STATE,
-                                   char_appender = ?EMPTY_APPENDER}],
+                                   char_appender = fun(_Char, Buffer) -> Buffer end}],
     FinalStates = [?STR_FINAL_STATE],
     TokenFactory = fun(#token_parser_state{current_state = ?STR_FINAL_STATE, recognized_buffer = Buffer}) ->
         #token{type = string, value = lists:reverse(Buffer)}
@@ -99,13 +91,13 @@ create_string_config() ->
 
 create_space_config() ->
     TransitionTable = [#transition{from_state = ?SPACE_INIT_STATE,
-                                   char_predicate = ?SPACE_PREDICATE,
+                                   char_predicate = fun(Char) -> lists:member(Char, " \t") end,
                                    to_state = ?SPACE_BODY_STATE,
-                                   char_appender = ?EMPTY_APPENDER},
+                                   char_appender = fun(_Char, Buffer) -> Buffer end},
                        #transition{from_state = ?SPACE_BODY_STATE,
-                                   char_predicate = ?SPACE_PREDICATE,
+                                   char_predicate = fun(Char) -> lists:member(Char, " \t") end,
                                    to_state = ?SPACE_BODY_STATE,
-                                   char_appender = ?EMPTY_APPENDER}],
+                                   char_appender = fun(_Char, Buffer) -> Buffer end}],
     FinalStates = [?SPACE_BODY_STATE],
     TokenFactory = fun(#token_parser_state{current_state = ?SPACE_BODY_STATE}) ->
         #token{type = whitespace, value = ""}
@@ -119,11 +111,11 @@ create_keyword_config() ->
     TransitionTable = [#transition{from_state = ?IF_INIT_STATE,
                                    char_predicate = fun(Char) -> Char == $i end,
                                    to_state = ?IF_INNER_STATE,
-                                   char_appender = ?APPENDER},
+                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end},
                        #transition{from_state = ?IF_INNER_STATE,
                                    char_predicate = fun(Char) -> Char == $f end,
                                    to_state = ?IF_FINAL_STATE,
-                                   char_appender = ?APPENDER}],
+                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end}],
     FinalStates = [?IF_FINAL_STATE],
     TokenFactory = fun(#token_parser_state{current_state = ?IF_FINAL_STATE}) ->
         #token{type = keyword, value = "if"}
