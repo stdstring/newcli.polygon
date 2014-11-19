@@ -9,10 +9,13 @@ SOURCE=src/char_category.erl \
        src/frame_item_search.erl \
        src/frame_item_search_tests.erl \
        src/lex_analyzer.erl \
+       src/lex_analyzer_config.erl \
        src/lex_analyzer_tests.erl \
        src/name_search.erl \
+       src/name_search_config.erl \
        src/name_search_tests.erl \
        src/syntax_analyzer.erl \
+       src/syntax_analyzer_config.erl \
        src/syntax_analyzer_tests.erl \
        src/token_parser.erl
 

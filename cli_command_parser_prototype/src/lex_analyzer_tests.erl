@@ -7,13 +7,6 @@
 -include("common_defs.hrl").
 -include("token_defs.hrl").
 
--define(WORD_INIT_STATE, word_init_state).
--define(WORD_BODY_STATE, word_body_state).
--define(STR_INIT_STATE, str_init_state).
--define(STR_BODY_STATE, str_body_state).
--define(STR_FINAL_STATE, str_final_state).
--define(SPACE_INIT_STATE, space_init_state).
--define(SPACE_BODY_STATE, space_body_state).
 -define(IF_INIT_STATE, if_init_state).
 -define(IF_INNER_STATE, if_inner_state).
 -define(IF_FINAL_STATE, if_final_state).
@@ -23,17 +16,18 @@
 %% ====================================================================
 
 parse_test_() ->
-    ConfigList = create_config(),
-    [check_success("ping XXX", [?WORD("ping"), ?WHITESPACE, ?WORD("XXX"), ?END_TOKEN], ConfigList, false),
-     check_success("ping XXX", [?WORD("ping"), ?WORD("XXX"), ?END_TOKEN], ConfigList, true),
-     check_success("ping \"impulse 9\"", [?WORD("ping"), ?WHITESPACE, ?STRING("impulse 9"), ?END_TOKEN], ConfigList, false),
-     check_success("ping \"impulse 9\"", [?WORD("ping"), ?STRING("impulse 9"), ?END_TOKEN], ConfigList, true),
-     check_success("ping \t\t XXX", [?WORD("ping"), ?WHITESPACE, ?WORD("XXX"), ?END_TOKEN], ConfigList, false),
-     check_success("ping \t\t XXX", [?WORD("ping"), ?WORD("XXX"), ?END_TOKEN], ConfigList, true)].
+    ConfigList = lex_analyzer_config:create_config(),
+    [check_success("ping XXX", [?WORD_TOKEN("ping"), ?WHITESPACE_TOKEN, ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, false),
+     check_success("ping XXX", [?WORD_TOKEN("ping"), ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, true),
+     check_success("ping \"impulse 9\"", [?WORD_TOKEN("ping"), ?WHITESPACE_TOKEN, ?STRING_TOKEN("impulse 9"), ?END_TOKEN], ConfigList, false),
+     check_success("ping \"impulse 9\"", [?WORD_TOKEN("ping"), ?STRING_TOKEN("impulse 9"), ?END_TOKEN], ConfigList, true),
+     check_success("ping \t\t XXX", [?WORD_TOKEN("ping"), ?WHITESPACE_TOKEN, ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, false),
+     check_success("ping \t\t XXX", [?WORD_TOKEN("ping"), ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, true)].
 
 different_token_parsers_test_() ->
-    [check_success("parse \"if\". word parser first", "if", [?TOKEN(keyword, "if"), ?END_TOKEN], [create_word_config(), create_keyword_config()], false),
-     check_success("parse \"if\". keyword parser first", "if", [?WORD("if"), ?END_TOKEN], [create_keyword_config(), create_word_config()], false)].
+    ConfigList = lex_analyzer_config:create_config(),
+    [check_success("parse \"if\". word parser first", "if", [?TOKEN(keyword, "if"), ?END_TOKEN], ConfigList ++ [create_keyword_config()], false),
+     check_success("parse \"if\". keyword parser first", "if", [?WORD_TOKEN("if"), ?END_TOKEN], [create_keyword_config()] ++ ConfigList, false)].
 
 %% ====================================================================
 %% Internal functions
@@ -48,64 +42,6 @@ check_success(Source, Expected, ConfigList, false) ->
 
 check_success(Description, Source, Expected, ConfigList, SkipWhitespaces) ->
     {Description, ?_assertEqual({true, Expected}, lex_analyzer:parse(Source, ConfigList, SkipWhitespaces))}.
-
-create_word_config() ->
-    TransitionTable = [#transition{from_state = ?WORD_INIT_STATE,
-                                   char_predicate = fun(Char) -> word_body_predicate(Char) end,
-                                   to_state = ?WORD_BODY_STATE,
-                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end},
-                       #transition{from_state = ?WORD_BODY_STATE,
-                                   char_predicate = fun(Char) -> word_body_predicate(Char) end,
-                                   to_state = ?WORD_BODY_STATE,
-                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end}],
-    FinalStates = [?WORD_BODY_STATE],
-    TokenFactory = fun(#token_parser_state{current_state = ?WORD_BODY_STATE, recognized_buffer = Buffer}) ->
-        #token{type = word, value = lists:reverse(Buffer)}
-    end,
-    #token_parser_config{init_state = ?WORD_INIT_STATE,
-                         transitions = TransitionTable,
-                         final_states = FinalStates,
-                         token_factory = TokenFactory}.
-
-create_string_config() ->
-    TransitionTable = [#transition{from_state = ?STR_INIT_STATE,
-                                   char_predicate = fun(Char) -> Char == $" end,
-                                   to_state = ?STR_BODY_STATE,
-                                   char_appender = fun(_Char, Buffer) -> Buffer end},
-                       #transition{from_state = ?STR_BODY_STATE,
-                                   char_predicate = fun(Char) -> Char /= $" end,
-                                   to_state = ?STR_BODY_STATE,
-                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end},
-                       #transition{from_state = ?STR_BODY_STATE,
-                                   char_predicate = fun(Char) -> Char == $" end,
-                                   to_state = ?STR_FINAL_STATE,
-                                   char_appender = fun(_Char, Buffer) -> Buffer end}],
-    FinalStates = [?STR_FINAL_STATE],
-    TokenFactory = fun(#token_parser_state{current_state = ?STR_FINAL_STATE, recognized_buffer = Buffer}) ->
-        #token{type = string, value = lists:reverse(Buffer)}
-    end,
-    #token_parser_config{init_state = ?STR_INIT_STATE,
-                         transitions = TransitionTable,
-                         final_states = FinalStates,
-                         token_factory = TokenFactory}.
-
-create_space_config() ->
-    TransitionTable = [#transition{from_state = ?SPACE_INIT_STATE,
-                                   char_predicate = fun(Char) -> lists:member(Char, " \t") end,
-                                   to_state = ?SPACE_BODY_STATE,
-                                   char_appender = fun(_Char, Buffer) -> Buffer end},
-                       #transition{from_state = ?SPACE_BODY_STATE,
-                                   char_predicate = fun(Char) -> lists:member(Char, " \t") end,
-                                   to_state = ?SPACE_BODY_STATE,
-                                   char_appender = fun(_Char, Buffer) -> Buffer end}],
-    FinalStates = [?SPACE_BODY_STATE],
-    TokenFactory = fun(#token_parser_state{current_state = ?SPACE_BODY_STATE}) ->
-        #token{type = whitespace, value = ""}
-    end,
-    #token_parser_config{init_state = ?SPACE_INIT_STATE,
-                         transitions = TransitionTable,
-                         final_states = FinalStates,
-                         token_factory = TokenFactory}.
 
 create_keyword_config() ->
     TransitionTable = [#transition{from_state = ?IF_INIT_STATE,
@@ -124,12 +60,3 @@ create_keyword_config() ->
                          transitions = TransitionTable,
                          final_states = FinalStates,
                          token_factory = TokenFactory}.
-
-
-create_config() ->
-    [create_word_config(), create_string_config(), create_space_config()].
-
-word_body_predicate(Char) ->
-    char_category:is_letter(Char) orelse
-    char_category:is_digit(Char) orelse
-    lists:member(Char, "\\.,-").
