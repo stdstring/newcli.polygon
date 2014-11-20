@@ -3,21 +3,40 @@
 -include_lib("eunit/include/eunit.hrl").
 
 -include("common_defs.hrl").
+-include("syntax_analyzer_defs.hrl").
 -include("token_defs.hrl").
 
 %% ====================================================================
 %% Test functions
 %% ====================================================================
 
-parse_test() ->
+parse_command_test_() ->
     LexConfig = lex_analyzer_config:create_config(),
-    io:format(user, "~p~n", [LexConfig]),
     NameConfig = name_search_config:create_config(),
-    io:format(user, "~p~n", [NameConfig]),
     SyntaxConfig = syntax_analyzer_config:create_config(),
-    io:format(user, "~p~n", [SyntaxConfig]),
-    ok.
+    [success_execution("process \"ping XXX\"", "ping XXX", "ping \"XXX\"", LexConfig, NameConfig, SyntaxConfig),
+     fail_execution("process \"route XXX\"", "route XXX", command_not_found, LexConfig, NameConfig, SyntaxConfig)].
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+success_execution(Description, Source, Expected, LexConfig, NameConfig, SyntaxConfig) ->
+    {Description, ?_assertEqual({true, Expected}, process(Source, LexConfig, NameConfig, SyntaxConfig))}.
+
+fail_execution(Description, Source, Reason, LexConfig, NameConfig, SyntaxConfig) ->
+    {Description, ?_assertEqual({false, Reason}, process(Source, LexConfig, NameConfig, SyntaxConfig))}.
+
+process(Source, LexConfig, NameConfig, SyntaxConfig) ->
+    case lex_analyzer:parse(Source, LexConfig, true) of
+        {true, TokenList} ->
+            GlobalState = #global_state{syntax_table = SyntaxConfig, name_table = NameConfig},
+            case syntax_analyzer:process(TokenList, ?COMMAND, GlobalState) of
+                {true, Binary} ->
+                    {module, ?EXEC_CONTEXT_MODULE} = code:load_binary(?EXEC_CONTEXT_MODULE, [], Binary),
+                    Result = ?EXEC_CONTEXT_MODULE:?EXEC_CONTEXT_FUNCTION(),
+                    {true, Result};
+                {false, Reason} -> {false, Reason}
+            end;
+        {false, Reason} -> {false, Reason}
+    end.
