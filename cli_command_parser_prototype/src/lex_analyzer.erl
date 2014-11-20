@@ -44,15 +44,18 @@ process_string([], _ConfigList, _ParserList, {undefined, []}, _TokenList) ->
     {false, bad_input};
 process_string([], _ConfigList, _ParserList, {Token, []}, TokenList) ->
     {true, [Token] ++ TokenList};
-process_string([], _ConfigList, _ParserList, {_Token, _Rest}, _TokenList) ->
-    {false, bad_input};
-process_string(_Source, _ConfigList, [], {undefined, []}, _TokenList) ->
-    {false, unsuitable_char};
-process_string(_Source, ConfigList, [], {Token, TokenRest}, TokenList) ->
+process_string([], ConfigList, _ParserList, {Token, TokenRest}, TokenList) ->
     ParserList = init_parser_list(ConfigList),
     process_string(TokenRest, ConfigList, ParserList, {undefined, []}, [Token] ++ TokenList);
 process_string([Char | Rest], ConfigList, ParserList, BestToken, TokenList) ->
     case process_char(Char, ParserList) of
+        {[], undefined} ->
+            case BestToken of
+                {undefined, []} -> {false, unsuitable_char};
+                {Token, TokenRest} ->
+                    NewParserList = init_parser_list(ConfigList),
+                    process_string(TokenRest, ConfigList, NewParserList, {undefined, []}, [Token] ++ TokenList)
+            end;
         {NewParserList, undefined} ->
             process_string(Rest, ConfigList, NewParserList, BestToken, TokenList);
         {NewParserList, NewToken} ->

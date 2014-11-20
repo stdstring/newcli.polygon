@@ -14,8 +14,16 @@ parse_command_test_() ->
     LexConfig = lex_analyzer_config:create_config(),
     NameConfig = name_search_config:create_config(),
     SyntaxConfig = syntax_analyzer_config:create_config(),
-    [success_execution("process \"ping XXX\"", "ping XXX", "ping \"XXX\"", LexConfig, NameConfig, SyntaxConfig),
-     fail_execution("process \"route XXX\"", "route XXX", command_not_found, LexConfig, NameConfig, SyntaxConfig)].
+    [success_execution("process 'ping XXX'", "ping XXX", "ping \"XXX\"", LexConfig, NameConfig, SyntaxConfig),
+     success_execution("process 'p XXX'", "p XXX", "ping \"XXX\"", LexConfig, NameConfig, SyntaxConfig),
+     success_execution("process 'c t'", "c t", "configure terminal", LexConfig, NameConfig, SyntaxConfig),
+     fail_execution("process 'ping +'", "ping +", unsuitable_char, LexConfig, NameConfig, SyntaxConfig),
+     fail_execution("process 'ping +XXX'", "ping +", unsuitable_char, LexConfig, NameConfig, SyntaxConfig),
+     fail_execution("process 'ping \"'", "ping \"", bad_input, LexConfig, NameConfig, SyntaxConfig),
+     fail_execution("process 'ping \"XXX'", "ping \"XXX", bad_input, LexConfig, NameConfig, SyntaxConfig),
+     fail_execution("process 'route XXX'", "route XXX", command_not_found, LexConfig, NameConfig, SyntaxConfig),
+     fail_execution("process 'n YYY'", "n YYY", command_not_found, LexConfig, NameConfig, SyntaxConfig),
+     fail_execution("process '\"ping\"'", "\"ping\"", bad_token, LexConfig, NameConfig, SyntaxConfig)].
 
 %% ====================================================================
 %% Internal functions
