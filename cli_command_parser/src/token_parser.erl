@@ -2,18 +2,18 @@
 
 -module(token_parser).
 
--export([parse/3]).
+-export([process/3]).
 
+-include("lexical_defs.hrl").
 -include("common_defs.hrl").
--include("lexical_defs.hrl")
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
--spec parse(ParserState :: #token_parser_state{}, Char :: byte(), ParserConfig :: #token_parser_config{}) ->
+-spec process(ParserState :: #token_parser_state{}, Char :: byte(), ParserConfig :: #token_parser_config{}) ->
     {'true', #token_parser_result{}} | 'false'.
-parse(ParserState, Char, ParserConfig) ->
+process(ParserState, Char, ParserConfig) ->
     CurrentState = ParserState#token_parser_state.current_state,
     TransitionTable = ParserConfig#token_parser_config.transitions,
     case find_transition(CurrentState, Char, TransitionTable) of
@@ -43,6 +43,10 @@ find_transition(CurrentState, Char, TransitionTable) ->
         _Other -> false
     end.
 
+-spec create_token(ParserState :: #token_parser_state{},
+                   FinalStates :: [atom()],
+                   TokenBuilder :: fun((#token_parser_state{}) -> #token{})) ->
+    'undefined' | #token{}.
 create_token(ParserState, FinalStates, TokenBuilder) ->
     State = ParserState#token_parser_state.current_state,
     case lists:member(State, FinalStates) of

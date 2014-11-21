@@ -18,3 +18,6 @@
                               final_states = [] :: [atom()],
                               %%token_factory = undefined :: 'undefined' | fun((#token_parser_state{}) -> #token{})}).
                               token_factory = undefined}).
+
+-record(lex_analyzer_config, {token_parsers_config = [] :: [#token_parser_config{}],
+                              skip_whitespaces = false :: boolean()}).

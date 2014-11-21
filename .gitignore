@@ -14,5 +14,6 @@ cli_integration_tests/cli_terminal_bin/
 cli_terminal/bin/
 cli_terminal_prototype/bin/
 cli_command_parser_prototype/ebin/
+cli_command_parser/ebin/
 deploy/
 untitled.sublime-workspace

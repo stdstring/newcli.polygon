@@ -1,8 +1,9 @@
 EBIN=ebin
 
-SOURCE=src/token_parser.erl
+SOURCE=src/lex_analyzer.erl \
+       src/token_parser.erl
 
-INCLUDE_FLAGS=-I include -I ./../cli_command_parser_include
+INCLUDE_FLAGS=-I include -I ../cli_command_parser_include
 
 TARGETS = $(SOURCE:%.erl=$(EBIN)/%.beam)
 
