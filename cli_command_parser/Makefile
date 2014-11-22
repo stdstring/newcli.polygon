@@ -2,6 +2,7 @@ EBIN=ebin
 
 SOURCE=src/char_category.erl \
        src/lex_analyzer.erl \
+       src/name_search.erl \
        src/token_parser.erl
 
 INCLUDE_FLAGS=-I include -I ../cli_command_parser_include

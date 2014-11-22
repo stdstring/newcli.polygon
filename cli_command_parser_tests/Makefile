@@ -2,10 +2,12 @@ EBIN=ebin
 
 SRC_EBIN = ../cli_command_parser/ebin
 
-SOURCE=src/lex_analyzer_config.erl
+SOURCE=src/lex_analyzer_config.erl \
+       src/name_search_config.erl
 
 TEST_SOURCE=src/char_category_tests.erl \
-            src/lex_analyzer_tests.erl
+            src/lex_analyzer_tests.erl \
+            src/name_search_tests.erl
 
 INCLUDE_FLAGS=-I include -I ../cli_command_parser_include
 
