@@ -72,7 +72,7 @@ create_keyword_config() ->
                                    char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end}],
     FinalStates = [?IF_FINAL_STATE],
     TokenFactory = fun(#token_parser_state{current_state = ?IF_FINAL_STATE}) ->
-        #token{type = keyword, value = "if"}
+        ?TOKEN(keyword, "if")
     end,
     #token_parser_config{init_state = ?IF_INIT_STATE,
                          transitions = TransitionTable,
