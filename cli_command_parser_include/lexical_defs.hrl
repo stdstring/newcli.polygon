@@ -21,3 +21,5 @@
 
 -record(lex_analyzer_config, {token_parsers_config = [] :: [#token_parser_config{}],
                               skip_whitespaces = false :: boolean()}).
+
+-record(token_parser_state, {current_state = undefined :: 'undefined' | atom(), recognized_buffer = [] :: [byte()]}).
