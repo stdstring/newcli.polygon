@@ -40,15 +40,18 @@ args_action(_NameTable, #syntax_process_state{current_frame = #command_frame{ite
     NewCommandFrame = #command_frame{items = [#frame_item{type = string, value = String}] ++ Items},
     {true, #syntax_process_state{current_frame = NewCommandFrame}};
 args_action(NameTable, #syntax_process_state{current_frame = #command_frame{items = Items}}, ?END_TOKEN) ->
-    case generate_code(lists:reverse(Items), NameTable) of
-        {true, Binary} -> {true, #syntax_process_state{current_frame = undefined, result = Binary}};
+    case generate_result(lists:reverse(Items), NameTable) of
+        {true, Module, Function, Args} -> {true, #syntax_process_state{current_frame = undefined, result = {Module, Function, Args}}};
         false -> {false, command_not_found}
     end.
 
-generate_code(Items, NameTable) ->
-    case frame_item_search:search_best(Items, NameTable) of
-        {true, CommandModule, CommandFunction, CommandArgs} ->
-            {ok, ?EXEC_CONTEXT_MODULE, Binary} = code_generator:generate(?EXEC_CONTEXT_MODULE, ?EXEC_CONTEXT_FUNCTION, {CommandModule, CommandFunction, CommandArgs}),
-            {true, Binary};
-        false -> false
-    end.
+generate_result(_Items, _NameTable) ->
+    ok.
+
+%%generate_code(Items, NameTable) ->
+%%    case frame_item_search:search_best(Items, NameTable) of
+%%        {true, CommandModule, CommandFunction, CommandArgs} ->
+%%            {ok, ?EXEC_CONTEXT_MODULE, Binary} = code_generator:generate(?EXEC_CONTEXT_MODULE, ?EXEC_CONTEXT_FUNCTION, {CommandModule, CommandFunction, CommandArgs}),
+%%            {true, Binary};
+%%        false -> false
+%%    end.
