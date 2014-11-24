@@ -10,8 +10,8 @@
 %% API functions
 %% ====================================================================
 
--spec search(Words :: [string()], Table :: name_search_item()) ->
-    {'true', Module :: atom(), Func :: atom(), Rows :: name_search_table()} | {'incomplete', Rows :: name_search_item()} | 'false'.
+-spec search(Words :: [string()], Table :: name_search_table()) ->
+    {'true', Module :: atom(), Func :: atom(), Rows :: name_search_table()} | {'incomplete', Rows :: name_search_table()} | 'false'.
 search(_Words, []) -> false;
 search(Words, Table) ->
     create_search_result(search_full_match(Words, Table), search_incomplete_match(Words, Table)).
@@ -22,7 +22,7 @@ search(Words, Table) ->
 
 -spec create_search_result(FullMatchResult :: {'true', Module :: atom(), Func :: atom()} | 'false',
                            IncompleteMatchResult :: {'incomplete', Other :: name_search_table()} | 'false') ->
-    {'true', Module :: atom(), Func :: atom(), Rows :: name_search_table()} | {'incomplete', Rows :: name_search_item()} | 'false'.
+    {'true', Module :: atom(), Func :: atom(), Rows :: name_search_table()} | {'incomplete', Rows :: name_search_table()} | 'false'.
 create_search_result(false, false) -> false;
 create_search_result({true, Module, Func}, false) -> {true, Module, Func, []};
 create_search_result(false, {incomplete, Rows}) -> {incomplete, Rows};
@@ -46,7 +46,7 @@ search_full_match(Words, Table) ->
         [{_Cond, Module, Func}] -> {true, Module, Func}
     end.
 
--spec compare_words(Words :: [string()], SearchItems :: name_search_item()) ->
+-spec compare_words(Words :: [string()], SearchItems :: [name_search_item()]) ->
     'true' | 'false' | 'incomplete'.
 compare_words([], []) -> true;
 compare_words(_WordsRest, []) -> false;

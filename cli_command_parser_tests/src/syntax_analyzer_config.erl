@@ -46,13 +46,10 @@ args_action(NameTable, #syntax_process_state{current_frame = #command_frame{item
         false -> {false, command_not_found}
     end.
 
-generate_result(_Items, _NameTable) ->
-    ok.
-
-%%generate_code(Items, NameTable) ->
-%%    case frame_item_search:search_best(Items, NameTable) of
-%%        {true, CommandModule, CommandFunction, CommandArgs} ->
-%%            {ok, ?EXEC_CONTEXT_MODULE, Binary} = code_generator:generate(?EXEC_CONTEXT_MODULE, ?EXEC_CONTEXT_FUNCTION, {CommandModule, CommandFunction, CommandArgs}),
-%%            {true, Binary};
-%%        false -> false
-%%    end.
+generate_result(Items, NameTable) ->
+    case frame_item_search:search_best(Items, NameTable) of
+        {true, Module, Function, RestItems} ->
+            Args = lists:map(fun(#frame_item{value = Value}) -> Value end, RestItems),
+            {true, Module, Function, Args};
+        false -> false
+    end.

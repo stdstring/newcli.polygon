@@ -12,7 +12,7 @@
 %% ====================================================================
 
 -spec search_best(FrameItems :: [#frame_item{}], NameTable :: name_search_table()) ->
-    {'true', Module :: atom(), Function :: atom(), Rest :: name_search_table()} | 'false'.
+    {'true', Module :: atom(), Function :: atom(), Rest :: [#frame_item{}]} | 'false'.
 search_best(FrameItems, NameTable) ->
     search_best_impl([], FrameItems, undefined, NameTable).
 
@@ -22,9 +22,9 @@ search_best(FrameItems, NameTable) ->
 
 -spec search_best_impl(WordsUsed :: [string()],
                       FrameItems :: [#frame_item{}],
-                      SearchResult :: {'true', Module :: atom(), Function :: atom(), Rest :: name_search_table()} | 'undefined',
+                      SearchResult :: {'true', Module :: atom(), Function :: atom(), Rest :: [#frame_item{}]} | 'undefined',
                       Rows :: name_search_table()) ->
-    {'true', Module :: atom(), Function :: atom(), Rest :: name_search_table()} | 'false'.
+    {'true', Module :: atom(), Function :: atom(), Rest :: [#frame_item{}]} | 'false'.
 search_best_impl(_WordsUsed, [], undefined, _Rows) -> false;
 search_best_impl(_WordsUsed, [], {RecModule, RecFunc, RecRest}, _Rows) -> {true, RecModule, RecFunc, RecRest};
 search_best_impl(_WordsUsed, _ItemsRest, undefined, []) -> false;
