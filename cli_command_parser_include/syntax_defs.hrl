@@ -14,8 +14,6 @@
 
 -record(syntax_analyzer_config, {syntax_table = [] :: syntax_table(), name_table = [] :: name_search_table()}).
 
--record(frame_item, {type = undefined, value= undefined}).
--record(command_frame, {items = [] :: [#frame_item{}]}).
 -record(syntax_process_state, {current_frame = undefined :: 'undefined' | #command_frame{},
                                result =  undefined :: 'undefined' | term()}).
 

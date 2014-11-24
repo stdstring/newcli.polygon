@@ -5,10 +5,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 -include("function_defs.hrl").
--include("token_defs.hrl").
--include("lexical_defs.hrl").
--include("name_search_defs.hrl").
--include("syntax_defs.hrl").
+-include("frame_defs.hrl").
 
 -define(WORD(Value), #frame_item{type = word, value = Value}).
 -define(STRING(Value), #frame_item{type = string, value = Value}).
