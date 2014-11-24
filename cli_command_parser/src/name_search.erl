@@ -10,8 +10,8 @@
 %% API functions
 %% ====================================================================
 
-%% Condition = [{Word :: string(), MinPrefixLength :: pos_integer()}]
-%% Table = [{Condition, Module :: atom(), Function :: atom()}]
+-spec search(Words :: [string()], Table :: name_search_item()) ->
+    {'true', Module :: atom(), Func :: atom(), Rows :: name_search_table()} | {'incomplete', Rows :: name_search_item()} | 'false'.
 search(_Words, []) -> false;
 search(Words, Table) ->
     create_search_result(search_full_match(Words, Table), search_incomplete_match(Words, Table)).
@@ -20,11 +20,16 @@ search(Words, Table) ->
 %% Internal functions
 %% ====================================================================
 
+-spec create_search_result(FullMatchResult :: {'true', Module :: atom(), Func :: atom()} | 'false',
+                           IncompleteMatchResult :: {'incomplete', Other :: name_search_table()} | 'false') ->
+    {'true', Module :: atom(), Func :: atom(), Rows :: name_search_table()} | {'incomplete', Rows :: name_search_item()} | 'false'.
 create_search_result(false, false) -> false;
 create_search_result({true, Module, Func}, false) -> {true, Module, Func, []};
 create_search_result(false, {incomplete, Rows}) -> {incomplete, Rows};
 create_search_result({true, Module, Func}, {incomplete, Rows}) -> {true, Module, Func, Rows}.
 
+-spec search_incomplete_match(Words :: [string()], Table :: name_search_table()) ->
+    {'incomplete', Other :: name_search_table()} | 'false'.
 search_incomplete_match(Words, Table) ->
     Result = lists:filter(fun({Cond, _Module, _Func}) -> compare_words(Words, Cond) == incomplete end, Table),
     case Result of
@@ -32,6 +37,8 @@ search_incomplete_match(Words, Table) ->
         Other -> {incomplete, Other}
     end.
 
+-spec search_full_match(Words :: [string()], Table :: name_search_table()) ->
+    {'true', Module :: atom(), Func :: atom()} | 'false'.
 search_full_match(Words, Table) ->
     Result = lists:filter(fun({Cond, _Module, _Func}) -> compare_words(Words, Cond) == true end, Table),
     case Result of
@@ -39,6 +46,8 @@ search_full_match(Words, Table) ->
         [{_Cond, Module, Func}] -> {true, Module, Func}
     end.
 
+-spec compare_words(Words :: [string()], SearchItems :: name_search_item()) ->
+    'true' | 'false' | 'incomplete'.
 compare_words([], []) -> true;
 compare_words(_WordsRest, []) -> false;
 compare_words([], _CondRest) -> incomplete;

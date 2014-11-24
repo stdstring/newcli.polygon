@@ -3,6 +3,7 @@
 -export([create/0]).
 
 -include("lexical_defs.hrl").
+-include("name_search_defs.hrl").
 -include("syntax_defs.hrl").
 -include("token_defs.hrl").
 -include("syntax_analyzer_defs.hrl").
