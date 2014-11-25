@@ -1,3 +1,5 @@
+%% @author std-string
+
 -module(lex_analyzer_config).
 
 -export([create/0]).

@@ -1,3 +1,5 @@
+%% @author std-string
+
 -module(name_search_config).
 
 -export([create/0]).

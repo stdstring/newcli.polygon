@@ -11,7 +11,6 @@ SOURCE=src/commands/command_behaviour.erl \
        src/command_helper.erl \
        src/cli_frontend_application.erl \
        src/cli_frontend_supervisor.erl \
-       src/cli_frontend_testing.erl \
        src/cli_terminal_endpoint.erl \
        src/cli_terminal_listen_endpoint.erl \
        src/cli_terminal_listen_supervisor.erl \
