@@ -1,0 +1,35 @@
+%% [{command_name, command_module}]
+[
+%% login
+{login, login_command},
+%% logout
+{logout, logout_command},
+%% configure terminal
+{config_terminal, config_terminal_command},
+%% interface
+{interface, interface_command},
+%% interface range
+{interface_range, interface_range_command},
+%% vlan
+{vlan, vlan_command},
+%% no vlan
+{no_vlan, no_vlan_command},
+%% ping
+{ping, ping_command},
+%% switchport access vlan
+{switchport_vlan, switchport_vlan_command},
+%% no switchport access vlan
+{no_switchport_vlan, no_switchport_vlan_command},
+%% name
+{name_vlan, name_vlan_command},
+%% no name
+{no_name_vlan, no_name_vlan_command},
+%% end
+{'end', end_command},
+%% exit
+{exit, exit_command},
+%% show vlan
+{show_vlan, show_vlan_command}
+%% help (special command)
+%% {help, help_command},
+].
