@@ -29,7 +29,7 @@ search_best_impl(_WordsUsed, [], undefined, _Rows) -> false;
 search_best_impl(_WordsUsed, [], {RecModule, RecFunc, RecRest}, _Rows) -> {true, RecModule, RecFunc, RecRest};
 search_best_impl(_WordsUsed, _ItemsRest, undefined, []) -> false;
 search_best_impl(_WordsUsed, _ItemsRest, {RecModule, RecFunc, RecRest}, []) -> {true, RecModule, RecFunc, RecRest};
-search_best_impl(WordsUsed, [#frame_item{type = word, value= Word} | Rest], undefined, Rows) ->
+search_best_impl(WordsUsed, [#frame_item{type = word, value = Word} | Rest], undefined, Rows) ->
     NewWordsUsed = WordsUsed ++ [Word],
     case name_search:search(NewWordsUsed, Rows) of
         {true, Module, Func, RowsRest} ->
@@ -38,7 +38,7 @@ search_best_impl(WordsUsed, [#frame_item{type = word, value= Word} | Rest], unde
         {incomplete, RowsRest} -> search_best_impl(NewWordsUsed, Rest, undefined, RowsRest);
         false -> false
     end;
-search_best_impl(WordsUsed, [#frame_item{type = word, value= Word} | Rest], {RecModule, RecFunc, RecRest}, Rows) ->
+search_best_impl(WordsUsed, [#frame_item{type = word, value = Word} | Rest], {RecModule, RecFunc, RecRest}, Rows) ->
     NewWordsUsed = WordsUsed ++ [Word],
     case name_search:search(NewWordsUsed, Rows) of
         {true, Module, Func, RowsRest} ->
