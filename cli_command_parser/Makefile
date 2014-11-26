@@ -1,6 +1,7 @@
 EBIN=ebin
 
 SOURCE=src/char_category.erl \
+       src/command_parser.erl \
        src/frame_item_search.erl \
        src/lex_analyzer.erl \
        src/name_search.erl \
