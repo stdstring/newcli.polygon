@@ -19,7 +19,7 @@
 syntax_analyzer_process_test_() ->
     SyntaxTable = syntax_analyzer_config:create(),
     NameTable = name_search_config:create(),
-    Config = #syntax_analyzer_config{syntax_table = SyntaxTable, name_table = NameTable},
+    Config = #syntax_analyzer_config{syntax_table = SyntaxTable, start_symbol = ?COMMAND, name_table = NameTable},
     [{"parse 'ping 192.168.0.1'",
       success_execution([?WORD_TOKEN("ping"), ?WORD_TOKEN("192.168.0.1"), ?END_TOKEN], Config, ?PING_FUNCTION, ["192.168.0.1"])},
      {"parse 'p 192.168.0.1'",
@@ -40,9 +40,9 @@ syntax_analyzer_process_test_() ->
 %% ====================================================================
 
 success_execution(TokenList, Config, Function, Args) ->
-    Result = syntax_analyzer:process(TokenList, ?COMMAND, Config),
+    Result = syntax_analyzer:process(TokenList, Config),
     ?_assertEqual({true, {?MODULE_NAME, Function, Args}}, Result).
 
 fail_execution(TokenList, Config, Reason) ->
-    Result = syntax_analyzer:process(TokenList, ?COMMAND, Config),
+    Result = syntax_analyzer:process(TokenList, Config),
     ?_assertEqual({false, Reason}, Result).

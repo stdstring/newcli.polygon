@@ -2,7 +2,7 @@
 
 -module(syntax_analyzer).
 
--export([process/3]).
+-export([process/2]).
 
 -include("frame_defs.hrl").
 -include("lexical_defs.hrl").
@@ -13,9 +13,10 @@
 %% API functions
 %% ====================================================================
 
--spec process(TokenList :: [#token{}], StartSymbol :: #nonterminal{}, Config :: #syntax_analyzer_config{}) ->
+-spec process(TokenList :: [#token{}], Config :: #syntax_analyzer_config{}) ->
     {'true', Result :: term()} | {'false', Reason :: term()}.
-process(TokenList, StartSymbol, Config) ->
+process(TokenList, Config) ->
+    StartSymbol = Config#syntax_analyzer_config.start_symbol,
     process_impl(TokenList, [StartSymbol], Config, #syntax_process_state{}).
 
 %% ====================================================================

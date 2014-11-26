@@ -12,7 +12,9 @@
 %%-type syntax_table() :: dict(syntax_table_key(), syntax_table_value()).
 -type syntax_table() :: [{syntax_table_key(), syntax_table_value()}].
 
--record(syntax_analyzer_config, {syntax_table = [] :: syntax_table(), name_table = [] :: name_search_table()}).
+-record(syntax_analyzer_config, {syntax_table = [] :: syntax_table(),
+                                 start_symbol = #nonterminal{} :: #nonterminal{},
+                                 name_table = [] :: name_search_table()}).
 
 -record(syntax_process_state, {current_frame = undefined :: 'undefined' | #command_frame{},
                                result =  undefined :: 'undefined' | term()}).
