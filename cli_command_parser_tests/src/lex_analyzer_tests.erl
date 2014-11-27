@@ -19,7 +19,7 @@
 %% ====================================================================
 
 parse_test_() ->
-    ConfigList = lex_analyzer_config:create(),
+    ConfigList = lex_analyzer_config:create_parsers_config(),
     [check_success("ping XXX", [?WORD_TOKEN("ping"), ?WHITESPACE_TOKEN, ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, false),
      check_success("ping XXX", [?WORD_TOKEN("ping"), ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, true),
      check_success("ping \"impulse 9\"", [?WORD_TOKEN("ping"), ?WHITESPACE_TOKEN, ?STRING_TOKEN("impulse 9"), ?END_TOKEN], ConfigList, false),
@@ -38,7 +38,7 @@ parse_test_() ->
      check_fail("ping \"XXX", bad_input, ConfigList)].
 
 different_token_parsers_test_() ->
-    ConfigList = lex_analyzer_config:create(),
+    ConfigList = lex_analyzer_config:create_parsers_config(),
     [check_success("parse 'if'. word parser first", "if", [?TOKEN(keyword, "if"), ?END_TOKEN], ConfigList ++ [create_keyword_config()], false),
      check_success("parse 'if'. keyword parser first", "if", [?WORD_TOKEN("if"), ?END_TOKEN], [create_keyword_config()] ++ ConfigList, false)].
 

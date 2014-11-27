@@ -2,7 +2,7 @@
 
 -module(lex_analyzer_config).
 
--export([create/1]).
+-export([create_parsers_config/0, create/1]).
 
 -include("lexical_defs.hrl").
 -include("token_defs.hrl").
@@ -26,9 +26,13 @@
 %% API functions
 %% ====================================================================
 
+-spec create_parsers_config() -> [#token_parser_config{}].
+create_parsers_config() ->
+    [create_space_config(), create_string_config(), create_word_config()].
+
 -spec create(SkipWhitespaces :: boolean()) -> #lex_analyzer_config{}.
 create(SkipWhitespaces) ->
-    ParsersConfig = [create_space_config(), create_string_config(), create_word_config()],
+    ParsersConfig = create_parsers_config(),
     #lex_analyzer_config{token_parsers_config = ParsersConfig, skip_whitespaces = SkipWhitespaces}.
 
 %%create() ->

@@ -17,9 +17,8 @@
 %% ====================================================================
 
 syntax_analyzer_process_test_() ->
-    SyntaxTable = syntax_analyzer_config:create(),
     NameTable = name_search_config:create(),
-    Config = #syntax_analyzer_config{syntax_table = SyntaxTable, start_symbol = ?COMMAND, name_table = NameTable},
+    Config = syntax_analyzer_config:create(NameTable),
     [{"parse 'ping 192.168.0.1'",
       success_execution([?WORD_TOKEN("ping"), ?WORD_TOKEN("192.168.0.1"), ?END_TOKEN], Config, ?PING_FUNCTION, ["192.168.0.1"])},
      {"parse 'p 192.168.0.1'",

@@ -18,12 +18,11 @@
 %% ====================================================================
 
 command_parser_process_test_() ->
-    LexData = lex_analyzer_config:create(),
+    LexConfig = lex_analyzer_config:create(true),
     NameData = name_search_config:create(),
-    SyntaxData = syntax_analyzer_config:create(),
-    LexConfig = #lex_analyzer_config{token_parsers_config = LexData, skip_whitespaces = true},
-    SyntaxConfig = #syntax_analyzer_config{syntax_table = SyntaxData, start_symbol = ?COMMAND, name_table = NameData},
-    [].
+    SyntaxConfig = syntax_analyzer_config:create(NameData),
+    [{"process 'ping XXX'", success_execution("ping XXX", LexConfig, SyntaxConfig, ?PING_FUNCTION, ["XXX"])},
+     {"process 'pong XXX'", fail_execution("pong XXX", LexConfig, SyntaxConfig, command_not_found)}].
 
 %% ====================================================================
 %% Internal functions
