@@ -15,7 +15,8 @@
 
 -spec process(Source :: string(),
               LexConfig :: #lex_analyzer_config{},
-              SyntaxConfig :: #syntax_analyzer_config{}) -> 'ok'.
+              SyntaxConfig :: #syntax_analyzer_config{}) ->
+    {'true', Result :: term()} | {'false', Reason :: term()}.
 process(Source, LexConfig, SyntaxConfig) ->
     case lex_analyzer:process(Source, LexConfig) of
         {true, TokenList} ->
