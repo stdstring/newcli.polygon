@@ -24,13 +24,13 @@ process(Source, Config) ->
 %% Internal functions
 %% ====================================================================
 
--spec process_string(Source :: [byte()], Config :: #lex_analyzer_config{}) ->
+-spec process_string(Source :: string(), Config :: #lex_analyzer_config{}) ->
     {true, TokenList :: [#token{}]} | {false, Reason :: term()}.
 process_string(Source, Config) ->
     ParserList = init_parser_list(Config#lex_analyzer_config.token_parsers_config),
     process_string(Source, Config, ParserList, {undefined, []}, []).
 
--spec process_string(Source :: [byte()],
+-spec process_string(Source :: string(),
                      Config :: #lex_analyzer_config{},
                      ParserList :: [{ParserConfig :: #token_parser_config{}, State :: #token_parser_state{}}],
                      BestToken :: {Token :: #token{}, Rest :: [byte()]},
@@ -59,7 +59,7 @@ process_string([Char | Rest], Config, ParserList, BestToken, TokenList) ->
 
 -spec restart_process_string(Config :: #lex_analyzer_config{},
                              Token :: #token{},
-                             TokenRest :: [byte()],
+                             TokenRest :: string(),
                              TokenList :: [#token{}]) -> no_return().
 restart_process_string(Config, Token, TokenRest, TokenList) ->
     NewParserList = init_parser_list(Config#lex_analyzer_config.token_parsers_config),
@@ -74,12 +74,12 @@ init_parser_list(ConfigList) ->
     end,
     lists:map(MapFun, ConfigList).
 
--spec process_char(Char :: byte(),
+-spec process_char(Char :: char(),
                    ParserList :: [{ParserConfig :: #token_parser_config{}, State :: #token_parser_state{}}]) ->
     {ParserList :: [{ParserConfig :: #token_parser_config{}, State :: #token_parser_state{}}], Token :: 'undefined' | #token{}}.
 process_char(Char, ParserList) -> process_char(Char, ParserList, [], undefined).
 
--spec process_char(Char :: byte(),
+-spec process_char(Char :: char(),
                    ParserList :: [{ParserConfig :: #token_parser_config{}, State :: #token_parser_state{}}],
                    NextParserList :: [{ParserConfig :: #token_parser_config{}, State :: #token_parser_state{}}],
                    Token :: 'undefined' | #token{}) ->

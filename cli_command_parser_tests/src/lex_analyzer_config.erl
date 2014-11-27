@@ -2,7 +2,7 @@
 
 -module(lex_analyzer_config).
 
--export([create/0]).
+-export([create/1]).
 
 -include("lexical_defs.hrl").
 -include("token_defs.hrl").
@@ -26,14 +26,19 @@
 %% API functions
 %% ====================================================================
 
-create() ->
+-spec create(SkipWhitespaces :: boolean()) -> #lex_analyzer_config{}.
+create(SkipWhitespaces) ->
+    ParsersConfig = [create_space_config(), create_string_config(), create_word_config()],
+    #lex_analyzer_config{token_parsers_config = ParsersConfig, skip_whitespaces = SkipWhitespaces}.
+
+%%create() ->
 %%    [create_space_config(), create_string_config(), create_data_config(), create_word_config()].
-    [create_space_config(), create_string_config(), create_word_config()].
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
+-spec create_word_config() -> #token_parser_config{}.
 create_word_config() ->
     TransitionTable = [#transition{from_state = ?WORD_INIT_STATE,
                                    char_predicate = fun char_category:is_letter/1,
@@ -70,6 +75,7 @@ create_word_config() ->
 %%                         final_states = FinalStates,
 %%                         token_factory = TokenFactory}.
 
+-spec create_string_config() -> #token_parser_config{}.
 create_string_config() ->
     TransitionTable = [#transition{from_state = ?STR_INIT_STATE,
                                    char_predicate = fun(Char) -> Char == $" end,
@@ -100,6 +106,7 @@ create_string_config() ->
                          final_states = FinalStates,
                          token_factory = TokenFactory}.
 
+-spec create_space_config() -> #token_parser_config{}.
 create_space_config() ->
     TransitionTable = [#transition{from_state = ?WSPACE_INIT_STATE,
                                    char_predicate = fun(Char) -> lists:member(Char, " \t") end,
@@ -118,6 +125,7 @@ create_space_config() ->
                          final_states = FinalStates,
                          token_factory = TokenFactory}.
 
+-spec word_body_predicate(Char :: char()) -> boolean().
 word_body_predicate(Char) ->
     char_category:is_letter(Char) orelse
     char_category:is_digit(Char) orelse

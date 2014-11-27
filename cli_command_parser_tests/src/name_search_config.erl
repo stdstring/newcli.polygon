@@ -4,6 +4,8 @@
 
 -export([create/0]).
 
+-include("name_search_defs.hrl").
+
 -define(MODULE_NAME, commands_example).
 
 -define(PING_FUNCTION, ping_exec).
@@ -26,6 +28,7 @@
 %% API functions
 %% ====================================================================
 
+-spec create() -> name_search_table().
 create() ->
     [{[{"ping", 1}], ?MODULE_NAME, ?PING_FUNCTION},
      {[{"configure", 1}, {"terminal", 1}], ?MODULE_NAME, ?CONF_TERM_FUNCTION},

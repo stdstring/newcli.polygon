@@ -7,10 +7,10 @@
 -define(END_TOKEN, #token{type = 'end', value = ""}).
 
 -record(transition, {from_state = undefined :: 'undefined' | atom(),
-                     %%char_predicate = undefined :: 'undefined' | fun((byte()) -> boolean()),
+                     %%char_predicate = undefined :: 'undefined' | fun((char()) -> boolean()),
                      char_predicate = undefined,
                      to_state = undefined :: 'undefined' | atom(),
-                     %%char_appender = undefined :: 'undefined' | fun((byte(), [byte()]) -> [byte()])}).
+                     %%char_appender = undefined :: 'undefined' | fun((char(), string()) -> string())}).
                      char_appender = undefined}).
 
 -record(token_parser_config, {init_state = undefined :: 'undefined' | atom(),
@@ -22,4 +22,4 @@
 -record(lex_analyzer_config, {token_parsers_config = [] :: [#token_parser_config{}],
                               skip_whitespaces = false :: boolean()}).
 
--record(token_parser_state, {current_state = undefined :: 'undefined' | atom(), recognized_buffer = [] :: [byte()]}).
+-record(token_parser_state, {current_state = undefined :: 'undefined' | atom(), recognized_buffer = [] :: string()}).

@@ -11,7 +11,7 @@
 %% API functions
 %% ====================================================================
 
--spec process(ParserState :: #token_parser_state{}, Char :: byte(), ParserConfig :: #token_parser_config{}) ->
+-spec process(ParserState :: #token_parser_state{}, Char :: char(), ParserConfig :: #token_parser_config{}) ->
     {'true', #token_parser_result{}} | 'false'.
 process(ParserState, Char, ParserConfig) ->
     CurrentState = ParserState#token_parser_state.current_state,
@@ -32,7 +32,7 @@ process(ParserState, Char, ParserConfig) ->
 %% Internal functions
 %% ====================================================================
 
--spec find_transition(CurrentState :: atom(), Char :: byte(), TransitionTable :: [#transition{}]) ->
+-spec find_transition(CurrentState :: atom(), Char :: char(), TransitionTable :: [#transition{}]) ->
     {'true', ToState :: atom()} | 'false'.
 find_transition(CurrentState, Char, TransitionTable) ->
     FilterFun = fun(#transition{from_state = FromState, char_predicate = Predicate}) ->
