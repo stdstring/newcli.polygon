@@ -7,13 +7,13 @@
 %% -record(listen_state, {listen_socket = undefined :: 'undefined' | socket()}).
 -record(listen_state, {listen_socket = undefined :: 'undefined' | term()}).
 
-%% ====================================================================
-%% API functions
-%% ====================================================================
-
 -export([start/1]).
 %% proc_lib export
 -export([init/1]).
+
+%% ====================================================================
+%% API functions
+%% ====================================================================
 
 -spec start(Config :: #cli_terminal_config{}) -> {'ok', Pid :: pid()}.
 start(Config) ->

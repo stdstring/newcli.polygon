@@ -6,13 +6,13 @@
 
 -include("common_defs.hrl").
 
-%% ====================================================================
-%% API functions
-%% ====================================================================
-
 -export([start/1]).
 %% supervisor behaviour
 -export([init/1]).
+
+%% ====================================================================
+%% API functions
+%% ====================================================================
 
 -spec start(MainConfigFile :: string()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()} | term().
 start(MainConfigFile) ->

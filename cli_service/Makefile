@@ -2,8 +2,10 @@ EBIN=ebin
 
 SOURCE=src/cli_service_application.erl \
        src/cli_service_supervisor.erl \
+       src/cli_terminal_endpoint.erl \
        src/cli_terminal_listen_endpoint.erl \
-       src/cli_terminal_listen_supervisor.erl
+       src/cli_terminal_listen_supervisor.erl \
+       src/cli_terminal_supervisor.erl
 
 INCLUDE_FLAGS=-I include
 
