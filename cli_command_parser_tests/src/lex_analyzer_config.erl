@@ -10,9 +10,6 @@
 %% word token
 -define(WORD_INIT_STATE, word_init_state).
 -define(WORD_BODY_STATE, word_body_state).
-%% data portion token
-%%-define(DATA_INIT_STATE, data_init_state).
-%%-define(DATA_BODY_STATE, data_body_state).
 %% string token
 -define(STR_INIT_STATE, str_init_state).
 -define(STR_BODY_STATE, str_body_state).
@@ -34,9 +31,6 @@ create_parsers_config() ->
 create(SkipWhitespaces) ->
     ParsersConfig = create_parsers_config(),
     #lex_analyzer_config{token_parsers_config = ParsersConfig, skip_whitespaces = SkipWhitespaces}.
-
-%%create() ->
-%%    [create_space_config(), create_string_config(), create_data_config(), create_word_config()].
 
 %% ====================================================================
 %% Internal functions
@@ -60,24 +54,6 @@ create_word_config() ->
                          transitions = TransitionTable,
                          final_states = FinalStates,
                          token_factory = TokenFactory}.
-
-%%create_data_config() ->
-%%    TransitionTable = [#transition{from_state = ?DATA_INIT_STATE,
-%%                                   char_predicate = fun data_body_predicate/1,
-%%                                   to_state = ?DATA_BODY_STATE,
-%%                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end},
-%%                       #transition{from_state = ?DATA_BODY_STATE,
-%%                                   char_predicate = fun data_body_predicate/1,
-%%                                   to_state = ?DATA_BODY_STATE,
-%%                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end}],
-%%    FinalStates = [?DATA_BODY_STATE],
-%%    TokenFactory = fun(#token_parser_state{current_state = ?DATA_BODY_STATE, recognized_buffer = Buffer}) ->
-%%        ?DATA_TOKEN(lists:reverse(Buffer))
-%%    end,
-%%    #token_parser_config{init_state = ?DATA_INIT_STATE,
-%%                         transitions = TransitionTable,
-%%                         final_states = FinalStates,
-%%                         token_factory = TokenFactory}.
 
 -spec create_string_config() -> #token_parser_config{}.
 create_string_config() ->
@@ -134,6 +110,3 @@ word_body_predicate(Char) ->
     char_category:is_letter(Char) orelse
     char_category:is_digit(Char) orelse
     lists:member(Char, "-_").
-
-%%data_body_predicate(Char) ->
-%%    not lists:member(Char, " \t\"").
