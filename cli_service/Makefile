@@ -1,6 +1,8 @@
 EBIN=ebin
 
-SOURCE=src/cli_service_application.erl \
+SOURCE=src/config/lex_analyzer_config.erl \
+       src/config/syntax_analyzer_config.erl \
+       src/cli_service_application.erl \
        src/cli_service_supervisor.erl \
        src/cli_terminal_endpoint.erl \
        src/cli_terminal_listen_endpoint.erl \
@@ -9,7 +11,7 @@ SOURCE=src/cli_service_application.erl \
        src/client_handler.erl \
        src/command_execution_context.erl
 
-INCLUDE_FLAGS=-I include
+INCLUDE_FLAGS=-I include -I ../cli_command_parser_include
 
 TARGETS = $(SOURCE:%.erl=$(EBIN)/%.beam)
 
