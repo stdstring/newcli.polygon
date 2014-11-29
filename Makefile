@@ -1,5 +1,5 @@
 SOURCE_SUBDIRS = cli_common cli_backend cli_frontend cli_terminal cli_command_parser cli_service
-TEST_SUBDIRS = cli_common_tests cli_backend_tests cli_frontend_tests cli_command_parser_tests
+TEST_SUBDIRS = cli_common_tests cli_backend_tests cli_frontend_tests cli_command_parser_tests cli_service_tests
 
 BACKEND_EBIN = cli_backend/ebin
 BACKEND_DATA = cli_backend/data

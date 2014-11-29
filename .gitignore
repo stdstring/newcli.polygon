@@ -17,5 +17,6 @@ cli_command_parser_prototype/ebin/
 cli_command_parser/ebin/
 cli_command_parser_tests/ebin/
 cli_service/ebin/
+cli_service_tests/ebin/
 deploy/
 untitled.sublime-workspace
