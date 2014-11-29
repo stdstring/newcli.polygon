@@ -5,7 +5,9 @@ SOURCE=src/cli_service_application.erl \
        src/cli_terminal_endpoint.erl \
        src/cli_terminal_listen_endpoint.erl \
        src/cli_terminal_listen_supervisor.erl \
-       src/cli_terminal_supervisor.erl
+       src/cli_terminal_supervisor.erl \
+       src/client_handler.erl \
+       src/command_execution_context.erl
 
 INCLUDE_FLAGS=-I include
 
