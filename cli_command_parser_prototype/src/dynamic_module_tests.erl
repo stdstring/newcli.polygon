@@ -5,6 +5,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 -define(MODULE_NAME, some_dynamic_module).
+-define(ALT_MODULE_NAME, alt_dynamic_module).
 -define(FUNCTION_NAME, some_func).
 -define(POSITIVE, "positive").
 -define(ZERO, "zero").
@@ -52,6 +53,25 @@ generate_term_list_test() ->
     {module, ?MODULE_NAME} = code:load_binary(?MODULE_NAME, [], ModuleBinary),
     ?assertEqual(66, ?MODULE_NAME:?FUNCTION_NAME()).
 
+module_unload_test() ->
+    ?assertEqual(non_existing, code:which(?ALT_MODULE_NAME)),
+    ModuleBinary = generate_abstract_format_module(?ALT_MODULE_NAME, ?POSITIVE, ?ZERO, ?NEGATIVE),
+    Master = self(),
+    RemoteFun = fun() ->
+        {module, ?ALT_MODULE_NAME} = code:load_binary(?ALT_MODULE_NAME, [], ModuleBinary),
+        Result = ?ALT_MODULE_NAME:?FUNCTION_NAME(333),
+        Master ! {result, Result}
+    end,
+    spawn_link(RemoteFun),
+    receive
+        {result, Result} ->
+            io:format(user, "Result = ~p~n", [Result]),
+            DeleteResult = code:delete(?ALT_MODULE_NAME),
+            ?assert(DeleteResult),
+            ?assertEqual(non_existing, code:which(?ALT_MODULE_NAME))
+    end,
+    ok.
+
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
@@ -83,10 +103,14 @@ generate_erl_syntax_module(PositiveValue, ZeroValue, NegativeValue) ->
 
 -spec generate_abstract_format_module(PositiveValue :: string(), ZeroValue :: string(), NegativeValue :: string()) -> binary().
 generate_abstract_format_module(PositiveValue, ZeroValue, NegativeValue) ->
+    generate_abstract_format_module(?MODULE_NAME, PositiveValue, ZeroValue, NegativeValue).
+
+-spec generate_abstract_format_module(ModuleName :: atom(), PositiveValue :: string(), ZeroValue :: string(), NegativeValue :: string()) -> binary().
+generate_abstract_format_module(ModuleName, PositiveValue, ZeroValue, NegativeValue) ->
     % fun(X) when X > 0 -> "positive";
     % fun(X) when X == 0 -> "zero";
     % fun(X) when X < 0 -> "negative".
-    ModuleForm = {attribute, 0, module, ?MODULE_NAME},
+    ModuleForm = {attribute, 0, module, ModuleName},
     ExportForm = {attribute, 0, export, [{?FUNCTION_NAME, 1}]},
     PositiveGuard = {op, 0, '>', {var, 0, 'A'}, {integer, 0, 0}},
     PositiveClause = {clause, 0, [{var, 0, 'A'}], [[PositiveGuard]], [{string, 0, PositiveValue}]},
@@ -95,5 +119,5 @@ generate_abstract_format_module(PositiveValue, ZeroValue, NegativeValue) ->
     NegativeGuard = {op, 0, '<', {var, 0, 'A'}, {integer, 0, 0}},
     NegativeClause = {clause, 0, [{var, 0, 'A'}], [[NegativeGuard]], [{string, 0, NegativeValue}]},
     FunForm = {function, 0, ?FUNCTION_NAME, 1, [PositiveClause, ZeroClause, NegativeClause]},
-    {ok, ?MODULE_NAME, ModuleBinary} = compile:forms([ModuleForm, ExportForm, FunForm]),
+    {ok, ModuleName, ModuleBinary} = compile:forms([ModuleForm, ExportForm, FunForm]),
     ModuleBinary.
