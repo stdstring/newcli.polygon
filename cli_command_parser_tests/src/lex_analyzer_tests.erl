@@ -73,7 +73,11 @@ create_keyword_config() ->
                        #transition{from_state = ?IF_INNER_STATE,
                                    char_predicate = fun(Char) -> Char == $f end,
                                    to_state = ?IF_FINAL_STATE,
-                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end}],
+                                   char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end},
+                       #transition{from_state = ?IF_FINAL_STATE,
+                                   char_predicate = fun(Char) -> Char == ?EOF_CHAR end,
+                                   to_state = ?IF_FINAL_STATE,
+                                   char_appender = fun(_Char, Buffer) -> Buffer end}],
     FinalStates = [?IF_FINAL_STATE],
     TokenFactory = fun(#token_parser_state{current_state = ?IF_FINAL_STATE}) ->
         ?TOKEN(keyword, "if")

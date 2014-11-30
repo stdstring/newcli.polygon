@@ -6,6 +6,8 @@
 -define(WHITESPACE_TOKEN, #token{type = whitespace, value = ""}).
 -define(END_TOKEN, #token{type = 'end', value = ""}).
 
+-define(EOF_CHAR, 0).
+
 -record(transition, {from_state = undefined :: 'undefined' | atom(),
                      %%char_predicate = undefined :: 'undefined' | fun((char()) -> boolean()),
                      char_predicate = undefined,

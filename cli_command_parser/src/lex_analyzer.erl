@@ -36,13 +36,12 @@ process_string(Source, Config) ->
                      BestToken :: {Token :: #token{}, Rest :: [byte()]},
                      TokenList :: [#token{}]) ->
     {true, TokenList :: [#token{}]} | {false, Reason :: term()}.
-process_string([], _Config, _ParserList, {undefined, []}, _TokenList) ->
-    {false, bad_input};
-process_string([], Config, _ParserList, {Token, []}, TokenList) ->
-    NewTokenList = append_token(Token, TokenList, Config#lex_analyzer_config.skip_whitespaces),
-    {true, NewTokenList};
-process_string([], Config, _ParserList, {Token, TokenRest}, TokenList) ->
-    restart_process_string(Config, Token, TokenRest, TokenList);
+process_string([], Config, ParserList, {undefined, []}, TokenList) ->
+    process_eof(Config, ParserList, {undefined, []}, TokenList);
+process_string([], Config, ParserList, {Token, []}, TokenList) ->
+    process_eof(Config, ParserList, {Token, []}, TokenList);
+process_string([], Config, ParserList, {Token, Rest}, TokenList) ->
+    process_eof(Config, ParserList, {Token, Rest}, TokenList);
 process_string([Char | Rest], Config, ParserList, BestToken, TokenList) ->
     case process_char(Char, ParserList) of
         {[], undefined} ->
@@ -99,3 +98,25 @@ process_char(Char, [{Config, State} | ParserRest], NextParserList, Token) ->
 -spec append_token(Token :: #token{}, TokenList :: [#token{}], SkipWhitespaces :: boolean()) -> [#token{}].
 append_token(?WHITESPACE_TOKEN, TokenList, true) -> TokenList;
 append_token(Token, TokenList, _SkipWhitespaces) -> [Token] ++ TokenList.
+
+-spec process_eof(Config :: #lex_analyzer_config{},
+                  ParserList :: [{ParserConfig :: #token_parser_config{}, State :: #token_parser_state{}}],
+                  Token :: #token{},
+                  TokenList :: [#token{}]) ->
+    {true, TokenList :: [#token{}]} | {false, Reason :: term()} | no_return().
+process_eof(Config, ParserList, Token, TokenList) ->
+    case process_char(?EOF_CHAR, ParserList) of
+        {_NewParserList, undefined} ->
+            case Token of
+                {undefined, []} ->
+                    {false, bad_input};
+                {Token, []} ->
+                    NewTokenList = append_token(Token, TokenList, Config#lex_analyzer_config.skip_whitespaces),
+                    {true, NewTokenList};
+                {Token, Rest} ->
+                    restart_process_string(Config, Token, Rest, TokenList)
+            end;
+        {_NewParserList, NewToken} ->
+            NewTokenList = append_token(NewToken, TokenList, Config#lex_analyzer_config.skip_whitespaces),
+            {true, NewTokenList}
+    end.
