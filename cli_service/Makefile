@@ -1,7 +1,9 @@
 EBIN=ebin
 
-SOURCE=src/config/lex_analyzer_config.erl \
-       src/config/syntax_analyzer_config.erl \
+SOURCE=src/command/code_generator.erl \
+       src/command/command_factory.erl \
+       src/command/lex_analyzer_config.erl \
+       src/command/syntax_analyzer_config.erl \
        src/fsm/cli_fsm_behaviour.erl \
        src/fsm/cli_fsm.erl \
        src/services/authentication_service_behaviour.erl \
