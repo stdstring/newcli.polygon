@@ -30,11 +30,11 @@ start(Config, MainConfigDir) ->
 -spec authorize_command(User :: #user{}, CommandName :: atom()) ->
     {'authorization_result', 'access_allowed' | 'access_denied'} | {'authorization_fail', Reason :: atom()}.
 authorize_command(User, CommandName) when is_record(User, user) ->
-    gen_server:call(?AUTHORIZATION_SERVICE, {User, CommandName}).
+    gen_server:call(?AUTHORIZATION_SERVICE, {authorize_command, User, CommandName}).
 
 -spec authorize_commands(User :: #user{}, CommandNames :: [atom()]) -> [atom()].
-authorize_commands(_User, _CommandNames) ->
-    [].
+authorize_commands(User, CommandNames) ->
+    gen_server:call(?AUTHORIZATION_SERVICE, {authorize_commands, User, CommandNames}).
 
 init(Filename) ->
     %% {CommandName, AccessLevel}
@@ -43,12 +43,13 @@ init(Filename) ->
     register(?AUTHORIZATION_SERVICE, self()),
     {ok, State}.
 
-handle_call({User, CommandName}, _From, State) when is_record(User, user) ->
-    Data = State#authorization_service_state.data,
-    case lists:keyfind(CommandName, 1, Data) of
-        {CommandName, AccessLevel} -> {reply, authorize_impl(User, AccessLevel), State};
-        false -> {reply, {authorization_fail, unknown_command}, State}
-    end.
+handle_call({authorize_command, User, CommandName}, _From, State) when is_record(User, user) ->
+    Result = process_command(User, CommandName, State),
+    {reply, Result, State};
+handle_call({authorize_commands, User, SourceCommands}, _From, State) when is_record(User, user) ->
+    FilterFun = fun(Command) -> process_command(User, Command, State) == {authorization_result, access_allowed} end,
+    DestCommands = lists:filter(FilterFun, SourceCommands),
+    {reply, DestCommands, State}.
 
 handle_cast(_Request, State) -> {stop, enotsup, State}.
 
@@ -72,6 +73,15 @@ parse_config(Config) ->
 load_data(Filename) ->
     Data = erlang_term_utils:read_from_file(Filename),
     #authorization_service_state{data = Data}.
+
+-spec process_command(User :: #user{}, CommandName :: atom(), State :: #authorization_service_state{}) ->
+    {'authorization_result', 'access_allowed' | 'access_denied'} | {'authorization_fail', Reason :: atom()}.
+process_command(User, CommandName, State) ->
+    Data = State#authorization_service_state.data,
+    case lists:keyfind(CommandName, 1, Data) of
+        {CommandName, AccessLevel} -> authorize_impl(User, AccessLevel);
+        false -> {authorization_fail, unknown_command}
+    end.
 
 -spec authorize_impl(#user{}, CommandAccessLevel :: integer()) -> {'authorization_result', 'access_allowed' | 'access_denied'}.
 authorize_impl(#user{access_level = UserAccessLevel}, CommandAccessLevel) ->

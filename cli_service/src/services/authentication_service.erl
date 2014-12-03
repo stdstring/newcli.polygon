@@ -11,6 +11,12 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
+-define(AUTHENTICATION_CONFIG, authentication_service).
+-define(AUTHENTICATION_DATA, data_source).
+-define(AUTHENTICATION_SERVICE, authentication_service).
+
+-record(authentication_service_state, {data = [] :: [{Uid :: integer(), Username :: string(), Password :: binary(), AccessLevel :: integer()}]}).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -60,7 +66,7 @@ parse_config(Config) ->
 -spec load_data(Filename :: string()) -> #authentication_service_state{}.
 load_data(Filename) ->
     Data = erlang_term_utils:read_from_file(Filename),
-    #authentication_service_state{source = Filename, data = Data}.
+    #authentication_service_state{data = Data}.
 
 -spec authenticate_impl({Uid :: integer(), Username :: string(), Hash :: binary(), AccessLevel :: integer()}, Password :: binary()) ->
           {'authentication_complete', #user{}} | {'authentication_fail', Reason :: term()}.
