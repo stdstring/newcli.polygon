@@ -10,8 +10,8 @@
 
 process(Source, LexConfig, SyntaxConfig) ->
     case command_parser:process(Source, LexConfig, SyntaxConfig) of
-        {true, Result} -> ;
-        {false, Reason} ->
+        {true, Result} -> {true, Result};
+        {false, Reason} -> {false, Reason}
     end.
 
 %% ====================================================================
