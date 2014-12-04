@@ -3,6 +3,7 @@ EBIN=ebin
 SOURCE=src/command/code_generator.erl \
        src/command/command_execution_checker.erl \
        src/command/command_factory.erl \
+       src/command/io_buffer.erl \
        src/command/lex_analyzer_config.erl \
        src/command/syntax_analyzer_config.erl \
        src/fsm/cli_fsm_behaviour.erl \
