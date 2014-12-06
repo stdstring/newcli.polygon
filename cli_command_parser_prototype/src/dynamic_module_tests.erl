@@ -72,6 +72,39 @@ module_unload_test() ->
     end,
     ok.
 
+generate_case_test() ->
+    Expr = {var, 0, 'A'},
+    Clause1 = {clause, 0, [{integer, 0, 1}], [], [{string, 0, "One"}]},
+    Clause2 = {clause, 0, [{integer, 0, 4}], [], [{string, 0, "Four"}]},
+    CommonClause = {clause, 0, [{var, 0, '_'}], [], [{string, 0, "Other"}]},
+    CaseExpr = {'case', 0, Expr, [Clause1, Clause2, CommonClause]},
+    Body = [CaseExpr],
+    FunClause = {clause, 0, [{var, 0, 'A'}], [], Body},
+    ModuleForm = {attribute, 0, module, ?MODULE_NAME},
+    ExportForm = {attribute, 0, export, [{?FUNCTION_NAME, 1}]},
+    FunForm = {function, 0, ?FUNCTION_NAME, 1, [FunClause]},
+    {ok, ?MODULE_NAME, ModuleBinary} = compile:forms([ModuleForm, ExportForm, FunForm]),
+    {module, ?MODULE_NAME} = code:load_binary(?MODULE_NAME, [], ModuleBinary),
+    ?assertEqual("Four", ?MODULE_NAME:?FUNCTION_NAME(4)),
+    ?assertEqual("One", ?MODULE_NAME:?FUNCTION_NAME(1)),
+    ?assertEqual("Other", ?MODULE_NAME:?FUNCTION_NAME(666)).
+
+generate_if_test() ->
+    PositiveClause = {clause, 0, [], [[{op, 0, '>', {var, 0, 'A'}, {integer, 0, 0}}]], [{string, 0, ?POSITIVE}]},
+    ZeroClause = {clause, 0, [], [[{op, 0, '==', {var, 0, 'A'}, {integer, 0, 0}}]], [{string, 0, ?ZERO}]},
+    NegativeClause = {clause, 0, [], [[{op, 0, '<', {var, 0, 'A'}, {integer, 0, 0}}]], [{string, 0, ?NEGATIVE}]},
+    IfExpr = {'if', 0, [PositiveClause, ZeroClause, NegativeClause]},
+    Body = [IfExpr],
+    FunClause = {clause, 0, [{var, 0, 'A'}], [], Body},
+    ModuleForm = {attribute, 0, module, ?MODULE_NAME},
+    ExportForm = {attribute, 0, export, [{?FUNCTION_NAME, 1}]},
+    FunForm = {function, 0, ?FUNCTION_NAME, 1, [FunClause]},
+    {ok, ?MODULE_NAME, ModuleBinary} = compile:forms([ModuleForm, ExportForm, FunForm]),
+    {module, ?MODULE_NAME} = code:load_binary(?MODULE_NAME, [], ModuleBinary),
+    ?assertEqual(?POSITIVE, ?MODULE_NAME:?FUNCTION_NAME(666)),
+    ?assertEqual(?ZERO, ?MODULE_NAME:?FUNCTION_NAME(0)),
+    ?assertEqual(?NEGATIVE, ?MODULE_NAME:?FUNCTION_NAME(-17)).
+
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
