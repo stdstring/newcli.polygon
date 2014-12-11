@@ -14,11 +14,11 @@
 -define(PROCESS_FAIL_FUN, process_fail).
 -define(SEND_OUTPUT_FUN, send_output).
 %% TODO (std_string) : definition of the error message must 
--define(BUFFER_START_FAIL_MESSAGE, "").
--define(UNSUITABLE_COMMAND_MESSAGE, "").
--define(ACCESS_DENIED_MESSAGE, "").
--define(BAD_CONFIG_MESSAGE, "").
--define(COMMAND_FAIL_MESSAGE, "").
+-define(BUFFER_START_FAIL_MESSAGE, "Buffer creation fails").
+-define(UNSUITABLE_COMMAND_MESSAGE, "Unsuitable command").
+-define(ACCESS_DENIED_MESSAGE, "Access denied").
+-define(BAD_CONFIG_MESSAGE, "Bad authorization config").
+-define(COMMAND_FAIL_MESSAGE, "Command fails with return code ").
 
 %% ====================================================================
 %% API functions
