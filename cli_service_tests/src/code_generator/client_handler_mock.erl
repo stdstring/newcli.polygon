@@ -6,16 +6,18 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--export([start/0, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1, send_output/2, send_error/2, finish_command/2]).
+-export([start/1, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1, send_output/2, send_error/2, finish_command/2]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+
+-record(mock_state, {expected = [] :: [{Func :: atom(), Args :: ['any' | term()], Result :: term()}]}).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
-start() ->
-    ?assert(false).
+start(Expected) ->
+    gen_server:start_link(?MODULE, Expected, []).
 
 process_command(_Handler, _CommandLine) ->
     ?assert(false).
@@ -60,3 +62,25 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+check_expectation([{Func, ExpectedArgs, Result} | ExpectedRest], Func, ActualArgs) ->
+    case compare_args(ExpectedArgs, ActualArgs) of
+        true -> {true, Result, ExpectedRest};
+        false -> false
+    end;
+check_expectation(_Expected, _ActualFunc, _ActualArgs) -> false.
+
+compare_args([], []) -> true;
+compare_args(_ExpectedRest, []) -> false;
+compare_args([], _ActualRest) -> false;
+compare_args([Arg | ExpectedRest], [Arg | ActualRest]) -> compare_args(ExpectedRest, ActualRest);
+compare_args([any | ExpectedRest], [_Arg | ActualRest]) -> compare_args(ExpectedRest, ActualRest);
+compare_args(_Expected, _Actual) -> false.
+
+stop_mock(Mock, Timeout) ->
+    process_flag(trap_exit, true),
+    exit(Mock, stop_work),
+    receive
+        after Timeout -> ?assert(false)
+    end,
+    process_flag(trap_exit, false).
