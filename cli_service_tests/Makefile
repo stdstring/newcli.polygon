@@ -2,7 +2,10 @@ EBIN=ebin
 
 SRC_EBIN = ../cli_service/ebin
 
-SOURCE=src/code_generator/io_buffer_mock.erl
+SOURCE=src/code_generator/cli_fsm_mock.erl \
+       src/code_generator/client_handler_mock.erl \
+       src/code_generator/command_execution_checker_mock.erl \
+       src/code_generator/io_buffer_mock.erl
 
 TEST_SOURCE=src/utils/config_utils_tests.erl \
             src/utils/crypto_utils_tests.erl \
