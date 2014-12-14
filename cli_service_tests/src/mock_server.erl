@@ -5,15 +5,12 @@
 -behaviour(gen_server).
 
 -include_lib("eunit/include/eunit.hrl").
+-include("mock_defs.hrl").
 
--export([start/1, stop/0, execute/3]).
+-export([start/0, stop/0, set_expected/1, execute/3, check_finish/0]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--record(expectation, {source = undefined :: 'undefined' | term(),
-                      func = undefined :: 'undefined' | atom(),
-                      args = [] :: ['any' | term()],
-                      result = undefined :: 'undefined' | term()}).
 -record(mock_state, {expected = [] :: [#expectation{}]}).
 -record(actual, {source = undefined :: 'undefined' | term(),
                  func = undefined :: 'undefined' | atom(),
@@ -25,14 +22,14 @@
 %% API functions
 %% ====================================================================
 
-start(Expectations) ->
-    gen_server:start_link(?SERVER_NAME, ?MODULE, Expectations, []).
+start() ->
+    gen_server:start_link(?SERVER_NAME, ?MODULE, [], []).
 
 stop() ->
-    case gen_server:call(?SERVER_NAME, stop) of
-        [] -> ok;
-        _Other -> ?assert(false)
-    end.
+    gen_server:cast(?SERVER_NAME, stop).
+
+set_expected(Expected) ->
+    gen_server:call(?SERVER_NAME, {expected, Expected}).
 
 execute(Source, Func, Args) ->
     case gen_server:call(?SERVER_NAME, #actual{source = Source, func = Func, args = Args}) of
@@ -40,19 +37,27 @@ execute(Source, Func, Args) ->
         false -> ?assert(false)
     end.
 
-init(_Args) ->
-    ?assert(false).
+check_finish() ->
+    case gen_server:call(?SERVER_NAME, finish) of
+        [] -> ok;
+        _Other -> ?assert(false)
+    end.
 
-handle_call(stop, _From, #mock_state{expected = Expected}) ->
-    {stop, terminate, Expected};
+init(_Args) ->
+    {ok, #mock_state{}}.
+
+handle_call({expected, Expected}, _From, State) ->
+    {reply, true, State#mock_state{expected = Expected}};
+handle_call(finish, _From, State) ->
+    {reply, State#mock_state.expected, State};
 handle_call(#actual{source = Source, func = Func, args = Args}, _From, #mock_state{expected = Expected}) ->
     case check_expectation(Expected, Source, Func, Args) of
         {true, Result, Rest} -> {reply, {true, Result}, #mock_state{expected = Rest}};
         false -> {reply, false, #mock_state{expected = []}}
     end.
 
-handle_cast(_Request, State) ->
-    {stop, enotsup, State}.
+handle_cast(stop, State) ->
+    {stop, normal, State}.
 
 handle_info(_Info, State) ->
     {stop, enotsup, State}.

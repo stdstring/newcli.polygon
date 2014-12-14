@@ -77,7 +77,8 @@
 %%     lists:foreach(ProcessFun, Data).
 
 
--spec generate(EntryModuleName :: atom(), EntryFunName :: atom(), Command :: #command{}, ModuleDefs :: #module_defs{}) -> 'ok'.
+-spec generate(EntryModuleName :: atom(), EntryFunName :: atom(), Command :: #command{}, ModuleDefs :: #module_defs{}) ->
+    {'true', Binary :: binary()} | {'false', Reason :: term()}.
 generate(EntryModuleName, EntryFunName, Command, ModuleDefs) ->
     CommandName = apply(Command#command.module, get_name, []),
     ModuleForm = {attribute, 0, module, EntryModuleName},
@@ -88,8 +89,9 @@ generate(EntryModuleName, EntryFunName, Command, ModuleDefs) ->
     BufferFailFun = generate_process_buffer_fail_fun(ModuleDefs),
     ProcessFailFun = generate_process_fail_fun(ModuleDefs),
     SendOutputFun = generate_send_output_fun(ModuleDefs),
-    case compile:forms([ModuleForm, ExportForm, EntryFun, ProcessFun, ProcessSuccessFun, BufferFailFun, ProcessFailFun, SendOutputFun]) of
-        {ok, EntryModuleName, Binary} -> {ok, Binary};
+    CompileResult = compile:forms([ModuleForm, ExportForm, EntryFun, ProcessFun, ProcessSuccessFun, BufferFailFun, ProcessFailFun, SendOutputFun]),
+    case CompileResult of
+        {ok, EntryModuleName, Binary} -> {true, Binary};
         _Other -> {false, undefined}
     end.
 
@@ -111,7 +113,7 @@ generate_entry_func(CommandName, ModuleDefs, EntryFunName) ->
     %%             end
     %%     end.
     BufferStartErrorPattern = [{tuple, 0, [{atom, 0, error}, {var, 0, '_Reason'}]}],
-    BufferStartErrorBody = [{call, 0, {atom, 0, process_buffer_fail}, [{var, 0, 'ClientHandler'}]}],
+    BufferStartErrorBody = [{call, 0, {atom, 0, ?PROCESS_BUFFER_FAIL_FUN}, [{var, 0, 'ClientHandler'}]}],
     BufferStartErrorClause = {clause, 0, BufferStartErrorPattern, [], BufferStartErrorBody},
     BufferStartSuccessPattern = [{tuple, 0, [{atom, 0, ok}, {var, 0, 'Buffer'}]}],
     BufferStartSuccessBody = [generate_precheck_command(CommandName, ModuleDefs)],
@@ -131,20 +133,20 @@ generate_precheck_command(CommandName, ModuleDefs) ->
     %% end
     AccessDeniedPattern = [{tuple, 0, [{atom, 0, false}, {atom, 0, access_denied}]}],
     AccessDeniedProcessArgs = [{string, 0, ?ACCESS_DENIED_MESSAGE}, {integer, 0, 255}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}],
-    AccessDeniedBody = [{call, 0, {atom, 0, process_fail}, AccessDeniedProcessArgs}],
+    AccessDeniedBody = [{call, 0, {atom, 0, ?PROCESS_FAIL_FUN}, AccessDeniedProcessArgs}],
     AccessDeniedClause = {clause, 0, AccessDeniedPattern, [], AccessDeniedBody},
     BadConfigPattern = [{tuple, 0, [{atom, 0, false}, {atom, 0, authorization_bad_config}]}],
     BadConfigProcessArgs = [{string, 0, ?BAD_CONFIG_MESSAGE}, {integer, 0, 255}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}],
-    BadConfigBody = [{call, 0, {atom, 0, process_fail}, BadConfigProcessArgs}],
+    BadConfigBody = [{call, 0, {atom, 0, ?PROCESS_FAIL_FUN}, BadConfigProcessArgs}],
     BadConfigClause = {clause, 0, BadConfigPattern, [], BadConfigBody},
     UnsuitableCommandPattern = [{tuple, 0, [{atom, 0, false}, {atom, 0, unsuitable_command}]}],
     UnsuitableCommandProcessArgs = [{string, 0, ?UNSUITABLE_COMMAND_MESSAGE}, {integer, 0, 255}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}],
-    UnsuitableCommandBody = [{call, 0, {atom, 0, process_fail}, UnsuitableCommandProcessArgs}],
+    UnsuitableCommandBody = [{call, 0, {atom, 0, ?PROCESS_FAIL_FUN}, UnsuitableCommandProcessArgs}],
     UnsuitableCommandClause = {clause, 0, UnsuitableCommandPattern, [], UnsuitableCommandBody},
-    SuccessBody = [{call, 0, {atom, 0, process_command}, [{var, 0, 'CliFsm'}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}]}],
+    SuccessBody = [{call, 0, {atom, 0, ?PROCESS_COMMAND_FUN}, [{var, 0, 'CliFsm'}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}]}],
     SuccessClause = {clause, 0, [{atom, 0, true}], [], SuccessBody},
     CaseExprArgs = [{atom, 0, CommandName}, {var, 0, 'CliFsm'}, {var, 0, 'User'}],
-    CaseExpr = {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.exec_checker_module}, {atom, 0, execution_precheck}}, [CaseExprArgs]},
+    CaseExpr = {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.exec_checker_module}, {atom, 0, execution_precheck}}, CaseExprArgs},
     {'case', 0, CaseExpr, [AccessDeniedClause, BadConfigClause, UnsuitableCommandClause, SuccessClause]}.
 
 -spec generate_process_command_fun(Command :: #command{}) -> tuple().
@@ -159,11 +161,11 @@ generate_process_command_fun(#command{module = Module, function = Func, argument
     %%     end.
     ArgsList = generate_arg_list(Args),
     CaseExpr = {call, 0, {remote, 0, {atom, 0, Module}, {atom, 0, Func}}, [ArgsList]},
-    SuccessBody = [{call, 0, {atom, 0, process_success}, [{var, 0, 'CliFsm'}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}]}],
+    SuccessBody = [{call, 0, {atom, 0, ?PROCESS_SUCCESS_FUN}, [{var, 0, 'CliFsm'}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}]}],
     SuccessClause = {clause, 0, [{atom, 0, 0}], [], SuccessBody},
     Message = generate_command_fail_message_command(),
     ProcessFailArgs = [Message, {var, 0, 'ReturnCode'}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}],
-    FailBody = [{call, 0, {atom, 0, process_fail}, ProcessFailArgs}],
+    FailBody = [{call, 0, {atom, 0, ?PROCESS_FAIL_FUN}, ProcessFailArgs}],
     FailClause = {clause, 0, [{var, 0, 'ReturnCode'}], [], FailBody},
     Body = [{'case', 0, CaseExpr, [SuccessClause, FailClause]}],
     FunClause = {clause, 0, [{var, 0, 'CliFsm'}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}], [], Body},
@@ -198,7 +200,7 @@ generate_process_success_fun(CommandName, ModuleDefs) ->
     %%     cli_fsm:process_command(CliFsm, CommandName),
     %%     process_flag(trap_exit, false).
     SetupGuard = generate_trap_guard_command(true),
-    SendOutput = {call, 0, {atom, 0, send_output}, [{var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}]},
+    SendOutput = {call, 0, {atom, 0, ?SEND_OUTPUT_FUN}, [{var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}]},
     FinishCommand = generate_finish_command({integer, 0, 0}, ModuleDefs),
     FsmNotification = generate_fsm_notification_command(CommandName, ModuleDefs),
     ReleaseGuard = generate_trap_guard_command(false),
@@ -230,7 +232,7 @@ generate_process_fail_fun(ModuleDefs) ->
     %%     client_handler:finish_command(ClientHandler, ReturnValue)
     %%     process_flag(trap_exit, false).
     SetupGuard = generate_trap_guard_command(true),
-    SendOutput = {call, 0, {atom, 0, send_output}, [{var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}]},
+    SendOutput = {call, 0, {atom, 0, ?SEND_OUTPUT_FUN}, [{var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}]},
     SendErrorCall = generate_send_error_command(ModuleDefs),
     FinishCommand = generate_finish_command({var, 0, 'ReturnValue'}, ModuleDefs),
     ReleaseGuard = generate_trap_guard_command(false),
