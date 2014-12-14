@@ -13,7 +13,7 @@
 -define(PROCESS_SUCCESS_FUN, process_success).
 -define(PROCESS_FAIL_FUN, process_fail).
 -define(SEND_OUTPUT_FUN, send_output).
-%% TODO (std_string) : definition of the error message must 
+%% TODO (std_string) : definition of the error message must be in other place
 -define(BUFFER_START_FAIL_MESSAGE, "Buffer creation fails").
 -define(UNSUITABLE_COMMAND_MESSAGE, "Unsuitable command").
 -define(ACCESS_DENIED_MESSAGE, "Access denied").

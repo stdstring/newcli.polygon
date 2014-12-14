@@ -5,6 +5,8 @@
 -include_lib("eunit/include/eunit.hrl").
 -include("code_generator_defs.hrl").
 -include("frame_defs.hrl").
+-include("mock_defs.hrl").
+-include("authentication_defs.hrl").
 
 -define(ENTRY_MODULE, test_entry_module).
 -define(ENTRY_FUNC, test_entry_func).
@@ -24,6 +26,16 @@
 
 generate_test() ->
     State = setup(),
+    CliFsmRef = cli_fsm_instance,
+    ClientHandlerRef = client_handler_instance,
+    User = #user{uid = 666, username = "superuser", access_level = 11},
+    Expected = [#expectation{source = io_buffer, func = start, args = [], result = {error, enotsup}},
+                #expectation{source = client_handler, func = send_error, args = [client_handler_instance, "Buffer creation fails"], result = ok},
+                #expectation{source = client_handler, func = finish_command, args = [client_handler_instance, 255], result = ok}],
+    mock_server:set_expected(Expected),
+    {module, ?ENTRY_MODULE} = code:load_binary(?ENTRY_MODULE, [], State#test_state.binary),
+    Result = ?ENTRY_MODULE:?ENTRY_FUNC(CliFsmRef, ClientHandlerRef, User),
+    io:format(user, "Result: ~p~n", [Result]),
     cleanup(State),
     ok.
 

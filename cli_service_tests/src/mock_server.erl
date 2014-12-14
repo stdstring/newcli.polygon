@@ -16,14 +16,14 @@
                  func = undefined :: 'undefined' | atom(),
                  args = [] :: [term()]}).
 
--define(SERVER_NAME, {local, mock_server}).
+-define(SERVER_NAME, mock_server).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
 start() ->
-    gen_server:start_link(?SERVER_NAME, ?MODULE, [], []).
+    gen_server:start_link({local, ?SERVER_NAME}, ?MODULE, [], []).
 
 stop() ->
     gen_server:cast(?SERVER_NAME, stop).
@@ -34,7 +34,9 @@ set_expected(Expected) ->
 execute(Source, Func, Args) ->
     case gen_server:call(?SERVER_NAME, #actual{source = Source, func = Func, args = Args}) of
         {true, Result} -> Result;
-        false -> ?assert(false)
+        false ->
+            ?debugFmt("call for source = \"~p\", func = \"~p\", args = ~p fails~n", [Source, Func, Args]),
+            ?assert(false)
     end.
 
 check_finish() ->
