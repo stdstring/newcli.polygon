@@ -2,55 +2,26 @@
 
 -module(io_buffer_mock).
 
--behaviour(gen_server).
-
--include_lib("eunit/include/eunit.hrl").
-
--export([start/1, send_output/2, send_error/2, get_data/2, reset/1]).
-%% gen_server export
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
-
--record(mock_state, {data = [] :: [{'output', Message :: string()} | {'error', Message :: string()}], trace = [] :: [tuple()]}).
+-export([start/0, send_output/2, send_error/2, get_data/2, reset/1]).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
-start(Data) ->
-    gen_server:start_link(?MODULE, Data, []).
+start() ->
+    mock_server:execute(io_buffer, start, []).
 
-send_output(_Buffer, _Message) ->
-    ?assert(false).
+send_output(Buffer, Message) ->
+    mock_server:execute(io_buffer, send_output, [Buffer, Message]).
 
-send_error(_Buffer, _Message) ->
-    ?assert(false).
+send_error(Buffer, Message) ->
+    mock_server:execute(io_buffer, send_error, [Buffer, Message]).
 
 get_data(Buffer, DataType) ->
-    gen_server:call(Buffer, {get_data, DataType}).
+    mock_server:execute(io_buffer, get_data, [Buffer, DataType]).
 
-reset(_Buffer) ->
-    ?assert(false).
-
-init(Data) ->
-    {ok, #mock_state{data = Data}}.
-
-handle_call({get_data, both}, _From, State) ->
-    case State#mock_state.trace of
-        [] -> {reply, State#mock_state.data, #mock_state{data = [], trace = [{get_data, both}]}};
-        _Other -> ?assert(false)
-    end;
-handle_call(_Request, _From, _State) ->
-    ?assert(false).
-
-handle_cast(_Request, _State) ->
-    ?assert(false).
-
-handle_info(_Info, _State) ->
-    ?assert(false).
-
-terminate(_Reason, _State) -> ok.
-
-code_change(_OldVsn, State, _Extra) -> {ok, State}.
+reset(Buffer) ->
+    mock_server:execute(io_buffer, reset, [Buffer]).
 
 %% ====================================================================
 %% Internal functions

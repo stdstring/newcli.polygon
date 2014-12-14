@@ -2,85 +2,39 @@
 
 -module(client_handler_mock).
 
--behaviour(gen_server).
-
--include_lib("eunit/include/eunit.hrl").
-
--export([start/1, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1, send_output/2, send_error/2, finish_command/2]).
-%% gen_server export
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
-
--record(mock_state, {expected = [] :: [{Func :: atom(), Args :: ['any' | term()], Result :: term()}]}).
+-export([start/2, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1, send_output/2, send_error/2, finish_command/2]).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
-start(Expected) ->
-    gen_server:start_link(?MODULE, Expected, []).
+start(GlobalConfig, Endpoint) ->
+    mock_server:execute(client_handler, start, [GlobalConfig, Endpoint]).
 
-process_command(_Handler, _CommandLine) ->
-    ?assert(false).
+process_command(Handler, CommandLine) ->
+    mock_server:execute(client_handler, process_command, [Handler, CommandLine]).
 
-interrupt_command(_Handler) ->
-    ?assert(false).
+interrupt_command(Handler) ->
+    mock_server:execute(client_handler, interrupt_command, [Handler]).
 
-get_current_state(_Handler) ->
-    ?assert(false).
+get_current_state(Handler) ->
+    mock_server:execute(client_handler, get_current_state, [Handler]).
 
-get_extensions(_Handler, _CommandLine) ->
-    ?assert(false).
+get_extensions(Handler, CommandLine) ->
+    mock_server:execute(client_handler, get_extensions, [Handler, CommandLine]).
 
-send_output(_Handler, _Output) ->
-    ?assert(false).
+send_output(Handler, Output) ->
+    mock_server:execute(client_handler, send_output, [Handler, Output]).
 
-send_error(_Handler, _Error) ->
-    ?assert(false).
+send_error(Handler, Error) ->
+    mock_server:execute(client_handler, send_error, [Handler, Error]).
 
-finish_command(_Handler, _ReturnCode) ->
-    ?assert(false).
+finish_command(Handler, ReturnCode) ->
+    mock_server:execute(client_handler, finish_command, [Handler, ReturnCode]).
 
-exit(_Handler) ->
-    ?assert(false).
-
-init(_Args) ->
-    ?assert(false).
-
-handle_call(_Request, _From, _State) ->
-    ?assert(false).
-
-handle_cast(_Request, _State) ->
-    ?assert(false).
-
-handle_info(_Info, _State) ->
-    ?assert(false).
-
-terminate(_Reason, _State) -> ok.
-
-code_change(_OldVsn, State, _Extra) -> {ok, State}.
+exit(Handler) ->
+    mock_server:execute(client_handler, exit, [Handler]).
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
-
-check_expectation([{Func, ExpectedArgs, Result} | ExpectedRest], Func, ActualArgs) ->
-    case compare_args(ExpectedArgs, ActualArgs) of
-        true -> {true, Result, ExpectedRest};
-        false -> false
-    end;
-check_expectation(_Expected, _ActualFunc, _ActualArgs) -> false.
-
-compare_args([], []) -> true;
-compare_args(_ExpectedRest, []) -> false;
-compare_args([], _ActualRest) -> false;
-compare_args([Arg | ExpectedRest], [Arg | ActualRest]) -> compare_args(ExpectedRest, ActualRest);
-compare_args([any | ExpectedRest], [_Arg | ActualRest]) -> compare_args(ExpectedRest, ActualRest);
-compare_args(_Expected, _Actual) -> false.
-
-stop_mock(Mock, Timeout) ->
-    process_flag(trap_exit, true),
-    exit(Mock, stop_work),
-    receive
-        after Timeout -> ?assert(false)
-    end,
-    process_flag(trap_exit, false).
