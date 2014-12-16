@@ -7,18 +7,11 @@
 -include("code_generator_defs.hrl").
 -include("frame_defs.hrl").
 
--define(ENTRY_FUN, process).
 -define(PROCESS_BUFFER_FAIL_FUN, process_buffer_fail).
 -define(PROCESS_COMMAND_FUN, process_command).
 -define(PROCESS_SUCCESS_FUN, process_success).
 -define(PROCESS_FAIL_FUN, process_fail).
 -define(SEND_OUTPUT_FUN, send_output).
-%% TODO (std_string) : definition of the error message must be in other place
--define(BUFFER_START_FAIL_MESSAGE, "Buffer creation fails").
--define(UNSUITABLE_COMMAND_MESSAGE, "Unsuitable command").
--define(ACCESS_DENIED_MESSAGE, "Access denied").
--define(BAD_CONFIG_MESSAGE, "Bad authorization config").
--define(COMMAND_FAIL_MESSAGE, "Command fails with return code ").
 
 %% ====================================================================
 %% API functions
