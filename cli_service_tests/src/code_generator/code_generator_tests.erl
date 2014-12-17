@@ -89,17 +89,15 @@ create_expected_for_fail_command_exec() ->
      #expectation{source = io_buffer, func = get_data, args = [?BUFFER_REF, both], result = [{output, "IDDQD"}, {error, "IDKFA"}]},
      #expectation{source = client_handler, func = send_output, args = [?CLIENT_HANDLER_REF, "IDDQD"], result = ok},
      #expectation{source = client_handler, func = send_error, args = [?CLIENT_HANDLER_REF, "IDKFA"], result = ok},
-     %% TODO (std_string) : wrong args !!!!
-     #expectation{source = client_handler, func = send_error, args = [?CLIENT_HANDLER_REF, true], result = ok},
+     #expectation{source = client_handler, func = send_error, args = [?CLIENT_HANDLER_REF, ?COMMAND_FAIL_MESSAGE ++ "128"], result = ok},
      #expectation{source = client_handler, func = finish_command, args = [?CLIENT_HANDLER_REF, 128], result = ok}].
 
 create_expected_for_success_command_exec() ->
     [#expectation{source = io_buffer, func = start, args = [], result = {ok, ?BUFFER_REF}},
      #expectation{source = command_execution_checker, func = execution_precheck, args = [command_example, ?CLI_FSM_REF, ?USER], result = true},
      #expectation{source = command_module, func = execute, args = [["iddqd","666"]], result = 0},
+     #expectation{source = cli_fsm, func = process_command, args = [command_example, ?CLI_FSM_REF], result = ok},
      #expectation{source = io_buffer, func = get_data, args = [?BUFFER_REF, both], result = [{output, "IDDQD"}, {error, "IDKFA"}]},
      #expectation{source = client_handler, func = send_output, args = [?CLIENT_HANDLER_REF, "IDDQD"], result = ok},
      #expectation{source = client_handler, func = send_error, args = [?CLIENT_HANDLER_REF, "IDKFA"], result = ok},
-     #expectation{source = client_handler, func = finish_command, args = [?CLIENT_HANDLER_REF, 0], result = ok},
-     %% TODO (std_string) : wrong order
-     #expectation{source = cli_fsm, func = process_command, args = [command_example, ?CLI_FSM_REF], result = ok}].
+     #expectation{source = client_handler, func = finish_command, args = [?CLIENT_HANDLER_REF, 0], result = ok}].

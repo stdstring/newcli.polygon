@@ -51,9 +51,9 @@
 %%
 %% process_success(CliFsm, Buffer, ClientHandler) ->
 %%     process_flag(trap_exit, true),
+%%     cli_fsm:process_command(CliFsm, CommandName),
 %%     send_output(Buffer, ClientHandler),
 %%     client_handler:finish_command(ClientHandler, 0),
-%%     cli_fsm:process_command(CliFsm, CommandName),
 %%     process_flag(trap_exit, false).
 %%
 %% process_fail(Message, ReturnCode, Buffer, ClientHandler) ->
@@ -181,23 +181,23 @@ generate_arg_list([#argument{type = string, value = Value} | Rest], Result) ->
 generate_command_fail_message_command() ->
     %% Message = "Command failed with return code " ++ integer_to_list(ReturnCode)
     ReturnCodeStr = {call, 0, {remote, 0, {atom, 0, erlang}, {atom, 0, integer_to_list}}, [{var, 0, 'ReturnCode'}]},
-    {op, 0, '>', {string, 0, ?COMMAND_FAIL_MESSAGE}, ReturnCodeStr}.
+    {op, 0, '++', {string, 0, ?COMMAND_FAIL_MESSAGE}, ReturnCodeStr}.
 
 
 -spec generate_process_success_fun(CommandName :: atom(), ModuleDefs :: #module_defs{}) -> tuple().
 generate_process_success_fun(CommandName, ModuleDefs) ->
     %% process_success(CliFsm, Buffer, ClientHandler) ->
     %%     process_flag(trap_exit, true),
+    %%     cli_fsm:process_command(CliFsm, CommandName),
     %%     send_output(Buffer, ClientHandler),
     %%     client_handler:finish_command(ClientHandler, 0),
-    %%     cli_fsm:process_command(CliFsm, CommandName),
     %%     process_flag(trap_exit, false).
     SetupGuard = generate_trap_guard_command(true),
+    FsmNotification = generate_fsm_notification_command(CommandName, ModuleDefs),
     SendOutput = {call, 0, {atom, 0, ?SEND_OUTPUT_FUN}, [{var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}]},
     FinishCommand = generate_finish_command({integer, 0, 0}, ModuleDefs),
-    FsmNotification = generate_fsm_notification_command(CommandName, ModuleDefs),
     ReleaseGuard = generate_trap_guard_command(false),
-    Body = [SetupGuard, SendOutput, FinishCommand, FsmNotification, ReleaseGuard],
+    Body = [SetupGuard, FsmNotification, SendOutput, FinishCommand, ReleaseGuard],
     FunClause = {clause, 0, [{var, 0, 'CliFsm'}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}], [], Body},
     {function, 0, ?PROCESS_SUCCESS_FUN, 3, [FunClause]}.
 
