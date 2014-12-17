@@ -107,7 +107,7 @@ handle_call({extensions, _CommandLine}, _From, State) ->
     {reply, Extensions, State}.
 
 handle_cast(Request, State) ->
-    NewState = command_execution_context:process(Request, State),
+    NewState = command_executor:process(Request, State),
     {noreply, NewState}.
 
 %% command's normal exit

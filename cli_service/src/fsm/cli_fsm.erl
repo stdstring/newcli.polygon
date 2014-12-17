@@ -6,7 +6,6 @@
 -behaviour(gen_fsm).
 
 -include("cli_fsm_defs.hrl").
--include("common_defs.hrl").
 
 -export([start/1, process_command/2, get_current_state/1]).
 %% gen_fsm

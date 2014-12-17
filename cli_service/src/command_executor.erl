@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(command_execution_context).
+-module(command_executor).
 
 -include("common_defs.hrl").
 
