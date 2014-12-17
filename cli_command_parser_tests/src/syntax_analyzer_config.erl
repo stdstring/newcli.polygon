@@ -49,16 +49,16 @@ args_action(_NameTable, #syntax_process_state{current_frame = #command_frame{ite
     {true, #syntax_process_state{current_frame = NewCommandFrame}};
 args_action(NameTable, #syntax_process_state{current_frame = #command_frame{items = Items}}, ?END_TOKEN) ->
     case generate_result(lists:reverse(Items), NameTable) of
-        {true, Module, Function, Args} -> {true, #syntax_process_state{current_frame = undefined, result = {Module, Function, Args}}};
+        {true, Module, Args} -> {true, #syntax_process_state{current_frame = undefined, result = {Module, Args}}};
         false -> {false, command_not_found}
     end.
 
 -spec generate_result(Items :: [#frame_item{}], NameTable :: name_search_table()) ->
-    {'true', Module :: atom(), Function :: atom(), Args :: [term()]} | 'false'.
+    {'true', Module :: atom(), Args :: [term()]} | 'false'.
 generate_result(Items, NameTable) ->
     case frame_item_search:search_best(Items, NameTable) of
-        {true, Module, Function, RestItems} ->
+        {true, Module, RestItems} ->
             Args = lists:map(fun(#frame_item{value = Value}) -> Value end, RestItems),
-            {true, Module, Function, Args};
+            {true, Module, Args};
         false -> false
     end.

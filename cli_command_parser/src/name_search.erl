@@ -11,7 +11,7 @@
 %% ====================================================================
 
 -spec search(Words :: [string()], Table :: name_search_table()) ->
-    {'true', Module :: atom(), Func :: atom(), Rows :: name_search_table()} | {'incomplete', Rows :: name_search_table()} | 'false'.
+    {'true', Value :: term(), Rows :: name_search_table()} | {'incomplete', Rows :: name_search_table()} | 'false'.
 search(_Words, []) -> false;
 search(Words, Table) ->
     create_search_result(search_full_match(Words, Table), search_incomplete_match(Words, Table)).
@@ -20,30 +20,30 @@ search(Words, Table) ->
 %% Internal functions
 %% ====================================================================
 
--spec create_search_result(FullMatchResult :: {'true', Module :: atom(), Func :: atom()} | 'false',
+-spec create_search_result(FullMatchResult :: {'true', Value :: term()} | 'false',
                            IncompleteMatchResult :: {'incomplete', Other :: name_search_table()} | 'false') ->
-    {'true', Module :: atom(), Func :: atom(), Rows :: name_search_table()} | {'incomplete', Rows :: name_search_table()} | 'false'.
+    {'true', Value :: term(), Rows :: name_search_table()} | {'incomplete', Rows :: name_search_table()} | 'false'.
 create_search_result(false, false) -> false;
-create_search_result({true, Module, Func}, false) -> {true, Module, Func, []};
+create_search_result({true, Value}, false) -> {true, Value, []};
 create_search_result(false, {incomplete, Rows}) -> {incomplete, Rows};
-create_search_result({true, Module, Func}, {incomplete, Rows}) -> {true, Module, Func, Rows}.
+create_search_result({true, Value}, {incomplete, Rows}) -> {true, Value, Rows}.
 
 -spec search_incomplete_match(Words :: [string()], Table :: name_search_table()) ->
     {'incomplete', Other :: name_search_table()} | 'false'.
 search_incomplete_match(Words, Table) ->
-    Result = lists:filter(fun({Cond, _Module, _Func}) -> compare_words(Words, Cond) == incomplete end, Table),
+    Result = lists:filter(fun({Cond, _Value}) -> compare_words(Words, Cond) == incomplete end, Table),
     case Result of
         [] -> false;
         Other -> {incomplete, Other}
     end.
 
 -spec search_full_match(Words :: [string()], Table :: name_search_table()) ->
-    {'true', Module :: atom(), Func :: atom()} | 'false'.
+    {'true', Value :: term()} | 'false'.
 search_full_match(Words, Table) ->
-    Result = lists:filter(fun({Cond, _Module, _Func}) -> compare_words(Words, Cond) == true end, Table),
+    Result = lists:filter(fun({Cond, _Value}) -> compare_words(Words, Cond) == true end, Table),
     case Result of
         [] -> false;
-        [{_Cond, Module, Func}] -> {true, Module, Func}
+        [{_Cond, Value}] -> {true, Value}
     end.
 
 -spec compare_words(Words :: [string()], SearchItems :: [name_search_item()]) ->

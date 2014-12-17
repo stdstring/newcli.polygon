@@ -11,7 +11,7 @@
 -define(ENTRY_MODULE, test_entry_module).
 -define(ENTRY_FUNC, test_entry_func).
 -define(COMMAND_ARGS, [#argument{type = word, value = "iddqd"}, #argument{type = string, value = "666"}]).
--define(COMMAND, #command{module = command_mock, function = execute, arguments = ?COMMAND_ARGS}).
+-define(COMMAND, #command{module = command_mock, arguments = ?COMMAND_ARGS}).
 -define(BUFFER_REF, io_buffer_instance).
 -define(CLI_FSM_REF, cli_fsm_instance).
 -define(CLIENT_HANDLER_REF, client_handler_instance).

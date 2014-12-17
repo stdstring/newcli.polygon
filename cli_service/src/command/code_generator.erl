@@ -7,6 +7,7 @@
 -include("code_generator_defs.hrl").
 -include("frame_defs.hrl").
 
+-define(COMMAND_EXEC_FUN, execute).
 -define(PROCESS_BUFFER_FAIL_FUN, process_buffer_fail).
 -define(PROCESS_COMMAND_FUN, process_command).
 -define(PROCESS_SUCCESS_FUN, process_success).
@@ -143,7 +144,7 @@ generate_precheck_command(CommandName, ModuleDefs) ->
     {'case', 0, CaseExpr, [AccessDeniedClause, BadConfigClause, UnsuitableCommandClause, SuccessClause]}.
 
 -spec generate_process_command_fun(Command :: #command{}) -> tuple().
-generate_process_command_fun(#command{module = Module, function = Func, arguments =Args}) ->
+generate_process_command_fun(#command{module = Module, arguments =Args}) ->
     %% process_command(CliFsm, Buffer, ClientHandler) ->
     %%     case apply(CommandModule, execute, [Buffer, Buffer, CommandArgs]) of
     %%         0 ->
@@ -153,7 +154,7 @@ generate_process_command_fun(#command{module = Module, function = Func, argument
     %%             process_fail(Message, ReturnCode, Buffer, ClientHandler)
     %%     end.
     ArgsList = generate_arg_list(Args),
-    CaseExpr = {call, 0, {remote, 0, {atom, 0, Module}, {atom, 0, Func}}, [ArgsList]},
+    CaseExpr = {call, 0, {remote, 0, {atom, 0, Module}, {atom, 0, ?COMMAND_EXEC_FUN}}, [ArgsList]},
     SuccessBody = [{call, 0, {atom, 0, ?PROCESS_SUCCESS_FUN}, [{var, 0, 'CliFsm'}, {var, 0, 'Buffer'}, {var, 0, 'ClientHandler'}]}],
     SuccessClause = {clause, 0, [{atom, 0, 0}], [], SuccessBody},
     Message = generate_command_fail_message_command(),
