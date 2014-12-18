@@ -22,7 +22,7 @@ SOURCE=src/command/code_generator.erl \
        src/cli_terminal_listen_supervisor.erl \
        src/cli_terminal_supervisor.erl \
        src/client_handler.erl \
-       src/command_execution_context.erl
+       src/command_executor.erl
 
 INCLUDE_FLAGS=-I include -I ../cli_command_parser_include
 

@@ -10,4 +10,4 @@
 -record(cli_terminal_state, {socket = undefined :: 'undefined' | term(), client_handler = undefined :: 'undefined' | pid()}).
 -record(client_handler_state, {config :: #global_config{}, endpoint = undefined :: 'undefined' | pid()}).
 
--record(command_exec_context, {user = undefined :: 'undefined' | #User{}, settings = undefined :: 'undefined' | dict()}).
+-record(command_exec_context, {user = undefined :: 'undefined' | #user{}, settings = undefined :: 'undefined' | dict()}).
