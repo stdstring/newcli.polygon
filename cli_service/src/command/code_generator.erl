@@ -35,7 +35,7 @@
 %%     case io_buffer:start() of
 %%         {error, Reason} -> process_buffer_fail(ClientHandler, Context);
 %%         {ok, Buffer} ->
-%%             User = case dict:find(user, Context)) of {ok, Value} -> Value; error -> undefined end,
+%%             User = case lists:keyfind(user, 1, Context)) of false -> undefined; {user, Value} -> Value end,
 %%             case command_execution_checker:execution_precheck(CommandNam, CliFsm, User) of
 %%                 {false, access_denied} -> process_fail("access denied message", 255, Buffer, ClientHandler, Context);
 %%                 {false, authorization_bad_config} -> process_fail("bad config message", 255, Buffer, ClientHandler, Context);
@@ -111,7 +111,7 @@ generate_entry_func(CommandName, ModuleDefs, EntryFunName) ->
     %%     case io_buffer:start() of
     %%         {error, Reason} -> process_buffer_fail(ClientHandler, Context);
     %%         {ok, Buffer} ->
-    %%             User = case dict:find(user, Context)) of {ok, Value} -> Value; error -> undefined end,
+    %%             User = case lists:keyfind(user, 1, Context)) of false -> undefined; {user, Value} -> Value end,
     %%             case command_execution_checker:execution_precheck(CommandNam, CliFsm, dict:fetch(user, Context)) of
     %%                 {false, access_denied} -> process_fail("access denied message", 255, Buffer, ClientHandler, Context);
     %%                 {false, authorization_bad_config} -> process_fail("bad config message", 255, Buffer, ClientHandler, Context);
@@ -132,7 +132,7 @@ generate_entry_func(CommandName, ModuleDefs, EntryFunName) ->
 
 -spec generate_precheck_command(CommandName :: atom(), ModuleDefs :: #module_defs{}) -> tuple().
 generate_precheck_command(CommandName, ModuleDefs) ->
-    %% User = case dict:find(user, Context)) of {ok, Value} -> Value; error -> undefined end,
+    %% User = case lists:keyfind(user, 1, Context)) of false -> undefined; {user, Value} -> Value end,
     %% case command_execution_checker:execution_precheck(CommandName, CliFsm, dict:fetch(user, Context)) of
     %%     {false, access_denied} -> process_fail("access denied message", 255, Buffer, ClientHandler, Context);
     %%     {false, authorization_bad_config} -> process_fail("bad config message", 255, Buffer, ClientHandler, Context);
@@ -160,12 +160,12 @@ generate_precheck_command(CommandName, ModuleDefs) ->
 
 -spec generate_find_user_command() -> tuple().
 generate_find_user_command() ->
-    %% User = case dict:find(user, Context)) of {ok, Value} -> Value; error -> undefined end,
-    CaseExpr = {call, 0, {remote, 0, {atom, 0, dict}, {atom, 0, find}}, [{atom, 0, ?USER_KEY}, ?CONTEXT]},
-    FoundPattern = [{tuple, 0, [{atom, 0, ok}, {var, 0, 'Value'}]}],
+    %% User = case lists:keyfind(user, 1, Context)) of false -> undefined; {user, Value} -> Value end,
+    CaseExpr = {call, 0, {remote, 0, {atom, 0, lists}, {atom, 0, keyfind}}, [{atom, 0, ?USER_KEY}, {integer, 0, 1}, ?CONTEXT]},
+    NotFoundClause = {clause, 0, [{atom, 0, false}], [], [{atom, 0, undefined}]},
+    FoundPattern = [{tuple, 0, [{atom, 0, ?USER_KEY}, {var, 0, 'Value'}]}],
     FoundClause = {clause, 0, FoundPattern, [], [{var, 0, 'Value'}]},
-    NotFoundClause = {clause, 0, [{atom, 0, error}], [], [{atom, 0, undefined}]},
-    {'case', 0, CaseExpr, [FoundClause, NotFoundClause]}.
+    {'case', 0, CaseExpr, [NotFoundClause, FoundClause]}.
 
 -spec generate_process_command_fun(Command :: #command{}) -> tuple().
 generate_process_command_fun(#command{module = Module, arguments =Args}) ->

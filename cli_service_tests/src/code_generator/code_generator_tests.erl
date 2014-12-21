@@ -18,9 +18,9 @@
 -define(CLI_FSM_REF, cli_fsm_instance).
 -define(CLIENT_HANDLER_REF, client_handler_instance).
 -define(USER, #user{uid = 666, username = "superuser", access_level = 11}).
--define(CONTEXT_WITHOUT_USER, dict:from_list([{some_key, some_value}])).
--define(CONTEXT, dict:from_list([{?USER_KEY, ?USER}])).
--define(CHANGED_CONTEXT, dict:from_list([{?USER_KEY, ?USER}, {some_key, some_value}])).
+-define(CONTEXT_WITHOUT_USER, [{some_key, some_value}]).
+-define(CONTEXT, [{?USER_KEY, ?USER}]).
+-define(CHANGED_CONTEXT, [{?USER_KEY, ?USER}, {some_key, some_value}]).
 
 -record(test_state, {binary = <<>> :: binary()}).
 
