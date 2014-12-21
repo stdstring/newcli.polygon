@@ -4,7 +4,6 @@
 
 -behaviour(gen_server).
 
--include("authentication_defs.hrl").
 -include("common_defs.hrl").
 
 %%-define(DEVICE_NAME, "CliDemo").

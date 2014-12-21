@@ -2,7 +2,6 @@
 
 -module(command_executor).
 
--include("authentication_defs.hrl").
 -include("common_defs.hrl").
 
 -define(EXEC_FAILED, "Command execution failed. Return code is ~w\n").

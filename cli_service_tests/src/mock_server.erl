@@ -76,7 +76,9 @@ check_expectation([], _Source, _ActualFunc, _ActualArgs) -> false;
 check_expectation([#expectation{source = Source, func = Func, args = Args, result = Result} | Rest], Source, Func, ActualArgs) ->
     case compare_args(Args, ActualArgs) of
         true -> {true, Result, Rest};
-        false -> false
+        false ->
+            %%?debugFmt("expected = \"~p\", func = \"~p\", args = ~p fails~n", [Source, Func, Args]),
+            false
     end;
 check_expectation(_Expected, _Source, _ActualFunc, _ActualArgs) -> false.
 

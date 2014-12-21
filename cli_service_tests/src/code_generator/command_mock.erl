@@ -2,7 +2,7 @@
 
 -module(command_mock).
 
--export([get_name/0, execute/1]).
+-export([get_name/0, execute/4]).
 
 %% ====================================================================
 %% API functions
@@ -11,8 +11,8 @@
 get_name() ->
     command_example.
 
-execute(Args) ->
-    mock_server:execute(command_module, execute, [Args]).
+execute(CommandArgs, Stdout, Stderr, Context) ->
+    mock_server:execute(command_module, execute, [CommandArgs, Stdout, Stderr, Context]).
 
 %% ====================================================================
 %% Internal functions
