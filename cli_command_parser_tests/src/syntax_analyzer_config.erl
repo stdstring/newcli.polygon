@@ -27,29 +27,29 @@ create(NameTable) ->
             {{?ARGS, ?WORD_TEMPLATE}, {[?WORD_TERM, ?ARGS], ?ARGS_ACTION}},
             {{?ARGS, ?STRING_TEMPLATE}, {[?STRING_TERM, ?ARGS], ?ARGS_ACTION}},
             {{?ARGS, ?END_TOKEN}, {[?END_TERM], ?ARGS_ACTION}}],
-    #syntax_analyzer_config{syntax_table =  dict:from_list(Table), start_symbol = ?COMMAND, name_table = NameTable}.
+    #syntax_analyzer_config{syntax_table =  dict:from_list(Table), start_symbol = ?COMMAND, production_config = NameTable}.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
--spec command_action(NameTable :: name_search_table(), State :: #syntax_process_state{}, Token :: #token{}) ->
-    {'true', State :: #syntax_process_state{}} | {'false', Reason :: term()}.
-command_action(_NameTable, #syntax_process_state{current_frame = undefined}, ?WORD_TOKEN(Word)) ->
+-spec command_action(NameTable :: term(), State :: 'undefined' | term(), Token :: #token{}) ->
+    {'true', State :: term()} | {'false', Reason :: term()}.
+command_action(_NameTable, undefined, ?WORD_TOKEN(Word)) ->
     CommandFrame = #command_frame{items = [#frame_item{type = word, value = Word}]},
-    {true, #syntax_process_state{current_frame = CommandFrame}}.
+    {true, CommandFrame}.
 
--spec args_action(NameTable :: name_search_table(), State :: #syntax_process_state{}, Token :: #token{}) ->
-    {'true', State :: #syntax_process_state{}} | {'false', Reason :: term()}.
-args_action(_NameTable, #syntax_process_state{current_frame = #command_frame{items = Items}}, ?WORD_TOKEN(Word)) ->
+-spec args_action(NameTable :: term(), State :: term(), Token :: #token{}) ->
+    {'true', State :: term()} | {'false', Reason :: term()}.
+args_action(_NameTable, #command_frame{items = Items}, ?WORD_TOKEN(Word)) ->
     NewCommandFrame = #command_frame{items = [#frame_item{type = word, value = Word}] ++ Items},
-    {true, #syntax_process_state{current_frame = NewCommandFrame}};
-args_action(_NameTable, #syntax_process_state{current_frame = #command_frame{items = Items}}, ?STRING_TOKEN(String)) ->
+    {true, NewCommandFrame};
+args_action(_NameTable, #command_frame{items = Items}, ?STRING_TOKEN(String)) ->
     NewCommandFrame = #command_frame{items = [#frame_item{type = string, value = String}] ++ Items},
-    {true, #syntax_process_state{current_frame = NewCommandFrame}};
-args_action(NameTable, #syntax_process_state{current_frame = #command_frame{items = Items}}, ?END_TOKEN) ->
+    {true, NewCommandFrame};
+args_action(NameTable, #command_frame{items = Items}, ?END_TOKEN) ->
     case generate_result(lists:reverse(Items), NameTable) of
-        {true, Module, Args} -> {true, #syntax_process_state{current_frame = undefined, result = {Module, Args}}};
+        {true, Module, Args} -> {true, {Module, Args}};
         false -> {false, command_not_found}
     end.
 

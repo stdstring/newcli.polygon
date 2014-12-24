@@ -10,8 +10,8 @@
 -include("authentication_defs.hrl").
 -include("command_defs.hrl").
 
--define(ENTRY_MODULE, test_entry_module).
--define(ENTRY_FUNC, test_entry_func).
+-define(TEST_ENTRY_MODULE, test_entry_module).
+-define(TEST_ENTRY_FUNC, test_entry_func).
 -define(COMMAND_ARGS, [#argument{type = word, value = "iddqd"}, #argument{type = string, value = "666"}]).
 -define(COMMAND, #command{module = command_mock, arguments = ?COMMAND_ARGS}).
 -define(BUFFER_REF, io_buffer_instance).
@@ -33,7 +33,7 @@ compilation_test() ->
                              client_handler_module = client_handler_mock,
                              cli_fsm_module = cli_fsm_mock,
                              exec_checker_module = command_execution_checker_mock},
-    {true, Binary} = code_generator:generate(?ENTRY_MODULE, ?ENTRY_FUNC, ?COMMAND, ModuleDefs),
+    {true, Binary} = code_generator:generate(?TEST_ENTRY_MODULE, ?TEST_ENTRY_FUNC, ?COMMAND, ModuleDefs),
     ?assert(is_binary(Binary)).
 
 generate_test_() ->
@@ -77,7 +77,7 @@ setup() ->
                              client_handler_module = client_handler_mock,
                              cli_fsm_module = cli_fsm_mock,
                              exec_checker_module = command_execution_checker_mock},
-    {true, Binary} = code_generator:generate(?ENTRY_MODULE, ?ENTRY_FUNC, ?COMMAND, ModuleDefs),
+    {true, Binary} = code_generator:generate(?TEST_ENTRY_MODULE, ?TEST_ENTRY_FUNC, ?COMMAND, ModuleDefs),
     #test_state{binary = Binary}.
 
 cleanup(_State) ->
@@ -85,8 +85,8 @@ cleanup(_State) ->
 
 check(ExpectedBehavior, ExpectedResult, State, Context) ->
     mock_server:set_expected(ExpectedBehavior),
-    {module, ?ENTRY_MODULE} = code:load_binary(?ENTRY_MODULE, [], State#test_state.binary),
-    ActualResult = ?ENTRY_MODULE:?ENTRY_FUNC(?CLI_FSM_REF, ?CLIENT_HANDLER_REF, Context),
+    {module, ?TEST_ENTRY_MODULE} = code:load_binary(?TEST_ENTRY_MODULE, [], State#test_state.binary),
+    ActualResult = ?TEST_ENTRY_MODULE:?TEST_ENTRY_FUNC(?CLI_FSM_REF, ?CLIENT_HANDLER_REF, Context),
     ?assertEqual(ExpectedResult, ActualResult),
     mock_server:check_finish().
 

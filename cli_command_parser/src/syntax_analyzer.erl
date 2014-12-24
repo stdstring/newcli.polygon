@@ -4,9 +4,7 @@
 
 -export([process/2]).
 
--include("frame_defs.hrl").
 -include("lexical_defs.hrl").
--include("name_search_defs.hrl").
 -include("syntax_defs.hrl").
 
 %% ====================================================================
@@ -17,7 +15,7 @@
     {'true', Result :: term()} | {'false', Reason :: term()}.
 process(TokenList, Config) ->
     StartSymbol = Config#syntax_analyzer_config.start_symbol,
-    process_impl(TokenList, [StartSymbol], Config, #syntax_process_state{}).
+    process_impl(TokenList, [StartSymbol], Config, undefined).
 
 %% ====================================================================
 %% Internal functions
@@ -26,9 +24,9 @@ process(TokenList, Config) ->
 -spec process_impl(TokenList :: [#token{}],
                    ProcessStack :: syntax_process_stack(),
                    Config :: #syntax_analyzer_config{},
-                   ProcessState :: #syntax_process_state{}) ->
+                   ProcessState :: term()) ->
     {'true', Result :: term()} | {'false', Reason :: term()}.
-process_impl([], [], _Config, #syntax_process_state{result = Result}) -> {true, Result};
+process_impl([], [], _Config, Result) -> {true, Result};
 process_impl([], _ProcessStack, _Config, _ProcessState) -> {false, bad_token};
 process_impl(TokenList, ProcessStack, Config, ProcessState) ->
     case process_token(TokenList, ProcessStack, Config, ProcessState) of
@@ -39,8 +37,8 @@ process_impl(TokenList, ProcessStack, Config, ProcessState) ->
 -spec process_token(TokenList :: [#token{}],
                     ProcessStack :: syntax_process_stack(),
                     Config :: #syntax_analyzer_config{},
-                    ProcessState :: #syntax_process_state{}) ->
-    {TokenList :: [#token{}], ProcessStack :: syntax_process_stack(), ProcessState :: #syntax_process_state{}} | {'false', Reason :: term()}.
+                    ProcessState :: term()) ->
+    {TokenList :: [#token{}], ProcessStack :: syntax_process_stack(), ProcessState :: term()} | {'false', Reason :: term()}.
 process_token([Token | TokenListRest], [#terminal{type = Type, value = Value} | ProcessStackRest], _Config, ProcessState) ->
     case check_terminal(Token, #terminal{type = Type, value = Value}) of
         true ->
@@ -49,10 +47,10 @@ process_token([Token | TokenListRest], [#terminal{type = Type, value = Value} | 
     end;
 process_token([Token | _] = TokenList, [#nonterminal{name = Name} | ProcessStackRest], Config, ProcessState) ->
     SyntaxTable = Config#syntax_analyzer_config.syntax_table,
-    NameTable = Config#syntax_analyzer_config.name_table,
+    ProductionConfig = Config#syntax_analyzer_config.production_config,
     case find_production(#nonterminal{name = Name}, Token, SyntaxTable) of
         {ok, Production} ->
-            case process_production(Token, Production, ProcessStackRest, NameTable, ProcessState) of
+            case process_production(Token, Production, ProcessStackRest, ProductionConfig, ProcessState) of
                 {true, NewProcessStack, NewProcessState} -> {TokenList, NewProcessStack, NewProcessState};
                 {false, Reason} -> {false, Reason}
             end;
@@ -81,11 +79,11 @@ find_production(Nonterminal, Token, SyntaxTable) ->
 -spec process_production(Token :: #token{},
                          {Production :: syntax_production(), Action :: syntax_production_action()},
                          ProcessStack :: syntax_process_stack(),
-                         NameTable :: name_search_table(),
-                         ProcessState :: #syntax_process_state{}) ->
-    {'true', ProcessStack :: syntax_process_stack(), ProcessState :: #syntax_process_state{}} | {'false', Reason :: term()}.
-process_production(Token, {Production, Action}, ProcessStack, NameTable, ProcessState) ->
-    case Action(NameTable, ProcessState, Token) of
+                         ProductionConfig :: term(),
+                         ProcessState :: term()) ->
+    {'true', ProcessStack :: syntax_process_stack(), ProcessState :: term()} | {'false', Reason :: term()}.
+process_production(Token, {Production, Action}, ProcessStack, ProductionConfig, ProcessState) ->
+    case Action(ProductionConfig, ProcessState, Token) of
         {true, NewProcessState} ->
             NewProcessStack = Production ++ ProcessStack,
             {true, NewProcessStack, NewProcessState};

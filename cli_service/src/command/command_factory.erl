@@ -6,7 +6,6 @@
 
 -include("frame_defs.hrl").
 -include("lexical_defs.hrl").
--include("name_search_defs.hrl").
 -include("syntax_defs.hrl").
 -include("code_generator_defs.hrl").
 -include("command_defs.hrl").
