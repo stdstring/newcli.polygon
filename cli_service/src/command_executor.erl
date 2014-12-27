@@ -24,7 +24,7 @@ process({?FINISH_COMMAND, _ReturnCode, _ExecutionState}, State) ->
     State;
 process({?FINISH_EXEC, 0, _ExecutionState}, State) ->
     NewState = State#client_handler_state{},
-    process_next_command(NewState);
+    NewState;
 %%process({command_end, ExecutionState, ReturnCode}, State) ->
 %%    Error = message_helper:format(?EXEC_FAILED, [ReturnCode]),
 %%    NewState = State#client_handler_state{execution_state = ExecutionState, command_chain = []},
@@ -66,7 +66,3 @@ process(?INTERRUPT, State) ->
 %%            Command = apply(Module, execute, [CommandLineRest, ClientHandler, ExecutionState]),
 %%            State#client_handler_state{command_chain = Rest, current_command = Command}
 %%    end.
-
--spec process_next_command(State :: #client_handler_state{}) -> #client_handler_state{}.
-process_next_command(State) ->
-    State.

@@ -3,6 +3,7 @@ EBIN=ebin
 SOURCE=src/command/code_generator.erl \
        src/command/command_execution_checker.erl \
        src/command/command_factory.erl \
+       src/command/command_helper.erl \
        src/command/io_buffer.erl \
        src/command/lex_analyzer_config.erl \
        src/command/syntax_analyzer_config.erl \
@@ -15,6 +16,7 @@ SOURCE=src/command/code_generator.erl \
        src/utils/config_utils.erl \
        src/utils/crypto_utils.erl \
        src/utils/erlang_term_utils.erl \
+       src/utils/string_utils.erl \
        src/cli_service_application.erl \
        src/cli_service_supervisor.erl \
        src/cli_terminal_endpoint.erl \
