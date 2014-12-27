@@ -47,7 +47,7 @@
 %% process_buffer_fail(ClientHandler, Context) ->
 %%     process_flag(trap_exit, true),
 %%     client_handler:send_error(ClientHandler, "buffer initialization message"),
-%%     client_handler:finish_command(ClientHandler, 255)
+%%     client_handler:finish_exec(ClientHandler, 255)
 %%     process_flag(trap_exit, false),
 %%     {255, Context}.
 %%
@@ -64,7 +64,7 @@
 %%     process_flag(trap_exit, true),
 %%     cli_fsm:process_command(CliFsm, CommandName),
 %%     send_output(Buffer, ClientHandler),
-%%     client_handler:finish_command(ClientHandler, 0),
+%%     client_handler:finish_exec(ClientHandler, 0),
 %%     process_flag(trap_exit, false),
 %%     {0, Context}.
 %%
@@ -72,7 +72,7 @@
 %%     process_flag(trap_exit, true),
 %%     send_output(Buffer, ClientHandler),
 %%     client_handler:send_error(ClientHandler, Message),
-%%     client_handler:finish_command(ClientHandler, ReturnValue),
+%%     client_handler:finish_exec(ClientHandler, ReturnValue),
 %%     process_flag(trap_exit, false),
 %%     {ReturnValue, Context}.
 %%
@@ -217,16 +217,16 @@ generate_process_success_fun(CommandName, ModuleDefs) ->
     %%     process_flag(trap_exit, true),
     %%     cli_fsm:process_command(CliFsm, CommandName),
     %%     send_output(Buffer, ClientHandler),
-    %%     client_handler:finish_command(ClientHandler, 0),
+    %%     client_handler:finish_exec(ClientHandler, 0),
     %%     process_flag(trap_exit, false),
     %%     {0, Context}.
     SetupGuard = generate_trap_guard_command(true),
     FsmNotification = generate_fsm_notification_command(CommandName, ModuleDefs),
     SendOutput = {call, 0, {atom, 0, ?SEND_OUTPUT_FUN}, [?BUFFER, ?CLIENT_HANDLER]},
-    FinishCommand = generate_finish_command({integer, 0, 0}, ModuleDefs),
+    FinishExec = generate_finish_exec({integer, 0, 0}, ModuleDefs),
     ReleaseGuard = generate_trap_guard_command(false),
     ReturnValue = {tuple, 0, [{integer, 0, 0}, ?CONTEXT]},
-    Body = [SetupGuard, FsmNotification, SendOutput, FinishCommand, ReleaseGuard, ReturnValue],
+    Body = [SetupGuard, FsmNotification, SendOutput, FinishExec, ReleaseGuard, ReturnValue],
     FunClause = {clause, 0, [?CLI_FSM, ?BUFFER, ?CLIENT_HANDLER, ?CONTEXT], [], Body},
     {function, 0, ?PROCESS_SUCCESS_FUN, 4, [FunClause]}.
 
@@ -235,15 +235,15 @@ generate_process_buffer_fail_fun(ModuleDefs) ->
     %% process_buffer_fail(ClientHandler, Context) ->
     %%     process_flag(trap_exit, true),
     %%     client_handler:send_error(ClientHandler, "buffer initialization message"),
-    %%     client_handler:finish_command(ClientHandler, 255)
+    %%     client_handler:finish_exec(ClientHandler, 255)
     %%     process_flag(trap_exit, false),
     %%     {255, Context}.
     SetupGuard = generate_trap_guard_command(true),
     SendErrorCall = generate_send_error_command(ModuleDefs, {string, 0, ?BUFFER_START_FAIL_MESSAGE}),
-    FinishCommand = generate_finish_command({integer, 0, 255}, ModuleDefs),
+    FinishExec = generate_finish_exec({integer, 0, 255}, ModuleDefs),
     ReleaseGuard = generate_trap_guard_command(false),
     ReturnValue = {tuple, 0, [{integer, 0, 255}, ?CONTEXT]},
-    Body = [SetupGuard, SendErrorCall, FinishCommand, ReleaseGuard, ReturnValue],
+    Body = [SetupGuard, SendErrorCall, FinishExec, ReleaseGuard, ReturnValue],
     FunClause = {clause, 0, [?CLIENT_HANDLER, ?CONTEXT], [], Body},
     {function, 0, ?PROCESS_BUFFER_FAIL_FUN, 2, [FunClause]}.
 
@@ -253,16 +253,16 @@ generate_process_fail_fun(ModuleDefs) ->
     %%     process_flag(trap_exit, true),
     %%     send_output(Buffer, ClientHandler),
     %%     client_handler:send_error(ClientHandler, Message),
-    %%     client_handler:finish_command(ClientHandler, ReturnValue),
+    %%     client_handler:finish_exec(ClientHandler, ReturnValue),
     %%     process_flag(trap_exit, false),
     %%     {ReturnValue, Context}.
     SetupGuard = generate_trap_guard_command(true),
     SendOutput = {call, 0, {atom, 0, ?SEND_OUTPUT_FUN}, [?BUFFER, ?CLIENT_HANDLER]},
     SendErrorCall = generate_send_error_command(ModuleDefs),
-    FinishCommand = generate_finish_command(?RETURN_VALUE, ModuleDefs),
+    FinishExec = generate_finish_exec(?RETURN_VALUE, ModuleDefs),
     ReleaseGuard = generate_trap_guard_command(false),
     ReturnValue = {tuple, 0, [?RETURN_VALUE, ?CONTEXT]},
-    Body = [SetupGuard, SendOutput, SendErrorCall, FinishCommand, ReleaseGuard, ReturnValue],
+    Body = [SetupGuard, SendOutput, SendErrorCall, FinishExec, ReleaseGuard, ReturnValue],
     FunClause = {clause, 0, [?MESSAGE, ?RETURN_VALUE, ?BUFFER, ?CLIENT_HANDLER, ?CONTEXT], [], Body},
     {function, 0, ?PROCESS_FAIL_FUN, 5, [FunClause]}.
 
@@ -308,11 +308,11 @@ generate_send_output_fun(ModuleDefs) ->
     FunClause = {clause, 0, [?BUFFER, ?CLIENT_HANDLER], [], Body},
     {function, 0, ?SEND_OUTPUT_FUN, 2, [FunClause]}.
 
--spec generate_finish_command(ReturnValue :: tuple(), ModuleDefs :: #module_defs{}) -> tuple().
-generate_finish_command(ReturnValue, ModuleDefs) ->
-    %% client_handler:finish_command(ClientHandler, ReturnValue),
-    FinishCommandArgs = [?CLIENT_HANDLER, ReturnValue],
-    {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.client_handler_module}, {atom, 0, finish_command}}, FinishCommandArgs}.
+-spec generate_finish_exec(ReturnValue :: tuple(), ModuleDefs :: #module_defs{}) -> tuple().
+generate_finish_exec(ReturnValue, ModuleDefs) ->
+    %% client_handler:finish_exec(ClientHandler, ReturnValue),
+    FinishExecArgs = [?CLIENT_HANDLER, ReturnValue, ?CONTEXT],
+    {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.client_handler_module}, {atom, 0, finish_exec}}, FinishExecArgs}.
 
 -spec generate_trap_guard_command(TrapExit :: boolean) -> tuple().
 generate_trap_guard_command(TrapExit) ->

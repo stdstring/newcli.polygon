@@ -2,6 +2,7 @@
 
 -module(command_executor).
 
+-include("client_handler_defs.hrl").
 -include("common_defs.hrl").
 
 -define(EXEC_FAILED, "Command execution failed. Return code is ~w\n").
@@ -13,13 +14,15 @@
 %% ====================================================================
 
 -spec process(Message :: term(), State :: #client_handler_state{}) -> #client_handler_state{}.
-process({command_out, Output}, State) ->
+process({?COMMAND_OUTPUT, Output}, State) ->
     command_helper:send_output(State, Output),
     State;
-process({command_err, Error}, State) ->
+process({?COMMAND_ERROR, Error}, State) ->
     command_helper:send_error(State, Error),
     State;
-process({command_end, 0}, State) ->
+process({?FINISH_COMMAND, _ReturnCode, _ExecutionState}, State) ->
+    State;
+process({?FINISH_EXEC, 0, _ExecutionState}, State) ->
     NewState = State#client_handler_state{},
     process_next_command(NewState);
 %%process({command_end, ExecutionState, ReturnCode}, State) ->
@@ -28,7 +31,7 @@ process({command_end, 0}, State) ->
 %%    command_helper:send_error(NewState, Error),
 %%    command_helper:send_end(NewState),
 %%    NewState;
-process({command_end, ReturnCode}, State) ->
+process({?FINISH_EXEC, ReturnCode, _ExecutionState}, State) ->
     Error = message_helper:format(?EXEC_FAILED, [ReturnCode]),
     NewState = State#client_handler_state{},
     command_helper:send_error(NewState, Error),
@@ -42,7 +45,7 @@ process({command_end, ReturnCode}, State) ->
 %%    NewState = State#client_handler_state{command_chain = [], current_command = undefined},
 %%    command_helper:send_end(NewState),
 %%    NewState.
-process(interrupt_command, State) ->
+process(?INTERRUPT, State) ->
     NewState = State#client_handler_state{},
     command_helper:send_end(NewState),
     NewState.

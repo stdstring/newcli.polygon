@@ -4,12 +4,14 @@
 
 -behaviour(gen_server).
 
+-include("client_handler_defs.hrl").
 -include("common_defs.hrl").
 
 %%-define(DEVICE_NAME, "CliDemo").
 -define(PARSER_ERROR, "Command's parsing is failed due to the following: ~w\n").
 
--export([start/2, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1, send_output/2, send_error/2, finish_command/2]).
+-export([start/2, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1]).
+-export([send_output/2, send_error/2, finish_command/3, finish_exec/3]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -23,39 +25,39 @@ start(GlobalConfig, Endpoint) ->
 
 -spec process_command(Handler :: pid(), CommandLine :: string()) -> boolean().
 process_command(Handler, CommandLine) ->
-    gen_server:call(Handler, {process_command, CommandLine}).
+    gen_server:call(Handler, {?PROCESS, CommandLine}).
 
 -spec interrupt_command(Handler :: pid()) -> 'ok'.
 interrupt_command(Handler) ->
-    gen_server:cast(Handler, interrupt_command).
+    gen_server:cast(Handler, ?INTERRUPT).
 
 -spec get_current_state(Handler :: pid()) -> string().
 get_current_state(Handler) ->
-    gen_server:call(Handler, current_state).
+    gen_server:call(Handler, ?CURRENT_STATE).
 
 -spec get_extensions(Handler :: pid(), CommandLine :: string()) -> [string()].
 get_extensions(Handler, CommandLine) ->
-    gen_server:call(Handler, {extensions, CommandLine}).
-
--spec send_output(Handler :: pid(), Output :: string()) -> 'ok'.
-send_output(Handler, Output) ->
-    gen_server:cast(Handler, {command_out, Output}).
-
--spec send_error(Handler :: pid(), Error :: string()) -> 'ok'.
-send_error(Handler, Error) ->
-    gen_server:cast(Handler, {command_err, Error}).
-
-%%-spec finish_command(Handler :: pid(), ExecutionState :: #execution_state{}, ReturnCode :: integer()) -> ok.
-%%finish_command(Handler, ExecutionState, ReturnCode) ->
-%%    gen_server:cast(Handler, {command_end, ExecutionState, ReturnCode}).
-
--spec finish_command(Handler :: pid(), ReturnCode :: integer()) -> 'ok'.
-finish_command(Handler, ReturnCode) ->
-    gen_server:cast(Handler, {command_end, ReturnCode}).
+    gen_server:call(Handler, {?EXTENSIONS, CommandLine}).
 
 -spec exit(Handler :: pid()) -> 'ok'.
 exit(Handler) ->
-    gen_server:cast(Handler, exit).
+    gen_server:cast(Handler, ?EXIT).
+
+-spec send_output(Handler :: pid(), Output :: string()) -> 'ok'.
+send_output(Handler, Output) ->
+    gen_server:cast(Handler, {?COMMAND_OUTPUT, Output}).
+
+-spec send_error(Handler :: pid(), Error :: string()) -> 'ok'.
+send_error(Handler, Error) ->
+    gen_server:cast(Handler, {?COMMAND_ERROR, Error}).
+
+-spec finish_command(Handler :: pid(), ReturnCode :: integer(), ExecutionState :: [{Key :: atom(), Value :: term()}]) -> 'ok'.
+finish_command(Handler, ReturnCode, ExecutionState) ->
+    gen_server:cast(Handler, {?FINISH_COMMAND, ReturnCode, ExecutionState}).
+
+-spec finish_exec(Handler :: pid(), ReturnCode :: integer(), ExecutionState :: [{Key :: atom(), Value :: term()}]) -> 'ok'.
+finish_exec(Handler, ReturnCode, ExecutionState) ->
+    gen_server:cast(Handler, {?FINISH_EXEC, ReturnCode, ExecutionState}).
 
 %%init([GlobalConfig, Endpoint]) ->
 %%    %% for catching exit signals from commands
@@ -97,12 +99,12 @@ init([GlobalConfig, Endpoint]) ->
 %%    Extensions = Generator(CommandLine),
 %%    {reply, Extensions, State}.
 
-handle_call({process_command, _CommandLine}, _From, State) ->
+handle_call({?PROCESS, _CommandLine}, _From, State) ->
     {reply, true, State};
-handle_call(current_state, _From, State) ->
+handle_call(?CURRENT_STATE, _From, State) ->
     Prompt = "",
     {reply, Prompt, State};
-handle_call({extensions, _CommandLine}, _From, State) ->
+handle_call({?EXTENSIONS, _CommandLine}, _From, State) ->
     Extensions = [],
     {reply, Extensions, State}.
 

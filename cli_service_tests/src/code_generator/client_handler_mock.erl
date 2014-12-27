@@ -2,7 +2,8 @@
 
 -module(client_handler_mock).
 
--export([start/2, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1, send_output/2, send_error/2, finish_command/2]).
+-export([start/2, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1]).
+-export([send_output/2, send_error/2, finish_command/3, finish_exec/3]).
 
 %% ====================================================================
 %% API functions
@@ -29,8 +30,11 @@ send_output(Handler, Output) ->
 send_error(Handler, Error) ->
     mock_server:execute(client_handler, send_error, [Handler, Error]).
 
-finish_command(Handler, ReturnCode) ->
-    mock_server:execute(client_handler, finish_command, [Handler, ReturnCode]).
+finish_command(Handler, ReturnCode, ExecutionState) ->
+    mock_server:execute(client_handler, finish_command, [Handler, ReturnCode, ExecutionState]).
+
+finish_exec(Handler, ReturnCode, ExecutionState) ->
+    mock_server:execute(client_handler, finish_exec, [Handler, ReturnCode, ExecutionState]).
 
 exit(Handler) ->
     mock_server:execute(client_handler, exit, [Handler]).
