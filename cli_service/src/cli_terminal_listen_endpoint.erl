@@ -2,6 +2,7 @@
 
 -module(cli_terminal_listen_endpoint).
 
+-include("authentication_defs.hrl").
 -include("common_defs.hrl").
 
 %% -record(listen_state, {listen_socket = undefined :: 'undefined' | socket()}).

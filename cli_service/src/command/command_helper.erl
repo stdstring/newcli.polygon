@@ -2,6 +2,7 @@
 
 -module(command_helper).
 
+-include("authentication_defs.hrl").
 -include("common_defs.hrl").
 
 %% ====================================================================

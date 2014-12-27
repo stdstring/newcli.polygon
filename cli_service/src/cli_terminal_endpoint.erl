@@ -4,6 +4,7 @@
 
 -behaviour(gen_server).
 
+-include("authentication_defs.hrl").
 -include("common_defs.hrl").
 
 -export([start/2, handle_output/2, handle_error/2, handle_end/2]).

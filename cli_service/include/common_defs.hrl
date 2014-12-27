@@ -8,4 +8,8 @@
 -record(global_config, {cli_terminal = #cli_terminal_config{} :: #cli_terminal_config{}, device_name = "" :: string()}).
 
 -record(cli_terminal_state, {socket = undefined :: 'undefined' | term(), client_handler = undefined :: 'undefined' | pid()}).
--record(client_handler_state, {config :: #global_config{}, endpoint = undefined :: 'undefined' | pid()}).
+-record(client_handler_state, {config :: #global_config{},
+                               endpoint = undefined :: 'undefined' | pid(),
+                               command_module = test_command :: atom(),
+                               user = undefined :: 'undefined' | #user{},
+                               current_command = undefined :: 'undefined' | pid()}).

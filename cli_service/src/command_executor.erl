@@ -2,6 +2,7 @@
 
 -module(command_executor).
 
+-include("authentication_defs.hrl").
 -include("client_handler_defs.hrl").
 -include("common_defs.hrl").
 

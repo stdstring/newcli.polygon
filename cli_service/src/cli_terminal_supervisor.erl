@@ -4,6 +4,7 @@
 
 -behaviour(supervisor).
 
+-include("authentication_defs.hrl").
 -include("common_defs.hrl").
 
 -export([start/1, create_endpoint/1]).
