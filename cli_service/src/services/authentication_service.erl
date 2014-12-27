@@ -60,8 +60,8 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 -spec parse_config(Config :: [{Key :: atom(), Value :: term()}]) -> string() | no_return().
 parse_config(Config) ->
-    ServiceConfig = config_utils:get_config(Config, ?AUTHENTICATION_CONFIG, 1, {authentication_service, bad_config}),
-    config_utils:get_config(ServiceConfig, ?AUTHENTICATION_DATA, 1, {authentication_service, missing_source}).
+    ServiceConfig = list_utils:get_value_by_key(Config, ?AUTHENTICATION_CONFIG, 1, {authentication_service, bad_config}),
+    list_utils:get_value_by_key(ServiceConfig, ?AUTHENTICATION_DATA, 1, {authentication_service, missing_source}).
 
 -spec load_data(Filename :: string()) -> #authentication_service_state{}.
 load_data(Filename) ->
