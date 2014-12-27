@@ -41,29 +41,29 @@ generate_test_() ->
         [{"test buffer creation error",
           ?_test(check(create_buffer_error_exps(?CONTEXT), {255, ?CONTEXT}, State, ?CONTEXT))},
          {"test unsuitable command error without user",
-          ?_test(check(create_unsuitable_command_exps(undefined, ?CONTEXT_WITHOUT_USER), {255, ?CONTEXT_WITHOUT_USER}, State, ?CONTEXT_WITHOUT_USER))},
+          ?_test(check(create_unsuitable_command_exps(?CONTEXT_WITHOUT_USER), {255, ?CONTEXT_WITHOUT_USER}, State, ?CONTEXT_WITHOUT_USER))},
          {"test unsuitable command error",
-          ?_test(check(create_unsuitable_command_exps(?USER, ?CONTEXT), {255, ?CONTEXT}, State, ?CONTEXT))},
+          ?_test(check(create_unsuitable_command_exps(?CONTEXT), {255, ?CONTEXT}, State, ?CONTEXT))},
          {"test access denied error without user",
-          ?_test(check(create_access_denied_exps(undefined, ?CONTEXT_WITHOUT_USER), {255, ?CONTEXT_WITHOUT_USER}, State, ?CONTEXT_WITHOUT_USER))},
+          ?_test(check(create_access_denied_exps(?CONTEXT_WITHOUT_USER), {255, ?CONTEXT_WITHOUT_USER}, State, ?CONTEXT_WITHOUT_USER))},
          {"test access denied error",
-          ?_test(check(create_access_denied_exps(?USER, ?CONTEXT), {255, ?CONTEXT}, State, ?CONTEXT))},
+          ?_test(check(create_access_denied_exps(?CONTEXT), {255, ?CONTEXT}, State, ?CONTEXT))},
          {"test bad config error without user",
-          ?_test(check(create_bad_config_exps(undefined, ?CONTEXT_WITHOUT_USER), {255, ?CONTEXT_WITHOUT_USER}, State, ?CONTEXT_WITHOUT_USER))},
+          ?_test(check(create_bad_config_exps(?CONTEXT_WITHOUT_USER), {255, ?CONTEXT_WITHOUT_USER}, State, ?CONTEXT_WITHOUT_USER))},
          {"test bad config error",
-          ?_test(check(create_bad_config_exps(?USER, ?CONTEXT), {255, ?CONTEXT}, State, ?CONTEXT))},
+          ?_test(check(create_bad_config_exps(?CONTEXT), {255, ?CONTEXT}, State, ?CONTEXT))},
          {"test fail command execution without user",
-          ?_test(check(create_fail_command_exps(undefined, ?CONTEXT_WITHOUT_USER), {128, ?CONTEXT_WITHOUT_USER}, State, ?CONTEXT_WITHOUT_USER))},
+          ?_test(check(create_fail_command_exps(?CONTEXT_WITHOUT_USER), {128, ?CONTEXT_WITHOUT_USER}, State, ?CONTEXT_WITHOUT_USER))},
          {"test fail command execution",
-          ?_test(check(create_fail_command_exps(?USER, ?CONTEXT), {128, ?CONTEXT}, State, ?CONTEXT))},
+          ?_test(check(create_fail_command_exps(?CONTEXT), {128, ?CONTEXT}, State, ?CONTEXT))},
          {"test fail command execution with change context",
-          ?_test(check(create_fail_command_exps(?USER, ?CONTEXT, ?CHANGED_CONTEXT), {128, ?CHANGED_CONTEXT}, State, ?CONTEXT))},
+          ?_test(check(create_fail_command_exps(?CONTEXT, ?CHANGED_CONTEXT), {128, ?CHANGED_CONTEXT}, State, ?CONTEXT))},
          {"test success command execution without user",
-          ?_test(check(create_success_command_exps(undefined, ?CONTEXT_WITHOUT_USER), {0, ?CONTEXT_WITHOUT_USER}, State, ?CONTEXT_WITHOUT_USER))},
+          ?_test(check(create_success_command_exps(?CONTEXT_WITHOUT_USER), {0, ?CONTEXT_WITHOUT_USER}, State, ?CONTEXT_WITHOUT_USER))},
          {"test success command execution",
-          ?_test(check(create_success_command_exps(?USER, ?CONTEXT), {0, ?CONTEXT}, State, ?CONTEXT))},
+          ?_test(check(create_success_command_exps(?CONTEXT), {0, ?CONTEXT}, State, ?CONTEXT))},
          {"test success command execution with change context",
-          ?_test(check(create_success_command_exps(?USER, ?CONTEXT, ?CHANGED_CONTEXT), {0, ?CHANGED_CONTEXT}, State, ?CONTEXT))}]
+          ?_test(check(create_success_command_exps(?CONTEXT, ?CHANGED_CONTEXT), {0, ?CHANGED_CONTEXT}, State, ?CONTEXT))}]
     end],
     [{foreach, fun setup/0, fun cleanup/1, Tests}].
 
@@ -95,31 +95,35 @@ create_buffer_error_exps(Context) ->
      #expectation{source = client_handler, func = send_error, args = [?CLIENT_HANDLER_REF, ?BUFFER_START_FAIL_MESSAGE], result = ok},
      #expectation{source = client_handler, func = finish_exec, args = [?CLIENT_HANDLER_REF, 255, Context], result = ok}].
 
-create_unsuitable_command_exps(User, Context) ->
+create_unsuitable_command_exps(Context) ->
+    User = list_utils:get_value_by_key_with_default(Context, ?USER_KEY, 1, undefined),
     [#expectation{source = io_buffer, func = start, args = [], result = {ok, ?BUFFER_REF}},
      #expectation{source = command_execution_checker, func = execution_precheck, args = [command_example, ?CLI_FSM_REF, User], result = {false, unsuitable_command}},
      #expectation{source = io_buffer, func = get_data, args = [?BUFFER_REF, both], result = []},
      #expectation{source = client_handler, func = send_error, args = [?CLIENT_HANDLER_REF, ?UNSUITABLE_COMMAND_MESSAGE], result = ok},
      #expectation{source = client_handler, func = finish_exec, args = [?CLIENT_HANDLER_REF, 255, Context], result = ok}].
 
-create_access_denied_exps(User, Context) ->
+create_access_denied_exps(Context) ->
+    User = list_utils:get_value_by_key_with_default(Context, ?USER_KEY, 1, undefined),
     [#expectation{source = io_buffer, func = start, args = [], result = {ok, ?BUFFER_REF}},
      #expectation{source = command_execution_checker, func = execution_precheck, args = [command_example, ?CLI_FSM_REF, User], result = {false, access_denied}},
      #expectation{source = io_buffer, func = get_data, args = [?BUFFER_REF, both], result = []},
      #expectation{source = client_handler, func = send_error, args = [?CLIENT_HANDLER_REF, ?ACCESS_DENIED_MESSAGE], result = ok},
      #expectation{source = client_handler, func = finish_exec, args = [?CLIENT_HANDLER_REF, 255, Context], result = ok}].
 
-create_bad_config_exps(User, Context) ->
+create_bad_config_exps(Context) ->
+    User = list_utils:get_value_by_key_with_default(Context, ?USER_KEY, 1, undefined),
     [#expectation{source = io_buffer, func = start, args = [], result = {ok, ?BUFFER_REF}},
      #expectation{source = command_execution_checker, func = execution_precheck, args = [command_example, ?CLI_FSM_REF, User], result = {false, authorization_bad_config}},
      #expectation{source = io_buffer, func = get_data, args = [?BUFFER_REF, both], result = []},
      #expectation{source = client_handler, func = send_error, args = [?CLIENT_HANDLER_REF, ?BAD_CONFIG_MESSAGE], result = ok},
      #expectation{source = client_handler, func = finish_exec, args = [?CLIENT_HANDLER_REF, 255, Context], result = ok}].
 
-create_fail_command_exps(User, Context) ->
-    create_fail_command_exps(User, Context, Context).
+create_fail_command_exps(Context) ->
+    create_fail_command_exps(Context, Context).
 
-create_fail_command_exps(User, Context, NewContext) ->
+create_fail_command_exps(Context, NewContext) ->
+    User = list_utils:get_value_by_key_with_default(Context, ?USER_KEY, 1, undefined),
     [#expectation{source = io_buffer, func = start, args = [], result = {ok, ?BUFFER_REF}},
      #expectation{source = command_execution_checker, func = execution_precheck, args = [command_example, ?CLI_FSM_REF, User], result = true},
      #expectation{source = command_module, func = execute, args = [["iddqd","666"], ?BUFFER_REF, ?BUFFER_REF, Context], result = {128, NewContext}},
@@ -129,10 +133,11 @@ create_fail_command_exps(User, Context, NewContext) ->
      #expectation{source = client_handler, func = send_error, args = [?CLIENT_HANDLER_REF, ?COMMAND_FAIL_MESSAGE ++ "128"], result = ok},
      #expectation{source = client_handler, func = finish_exec, args = [?CLIENT_HANDLER_REF, 128, NewContext], result = ok}].
 
-create_success_command_exps(User, Context) ->
-    create_success_command_exps(User, Context, Context).
+create_success_command_exps(Context) ->
+    create_success_command_exps(Context, Context).
 
-create_success_command_exps(User, Context, NewContext) ->
+create_success_command_exps(Context, NewContext) ->
+    User = list_utils:get_value_by_key_with_default(Context, ?USER_KEY, 1, undefined),
     [#expectation{source = io_buffer, func = start, args = [], result = {ok, ?BUFFER_REF}},
      #expectation{source = command_execution_checker, func = execution_precheck, args = [command_example, ?CLI_FSM_REF, User], result = true},
      #expectation{source = command_module, func = execute, args = [["iddqd","666"], ?BUFFER_REF, ?BUFFER_REF, Context], result = {0, NewContext}},
