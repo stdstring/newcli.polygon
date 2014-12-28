@@ -6,6 +6,7 @@ SOURCE=src/command/code_generator.erl \
        src/command/command_helper.erl \
        src/command/io_buffer.erl \
        src/command/lex_analyzer_config.erl \
+       src/command/module_name_generator.erl \
        src/command/syntax_analyzer_config.erl \
        src/fsm/cli_fsm_behaviour.erl \
        src/fsm/cli_fsm.erl \
@@ -24,7 +25,8 @@ SOURCE=src/command/code_generator.erl \
        src/cli_terminal_listen_supervisor.erl \
        src/cli_terminal_supervisor.erl \
        src/client_handler.erl \
-       src/command_executor.erl
+       src/command_executor.erl \
+       src/config_reader.erl
 
 INCLUDE_FLAGS=-I include -I ../cli_command_parser_include
 

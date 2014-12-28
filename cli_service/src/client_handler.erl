@@ -77,7 +77,8 @@ finish_exec(Handler, ReturnCode, ExecutionState) ->
 init([GlobalConfig, Endpoint]) ->
     %% for catching exit signals from commands
     process_flag(trap_exit, true),
-    State = #client_handler_state{config = GlobalConfig, endpoint = Endpoint},
+    CommandModule = test_command_module,
+    State = #client_handler_state{config = GlobalConfig, endpoint = Endpoint, command_module = CommandModule},
     {ok, State}.
 
 %%handle_call({process_command, CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
