@@ -18,4 +18,4 @@ generate(Prefix) ->
 
 -spec generate_unique_suffix() -> string().
 generate_unique_suffix() ->
-    "_test".
+    "666_test".

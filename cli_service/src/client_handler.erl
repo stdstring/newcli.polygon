@@ -1,4 +1,4 @@
-%% @author stdstring
+%% @author std-string
 
 -module(client_handler).
 
@@ -6,6 +6,7 @@
 
 -include("authentication_defs.hrl").
 -include("client_handler_defs.hrl").
+-include("command_defs.hrl").
 -include("common_defs.hrl").
 
 %%-define(DEVICE_NAME, "CliDemo").
@@ -77,9 +78,14 @@ finish_exec(Handler, ReturnCode, ExecutionState) ->
 init([GlobalConfig, Endpoint]) ->
     %% for catching exit signals from commands
     process_flag(trap_exit, true),
-    CommandModule = test_command_module,
-    State = #client_handler_state{config = GlobalConfig, endpoint = Endpoint, command_module = CommandModule},
-    {ok, State}.
+    CommandModule = module_name_generator:generator(?ENTRY_MODULE_PREFIX),
+    case cli_fsm:start(GlobalConfig#global_config.cli_fsm) of
+        {ok, CliFsm} -> #client_handler_state{config = GlobalConfig,
+                                              endpoint = Endpoint,
+                                              command_module = CommandModule,
+                                              cli_fsm =CliFsm};
+        {error, Reason} -> {stop, Reason}
+    end.
 
 %%handle_call({process_command, CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
 %%    GlobalConfig = State#client_handler_state.config,

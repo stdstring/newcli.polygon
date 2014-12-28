@@ -26,7 +26,8 @@ SOURCE=src/command/code_generator.erl \
        src/cli_terminal_supervisor.erl \
        src/client_handler.erl \
        src/command_executor.erl \
-       src/config_reader.erl
+       src/config_reader.erl \
+       src/prompt_factory.erl
 
 INCLUDE_FLAGS=-I include -I ../cli_command_parser_include
 

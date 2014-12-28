@@ -1,4 +1,4 @@
-%% @author stdstring
+%% @author std-string
 
 -module(cli_fsm).
 
