@@ -9,8 +9,7 @@
 -include("command_defs.hrl").
 -include("common_defs.hrl").
 
-%%-define(DEVICE_NAME, "CliDemo").
--define(PARSER_ERROR, "Command's parsing is failed due to the following: ~w\n").
+-define(COMMAND_CREATION_ERROR, "Command's creation is failed due to the following reason: ~w\n").
 
 -export([start/2, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1]).
 -export([send_output/2, send_error/2, finish_command/3, finish_exec/3]).
@@ -61,20 +60,6 @@ finish_command(Handler, ReturnCode, ExecutionState) ->
 finish_exec(Handler, ReturnCode, ExecutionState) ->
     gen_server:cast(Handler, {?FINISH_EXEC, ReturnCode, ExecutionState}).
 
-%%init([GlobalConfig, Endpoint]) ->
-%%    %% for catching exit signals from commands
-%%    process_flag(trap_exit, true),
-%%    case create_execution_state(GlobalConfig) of
-%%        {ok, ExecutionState} ->
-%%            CommandsInfo = ExecutionState#execution_state.commands_info,
-%%            CommandsBody = lists:map(fun({_Name, Body, _Help}) -> Body end, CommandsInfo),
-%%            Generator = autocomplete_factory:create_extension_generator(CommandsBody),
-%%            State = #client_handler_state{config = GlobalConfig, execution_state = ExecutionState, endpoint = Endpoint, extension_generator =  Generator},
-%%            {ok, State};
-%%        {error, Reason} ->
-%%            {stop, Reason}
-%%    end.
-
 init([GlobalConfig, Endpoint]) ->
     %% for catching exit signals from commands
     process_flag(trap_exit, true),
@@ -87,25 +72,20 @@ init([GlobalConfig, Endpoint]) ->
         {error, Reason} -> {stop, Reason}
     end.
 
-%%handle_call({process_command, CommandLine}, _From, #client_handler_state{command_chain = []} = State) ->
-%%    GlobalConfig = State#client_handler_state.config,
-%%    case command_parser:parse(CommandLine, GlobalConfig) of
-%%        {command_parser, Reason} ->
-%%            NewState = process_parser_error(State, Reason),
-%%            {reply, true, NewState};
-%%        CommandChain ->
-%%            NewState = process_start_command(State, CommandChain),
-%%            {reply, true, NewState}
-%%    end;
-%%handle_call({process_command, _CommandLine}, _From, State) ->
-%%    {reply, false, State};
-%%handle_call({extensions, CommandLine}, _From, State) ->
-%%    Generator = State#client_handler_state.extension_generator,
-%%    Extensions = Generator(CommandLine),
-%%    {reply, Extensions, State}.
-
-handle_call({?PROCESS, _CommandLine}, _From, State) ->
-    {reply, true, State};
+handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_command = undefined} = State) ->
+    LexConfig = undefined,
+    SyntaxConfig = undefined,
+    CommandModule = State#client_handler_state.command_module,
+    case command_factory:process(CommandLine, LexConfig, SyntaxConfig, CommandModule) of
+        {true, CommandFun} ->
+            Command = process_start_command(State, CommandFun),
+            {reply, true, State#client_handler_state{current_command = Command}};
+        {false, Reason} ->
+            process_command_creation_error(State, Reason),
+            {reply, false, State}
+    end;
+handle_call({process_command, _CommandLine}, _From, State) ->
+    {reply, false, State};
 handle_call(?CURRENT_STATE, _From, State) ->
     Prompt = prompt_factory:generate_prompt(State),
     {reply, Prompt, State};
@@ -134,26 +114,24 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% Internal functions
 %% ====================================================================
 
-%%-spec create_execution_state(GlobalConfig :: #global_config{}) ->
-%%    {'ok', ExecutionState :: #execution_state{}} | {'error', Reason :: term()}.
-%%create_execution_state(GlobalConfig) ->
-%%    GlobalHandler = GlobalConfig#global_config.global_handler,
-%%    case commands_info_helper:retrieve(GlobalHandler) of
-%%        {ok, CommandsInfo} ->
-%%            {ok, #execution_state{global_handler = GlobalHandler, commands_info = CommandsInfo, device_name = ?DEVICE_NAME}};
-%%        {error, Reason} ->
-%%            {error, Reason}
-%%    end.
+-spec process_start_command(State :: #client_handler_state{},
+                            CommandFun :: fun((CliFsm :: pid(), ClientHandler :: pid(), Context :: [{atom(), term()}]) -> 'ok')) ->
+    pid().
+process_start_command(State, CommandFun) ->
+    ExecutionContext = create_exec_context(State),
+    CliFsm = State#client_handler_state.cli_fsm,
+    ClientHandler = self(),
+    spawn_link(fun() -> CommandFun(CliFsm, ClientHandler, ExecutionContext) end).
 
-%%-spec process_parser_error(State ::  #client_handler_state{}, Reason :: term()) -> #client_handler_state{}.
-%%process_parser_error(State, Reason) ->
-%%    Error = message_helper:format(?PARSER_ERROR, [Reason]),
-%%    command_helper:send_error(State, Error),
-%%    command_helper:send_end(State),
-%%    State.
+-spec process_command_creation_error(State ::  #client_handler_state{}, Reason :: term()) -> 'ok'.
+process_command_creation_error(State, Reason) ->
+    Error = string_utils:format(?COMMAND_CREATION_ERROR, [Reason]),
+    command_helper:send_error(State, Error),
+    command_helper:send_end(State),
+    ok.
 
-%%-spec process_start_command(State :: #client_handler_state{}, CommandChain :: [#command_entry{}]) -> #client_handler_state{}.
-%%process_start_command(State, CommandChain) ->
-%%    ExecutionState = State#client_handler_state.execution_state,
-%%    Request = {command_end, ExecutionState, 0},
-%%    command_execution_context:process(Request, State#client_handler_state{command_chain = CommandChain}).
+-spec create_exec_context(State :: #client_handler_state{}) -> [{Key :: atom(), Balue :: term()}].
+create_exec_context(#client_handler_state{user = undefined}) ->
+    [];
+create_exec_context(#client_handler_state{user = User}) ->
+    [{?USER_KEY, User}].
