@@ -99,9 +99,6 @@ init([GlobalConfig, Endpoint]) ->
 %%    end;
 %%handle_call({process_command, _CommandLine}, _From, State) ->
 %%    {reply, false, State};
-%%handle_call(current_state, _From, State) ->
-%%    Prompt = prompt_factory:generate_prompt(State#client_handler_state.execution_state),
-%%    {reply, Prompt, State};
 %%handle_call({extensions, CommandLine}, _From, State) ->
 %%    Generator = State#client_handler_state.extension_generator,
 %%    Extensions = Generator(CommandLine),
@@ -110,7 +107,7 @@ init([GlobalConfig, Endpoint]) ->
 handle_call({?PROCESS, _CommandLine}, _From, State) ->
     {reply, true, State};
 handle_call(?CURRENT_STATE, _From, State) ->
-    Prompt = "",
+    Prompt = prompt_factory:generate_prompt(State),
     {reply, Prompt, State};
 handle_call({?EXTENSIONS, _CommandLine}, _From, State) ->
     Extensions = [],

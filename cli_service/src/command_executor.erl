@@ -26,6 +26,7 @@ process({?FINISH_COMMAND, _ReturnCode, _ExecutionState}, State) ->
     State;
 process({?FINISH_EXEC, 0, ExecutionState}, State) ->
     User = list_utils:get_value_by_key_with_default(ExecutionState, ?USER_KEY, 1, undefined),
+    clear_after_command(State),
     State#client_handler_state{user = User, current_command = undefined};
 process({?FINISH_EXEC, ReturnCode, ExecutionState}, State) ->
     Error = string_utils:format(?EXEC_FAILED, [ReturnCode]),
@@ -33,6 +34,7 @@ process({?FINISH_EXEC, ReturnCode, ExecutionState}, State) ->
     NewState = State#client_handler_state{user = User, current_command = undefined},
     command_helper:send_error(NewState, Error),
     command_helper:send_end(NewState),
+    clear_after_command(NewState),
     NewState;
 process(?INTERRUPT, #client_handler_state{current_command = undefined} = State) ->
     State;
@@ -41,8 +43,13 @@ process(?INTERRUPT, State) ->
     exit(Command, interrupt),
     NewState = State#client_handler_state{current_command = undefined},
     command_helper:send_end(NewState),
+    clear_after_command(NewState),
     NewState.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+clear_after_command(#client_handler_state{command_module = CommandModule}) ->
+    code:delete(CommandModule),
+    code:purge(CommandModule).

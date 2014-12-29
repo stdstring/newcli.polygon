@@ -11,7 +11,7 @@
 %% API functions
 %% ====================================================================
 
--spec generate_prompt(ExecutionState :: #client_handler_state{}) -> string().
+-spec generate_prompt(State :: #client_handler_state{}) -> string().
 generate_prompt(_State) ->
     "".
 
