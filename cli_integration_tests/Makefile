@@ -61,4 +61,7 @@ pre_build: clean
 
 clean:
 	$(shell rm -rf $(EBIN)/*)
+	$(shell rm -rf $(COMMON_EBIN)/*)
+	$(shell rm -rf $(BACKEND_EBIN)/*)
 	$(shell rm -rf $(BACKEND_COMMANDS_EBIN)/*)
+	$(shell rm -rf $(FRONTEND_EBIN)/*)
