@@ -11,8 +11,6 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--define(WORD_ARG(Value), #argument{type = word, value = Value}).
-
 %% ====================================================================
 %% Test functions
 %% ====================================================================
