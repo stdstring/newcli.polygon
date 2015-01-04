@@ -22,7 +22,7 @@ command_parser_process_test_() ->
     [{"process 'ping XXX'", success_execution("ping XXX", LexConfig, SyntaxConfig, ?PING_MODULE, ["XXX"])},
      {"process 'p XXX'", success_execution("p XXX", LexConfig, SyntaxConfig, ?PING_MODULE, ["XXX"])},
      {"process 'p \"XX\\\"X\" n666'", success_execution("p \"XX\\\"X\" n666", LexConfig, SyntaxConfig, ?PING_MODULE, ["XX\"X", "n666"])},
-     {"process 'pong -XXX'", fail_execution("pong -XXX", LexConfig, SyntaxConfig, unsuitable_char)},
+     {"process 'pong +XXX'", fail_execution("pong +XXX", LexConfig, SyntaxConfig, unsuitable_char)},
      {"process '\"pong\"'", fail_execution("\"pong\"", LexConfig, SyntaxConfig, bad_token)},
      {"process 'pong XXX'", fail_execution("pong XXX", LexConfig, SyntaxConfig, command_not_found)}].
 

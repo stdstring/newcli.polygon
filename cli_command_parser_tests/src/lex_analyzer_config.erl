@@ -39,7 +39,7 @@ create(SkipWhitespaces) ->
 -spec create_word_config() -> #token_parser_config{}.
 create_word_config() ->
     TransitionTable = [#transition{from_state = ?WORD_INIT_STATE,
-                                   char_predicate = fun char_category:is_letter/1,
+                                   char_predicate = fun word_body_predicate/1,
                                    to_state = ?WORD_BODY_STATE,
                                    char_appender = fun(Char, Buffer) -> [Char] ++ Buffer end},
                        #transition{from_state = ?WORD_BODY_STATE,
@@ -121,4 +121,4 @@ create_space_config() ->
 word_body_predicate(Char) ->
     char_category:is_letter(Char) orelse
     char_category:is_digit(Char) orelse
-    lists:member(Char, "-_").
+    lists:member(Char, "-_.,?").

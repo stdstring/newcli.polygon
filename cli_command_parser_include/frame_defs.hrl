@@ -5,3 +5,4 @@
 
 -record(argument, {type = undefined :: 'undefined' | atom(), value = undefined :: 'undefined' | term()}).
 -record(command, {module = undefined :: 'undefined' | atom(), arguments = [] :: [#argument{}]}).
+-record(help_command, {parts = [] :: [term()], prefix = "" :: string(), arguments = [] :: [#argument{}]}).
