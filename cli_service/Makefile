@@ -5,9 +5,11 @@ SOURCE=src/command/code_generator.erl \
        src/command/command_factory.erl \
        src/command/command_helper.erl \
        src/command/io_buffer.erl \
-       src/command/lex_analyzer_config.erl \
        src/command/module_name_generator.erl \
        src/command/syntax_analyzer_config.erl \
+       src/command_config/lex_analyzer_config.erl \
+       src/command_config/name_search_config.erl \
+       src/command_config/syntax_analyzer_config.erl \
        src/fsm/cli_fsm_behaviour.erl \
        src/fsm/cli_fsm.erl \
        src/services/authentication_service_behaviour.erl \
