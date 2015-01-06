@@ -14,6 +14,7 @@ TEST_SOURCE=src/code_generator/code_generator_tests.erl \
             src/utils/crypto_utils_tests.erl \
             src/utils/erlang_term_utils_tests.erl \
             src/utils/list_utils_tests.erl \
+            src/utils/string_utils_tests.erl
 
 INCLUDE_FLAGS=-I include -I ../cli_service/include -I ../cli_command_parser_include
 
