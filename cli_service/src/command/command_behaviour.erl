@@ -2,8 +2,6 @@
 
 -module(command_behaviour).
 
--include("common_defs.hrl").
-
 %% get command name
 -callback get_name() -> atom().
 

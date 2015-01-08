@@ -1,6 +1,7 @@
 EBIN=ebin
 
 SOURCE=src/command/code_generator.erl \
+       src/command/command_behaviour.erl \
        src/command/command_execution_checker.erl \
        src/command/command_factory.erl \
        src/command/command_helper.erl \

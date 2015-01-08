@@ -10,27 +10,9 @@
 %% API functions
 %% ====================================================================
 
-%%-spec create() -> name_search_table().
-%%create() ->
-%%    [{[{"ping", 1}], ?PING_MODULE},
-%%     {[{"configure", 1}, {"terminal", 1}], ?CONF_TERM_MODULE},
-%%     {[{"login", 4}], ?LOGIN_MODULE},
-%%     {[{"logout", 4}], ?LOGOUT_MODULE},
-%%     {[{"interface", 1}], ?INTERFACE_MODULE},
-%%     {[{"interface", 1}, {"range", 1}], ?IFRANGE_MODULE},
-%%     {[{"vlan", 1}], ?VLAN_MODULE},
-%%     {[{"no", 2}, {"vlan", 1}], ?NOVLAN_MODULE},
-%%     {[{"switchport", 2}, {"access", 1}, {"vlan", 1}], ?SWACCESS_VLAN_MODULE},
-%%     {[{"no", 2}, {"switchport", 1}, {"access", 1}, {"vlan", 1}], ?NOSWACCESS_VLAN_MODULE},
-%%     {[{"name", 2}], ?NAME_MODULE},
-%%     {[{"no", 2}, {"name", 1}], ?NONAME_MODULE},
-%%     {[{"end", 2}], ?END_MODULE},
-%%     {[{"exit", 2}], ?EXIT_MODULE},
-%%     {[{"show", 2}, {"vlan", 1}], ?SHOW_VLAN_MODULE}].
-
 -spec create(Commands :: [{CommandName :: atom(), CommandModule :: atom()}]) -> name_search_table().
 create(Commands) ->
-    InitData = lists:map(fun(_Name, Module) -> {[], Module:get_command_body(), Module} end, Commands),
+    InitData = lists:map(fun({_Name, Module}) -> {[], Module:get_command_body(), Module} end, Commands),
     InitGroup = group(InitData),
     process_groups(InitGroup, []).
 
@@ -60,10 +42,14 @@ group([CommandDataHead | CommandDataRest], Group) ->
 process_groups([], Dest) -> Dest;
 process_groups([{_Letter, LetterGroup} | Rest], Dest) ->
     Words = dict:fetch_keys(LetterGroup),
-    CommonPrefix = string_utils:get_common_prefix(Words),
-    MinLength = length(CommonPrefix) + 1,
+    MinLength = calc_min_length(Words),
     NewDest = process_group(dict:to_list(LetterGroup), MinLength, Dest),
     process_groups(Rest, NewDest).
+
+%% TODO (std_string) : name
+calc_min_length([_Word]) -> 1;
+calc_min_length(Words) ->
+    length(string_utils:get_common_prefix(Words)) + 1.
 
 %% TODO (std_string) : name
 process_group([], _MinLength, Dest) -> Dest;

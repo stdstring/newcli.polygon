@@ -7,10 +7,26 @@ SOURCE=src/code_generator/cli_fsm_mock.erl \
        src/code_generator/command_execution_checker_mock.erl \
        src/code_generator/command_mock.erl \
        src/code_generator/io_buffer_mock.erl \
+       src/test_commands/config_terminal_module.erl \
+       src/test_commands/end_module.erl \
+       src/test_commands/exit_module.erl \
+       src/test_commands/interface_module.erl \
+       src/test_commands/interface_range_module.erl \
+       src/test_commands/login_module.erl \
+       src/test_commands/logout_module.erl \
+       src/test_commands/name_module.erl \
+       src/test_commands/noname_module.erl \
+       src/test_commands/noswitchport_vlan_module.erl \
+       src/test_commands/novlan_module.erl \
+       src/test_commands/ping_module.erl \
+       src/test_commands/show_vlan_module.erl \
+       src/test_commands/switchport_vlan_module.erl \
+       src/test_commands/vlan_module.erl \
        src/mock_server.erl
 
 TEST_SOURCE=src/code_generator/code_generator_tests.erl \
             src/code_generator/dynamic_code_generation_tests.erl \
+            src/command_config/name_search_config_tests.erl \
             src/utils/crypto_utils_tests.erl \
             src/utils/erlang_term_utils_tests.erl \
             src/utils/list_utils_tests.erl \
@@ -25,7 +41,7 @@ TEST_TARGETS = $(TEST_SOURCE:%.erl=$(EBIN)/%.beam)
 TESTS_LIST = $(basename $(notdir $(TEST_SOURCE)))
 
 $(EBIN)/%.beam: %.erl
-	erlc -pa $(EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
+	erlc -pa $(EBIN) -pa $(SRC_EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
 all: pre_build $(TARGETS) $(TEST_TARGETS)
 
