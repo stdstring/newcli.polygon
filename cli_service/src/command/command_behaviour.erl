@@ -13,9 +13,6 @@
 %% get command help
 -callback get_help() -> Help :: string().
 
-%% create command's instance
-%%-callback create(CommandLineRest :: string(), Stdout :: pid(), Stderr :: pid()) -> {'ok', Command :: pid()} | {'error', Reason :: term()}.
-
 %% synchronous executing
--callback execute(Args :: [term()], Stdout :: pid(), Stderr :: pid(), ExecContext :: dict()) ->
-    {ReturnCode :: integer(), ExecContext :: dict()}.
+-callback execute(Args :: [term()], Stdout :: pid(), Stderr :: pid(), ExecContext :: [{Key :: atom(), Value :: term()}]) ->
+    {ReturnCode :: integer(), ExecContext :: [{Key :: atom(), Value :: term()}]}.
