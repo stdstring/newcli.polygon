@@ -38,7 +38,6 @@ group([CommandDataHead | CommandDataRest], Group) ->
             group(CommandDataRest, NewGroup)
     end.
 
-%% TODO (std_string) : name
 process_groups([], Dest) -> Dest;
 process_groups([{_Letter, LetterGroup} | Rest], Dest) ->
     Words = dict:fetch_keys(LetterGroup),
@@ -46,12 +45,10 @@ process_groups([{_Letter, LetterGroup} | Rest], Dest) ->
     NewDest = process_group(dict:to_list(LetterGroup), MinLength, Dest),
     process_groups(Rest, NewDest).
 
-%% TODO (std_string) : name
 calc_min_length([_Word]) -> 1;
 calc_min_length(Words) ->
     length(string_utils:get_common_prefix(Words)) + 1.
 
-%% TODO (std_string) : name
 process_group([], _MinLength, Dest) -> Dest;
 process_group([{_Word, [CommandData]} | Rest], MinLength, Dest) ->
     NewDest = process_command_data(CommandData, MinLength, Dest),
@@ -69,18 +66,15 @@ process_group([{_Word, CommandDataList} | Rest], MinLength, Dest) ->
             process_group(Rest, MinLength, process_groups(IncompleteGroup, NewDest))
     end.
 
-%% TODO (std_string) : name
 process_command_data_list([], Dest) -> Dest;
 process_command_data_list([{ProcessedParts, Words, Module} | CommandDataRest], Dest) ->
     NewDest = process_command_data(ProcessedParts, Words, Module, Dest),
     process_command_data_list(CommandDataRest, NewDest).
 
-%% TODO (std_string) : name
 process_command_data({ProcessedParts, [Word | WordsRest], Module}, MinLength, Dest) ->
     NewProcessedPart = [{Word, MinLength}] ++ ProcessedParts,
     process_command_data(NewProcessedPart, WordsRest, Module, Dest).
 
-%% TODO (std_string) : name
 process_command_data(ProcessedParts, [], Module, Dest) ->
     SearchEntry = {lists:reverse(ProcessedParts), Module},
     [SearchEntry] ++ Dest;
@@ -88,6 +82,5 @@ process_command_data(ProcessedParts, [Word | WordsRest], Module, Dest) ->
     NewProcessedPart = [{Word, 1}] ++ ProcessedParts,
     process_command_data(NewProcessedPart, WordsRest, Module, Dest).
 
-%% TODO (std_string) : name
 update_command_data({ProcessedParts, [Word | WordsRest], Module}, MinLength) ->
     {[{Word, MinLength}] ++ ProcessedParts, WordsRest, Module}.
