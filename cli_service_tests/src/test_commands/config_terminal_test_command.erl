@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(exit_module).
+-module(config_terminal_test_command).
 
 -behaviour(command_behaviour).
 
@@ -10,11 +10,11 @@
 %% API functions
 %% ====================================================================
 
-get_name() -> exit.
+get_name() -> config_terminal.
 
-get_command_body() -> ["exit"].
+get_command_body() -> ["configure", "terminal"].
 
-get_help() -> "exit help".
+get_help() -> "configure terminal help".
 
 execute(_Args, _Stdout, _Stderr, _ExecContext) ->
     throw(enotimpl).

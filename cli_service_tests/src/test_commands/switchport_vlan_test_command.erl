@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(logout_module).
+-module(switchport_vlan_test_command).
 
 -behaviour(command_behaviour).
 
@@ -10,11 +10,11 @@
 %% API functions
 %% ====================================================================
 
-get_name() -> logout.
+get_name() -> switchport_vlan.
 
-get_command_body() -> ["logout"].
+get_command_body() -> ["switchport", "access", "vlan"].
 
-get_help() -> "logout help".
+get_help() -> "switchport access vlan help".
 
 execute(_Args, _Stdout, _Stderr, _ExecContext) ->
     throw(enotimpl).

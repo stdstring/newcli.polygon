@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(interface_range_module).
+-module(ping_test_command).
 
 -behaviour(command_behaviour).
 
@@ -10,11 +10,11 @@
 %% API functions
 %% ====================================================================
 
-get_name() -> interface_range.
+get_name() -> ping.
 
-get_command_body() -> ["interface", "range"].
+get_command_body() -> ["ping"].
 
-get_help() -> "interface range help".
+get_help() -> "ping help".
 
 execute(_Args, _Stdout, _Stderr, _ExecContext) ->
     throw(enotimpl).

@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(login_module).
+-module(vlan_test_command).
 
 -behaviour(command_behaviour).
 
@@ -10,11 +10,11 @@
 %% API functions
 %% ====================================================================
 
-get_name() -> login.
+get_name() -> vlan.
 
-get_command_body() -> ["login"].
+get_command_body() -> ["vlan"].
 
-get_help() -> "login help".
+get_help() -> "vlan help".
 
 execute(_Args, _Stdout, _Stderr, _ExecContext) ->
     throw(enotimpl).

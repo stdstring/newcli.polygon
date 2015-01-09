@@ -7,21 +7,21 @@ SOURCE=src/code_generator/cli_fsm_mock.erl \
        src/code_generator/command_execution_checker_mock.erl \
        src/code_generator/command_mock.erl \
        src/code_generator/io_buffer_mock.erl \
-       src/test_commands/config_terminal_module.erl \
-       src/test_commands/end_module.erl \
-       src/test_commands/exit_module.erl \
-       src/test_commands/interface_module.erl \
-       src/test_commands/interface_range_module.erl \
-       src/test_commands/login_module.erl \
-       src/test_commands/logout_module.erl \
-       src/test_commands/name_module.erl \
-       src/test_commands/noname_module.erl \
-       src/test_commands/noswitchport_vlan_module.erl \
-       src/test_commands/novlan_module.erl \
-       src/test_commands/ping_module.erl \
-       src/test_commands/show_vlan_module.erl \
-       src/test_commands/switchport_vlan_module.erl \
-       src/test_commands/vlan_module.erl \
+       src/test_commands/config_terminal_test_command.erl \
+       src/test_commands/end_test_command.erl \
+       src/test_commands/exit_test_command.erl \
+       src/test_commands/interface_test_command.erl \
+       src/test_commands/interface_range_test_command.erl \
+       src/test_commands/login_test_command.erl \
+       src/test_commands/logout_test_command.erl \
+       src/test_commands/name_test_command.erl \
+       src/test_commands/noname_test_command.erl \
+       src/test_commands/noswitchport_vlan_test_command.erl \
+       src/test_commands/novlan_test_command.erl \
+       src/test_commands/ping_test_command.erl \
+       src/test_commands/show_vlan_test_command.erl \
+       src/test_commands/switchport_vlan_test_command.erl \
+       src/test_commands/vlan_test_command.erl \
        src/mock_server.erl
 
 TEST_SOURCE=src/code_generator/code_generator_tests.erl \

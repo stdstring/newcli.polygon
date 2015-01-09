@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(name_module).
+-module(noname_test_command).
 
 -behaviour(command_behaviour).
 
@@ -10,11 +10,11 @@
 %% API functions
 %% ====================================================================
 
-get_name() -> name.
+get_name() -> noname.
 
-get_command_body() -> ["name"].
+get_command_body() -> ["no", "name"].
 
-get_help() -> "name help".
+get_help() -> "no name help".
 
 execute(_Args, _Stdout, _Stderr, _ExecContext) ->
     throw(enotimpl).

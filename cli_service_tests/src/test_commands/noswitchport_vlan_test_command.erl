@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(show_vlan_module).
+-module(noswitchport_vlan_test_command).
 
 -behaviour(command_behaviour).
 
@@ -10,11 +10,11 @@
 %% API functions
 %% ====================================================================
 
-get_name() -> show_vlan.
+get_name() -> noswitchport_vlan.
 
-get_command_body() -> ["show", "vlan"].
+get_command_body() -> ["no", "switchport", "access", "vlan"].
 
-get_help() -> "show vlan help".
+get_help() -> "no switchport access vlan help".
 
 execute(_Args, _Stdout, _Stderr, _ExecContext) ->
     throw(enotimpl).

@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(end_module).
+-module(logout_test_command).
 
 -behaviour(command_behaviour).
 
@@ -10,11 +10,11 @@
 %% API functions
 %% ====================================================================
 
-get_name() -> 'end'.
+get_name() -> logout.
 
-get_command_body() -> ["end"].
+get_command_body() -> ["logout"].
 
-get_help() -> "end help".
+get_help() -> "logout help".
 
 execute(_Args, _Stdout, _Stderr, _ExecContext) ->
     throw(enotimpl).

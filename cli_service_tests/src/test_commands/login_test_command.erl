@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(config_terminal_module).
+-module(login_test_command).
 
 -behaviour(command_behaviour).
 
@@ -10,11 +10,11 @@
 %% API functions
 %% ====================================================================
 
-get_name() -> config_terminal.
+get_name() -> login.
 
-get_command_body() -> ["configure", "terminal"].
+get_command_body() -> ["login"].
 
-get_help() -> "configure terminal help".
+get_help() -> "login help".
 
 execute(_Args, _Stdout, _Stderr, _ExecContext) ->
     throw(enotimpl).

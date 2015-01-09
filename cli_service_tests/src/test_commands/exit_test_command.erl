@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(novlan_module).
+-module(exit_test_command).
 
 -behaviour(command_behaviour).
 
@@ -10,11 +10,11 @@
 %% API functions
 %% ====================================================================
 
-get_name() -> novlan.
+get_name() -> exit.
 
-get_command_body() -> ["no", "vlan"].
+get_command_body() -> ["exit"].
 
-get_help() -> "no vlan help".
+get_help() -> "exit help".
 
 execute(_Args, _Stdout, _Stderr, _ExecContext) ->
     throw(enotimpl).

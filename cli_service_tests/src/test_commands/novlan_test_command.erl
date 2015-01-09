@@ -1,6 +1,6 @@
 %% @author std-string
 
--module(interface_module).
+-module(novlan_test_command).
 
 -behaviour(command_behaviour).
 
@@ -10,11 +10,11 @@
 %% API functions
 %% ====================================================================
 
-get_name() -> interface.
+get_name() -> novlan.
 
-get_command_body() -> ["interface"].
+get_command_body() -> ["no", "vlan"].
 
-get_help() -> "interface help".
+get_help() -> "no vlan help".
 
 execute(_Args, _Stdout, _Stderr, _ExecContext) ->
     throw(enotimpl).
