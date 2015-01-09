@@ -6,6 +6,8 @@ SOURCE=src/command/code_generator.erl \
        src/command/command_factory.erl \
        src/command/command_helper.erl \
        src/command/io_buffer.erl \
+       src/command_common/login_command.erl \
+       src/command_common/logout_command.erl \
        src/command/module_name_generator.erl \
        src/command_config/lex_analyzer_config.erl \
        src/command_config/name_search_config.erl \
