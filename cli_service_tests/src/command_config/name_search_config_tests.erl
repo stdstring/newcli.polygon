@@ -9,6 +9,7 @@
 %% ====================================================================
 
 create_test() ->
+    CommandsInfo = create_commands_info(),
     Config = name_search_config:create(create_commands_info()),
     check(Config, config_terminal_module, [{"configure", 1}, {"terminal", 1}]),
     check(Config, end_module, [{"end", 2}]),
@@ -24,7 +25,8 @@ create_test() ->
     check(Config, ping_module, [{"ping", 1}]),
     check(Config, show_vlan_module, [{"show", 2}, {"vlan", 1}]),
     check(Config, switchport_vlan_module, [{"switchport", 2}, {"access", 1}, {"vlan", 1}]),
-    check(Config, vlan_module, [{"vlan", 1}]).
+    check(Config, vlan_module, [{"vlan", 1}]),
+    ?assertEqual(length(CommandsInfo), length(Config)).
 
 %% ====================================================================
 %% Internal functions

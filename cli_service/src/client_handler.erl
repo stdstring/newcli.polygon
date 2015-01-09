@@ -73,8 +73,11 @@ init([GlobalConfig, Endpoint]) ->
     end.
 
 handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_command = undefined} = State) ->
-    LexConfig = undefined,
-    SyntaxConfig = undefined,
+    %% TODO (std_string) : think about caching
+    GlobalConfig = State#client_handler_state.config,
+    LexConfig = lex_analyzer_config:create(true),
+    NameConfig = name_search_config:create(GlobalConfig#global_config.commands),
+    SyntaxConfig = syntax_analyzer_config:create(NameConfig),
     CommandModule = State#client_handler_state.command_module,
     case command_factory:process(CommandLine, LexConfig, SyntaxConfig, CommandModule) of
         {true, CommandFun} ->
