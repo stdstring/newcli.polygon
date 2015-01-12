@@ -55,7 +55,7 @@ test: all
 	# tests
 	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 
-pre_build: clean
+pre_build:
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
 	$(shell if [ ! -d "./$(BACKEND_COMMANDS_EBIN)/" ]; then mkdir $(BACKEND_COMMANDS_EBIN); fi)
 
