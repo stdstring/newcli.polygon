@@ -28,7 +28,7 @@ get_help() -> "logout help".
 
 execute(Args, Stdout, Stderr, ExecContext) ->
     case check_args(Args) of
-        false -> process_error(Stderr, ?BAD_ARGS_MESSAGE, ?BAD_ARGS_CODE, ExecContext);
+        false -> command_utils:process_error(Stderr, ?BAD_ARGS_MESSAGE, ?BAD_ARGS_CODE, ExecContext);
         true -> process_command(Stdout, Stderr, ExecContext)
     end.
 
@@ -44,30 +44,10 @@ check_args(_Other) -> false.
     {ReturnValue :: integer(), ExecContext :: [{Key :: atom(), Value :: term()}]}.
 process_command(Stdout, Stderr, ExecContext) ->
     case lists:keyfind(?USER_KEY, 1, ExecContext) of
-        false -> process_error(Stderr, ?MISSING_USER_MESSAGE, ?MISSING_USER_CODE, ExecContext);
+        false -> command_utils:process_error(Stderr, ?MISSING_USER_MESSAGE, ?MISSING_USER_CODE, ExecContext);
         {?USER_KEY, User} ->
             NewExecContext = lists:keydelete(?USER_KEY, 1, ExecContext),
-            %% TODO (std_string) : hide this knowledge in common place
             Message = string_utils:format(?LOGOUT_TEMPLATE, [User#user.username]),
-            send_output(Stdout, Message),
+            command_utils:send_output(Stdout, Message),
             {0, NewExecContext}
     end.
-
-%% TODO (std_string) : move into common place
--spec process_error(Stderr :: pid(), Message :: string(), ReturnCode :: integer(), ExecContext :: [{Key :: atom(), Value :: term()}]) ->
-    {ReturnValue :: integer(), ExecContext :: [{Key :: atom(), Value :: term()}]}.
-process_error(Stderr, Message, ReturnCode, ExecContext) ->
-    send_error(Stderr, Message),
-    {ReturnCode, ExecContext}.
-
-%% TODO (std_string) : move into common place
--spec send_output(Stdout :: pid(), Message :: string()) -> 'ok'.
-send_output(Stdout, Message) ->
-    gen_server:call(Stdout, {output, Message}),
-    ok.
-
-%% TODO (std_string) : move into common place
--spec send_error(Stderr :: pid(), Message :: string()) -> 'ok'.
-send_error(Stderr, Message) ->
-    gen_server:call(Stderr, {error, Message}),
-    ok.

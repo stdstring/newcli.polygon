@@ -1,7 +1,8 @@
 EBIN=ebin
 
+COMMON_EBIN = ../cli_common/ebin
+
 SOURCE=src/command/code_generator.erl \
-       src/command/command_behaviour.erl \
        src/command/command_execution_checker.erl \
        src/command/command_factory.erl \
        src/command/command_helper.erl \
@@ -38,7 +39,7 @@ INCLUDE_FLAGS=-I include -I ../cli_command_parser_include
 TARGETS = $(SOURCE:%.erl=$(EBIN)/%.beam)
 
 $(EBIN)/%.beam: %.erl
-	erlc -pa $(EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
+	erlc -pa $(EBIN) -pa $(COMMON_EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
 all: pre_build $(TARGETS)
 	

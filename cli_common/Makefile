@@ -1,6 +1,8 @@
 EBIN=ebin
 
-SOURCE=src/commandline_parser.erl \
+SOURCE=src/command_behaviour.erl \
+       src/command_utils.erl \
+       src/commandline_parser.erl \
        src/config_utils.erl \
        src/crypto_utils.erl \
        src/erlang_term_utils.erl \

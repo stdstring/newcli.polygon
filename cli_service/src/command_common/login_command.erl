@@ -35,7 +35,7 @@ get_help() -> "login help".
 
 execute(Args, Stdout, Stderr, ExecContext) ->
     case check_args(Args) of
-        false -> process_error(Stderr, ?BAD_ARGS_MESSAGE, ?BAD_ARGS_CODE, ExecContext);
+        false -> command_utils:process_error(Stderr, ?BAD_ARGS_MESSAGE, ?BAD_ARGS_CODE, ExecContext);
         true ->
             [Username, Password] = Args,
             process_command(Username, Password, Stdout, Stderr, ExecContext)
@@ -56,7 +56,7 @@ process_command(Username, PwdString, Stdout, Stderr, ExecContext) ->
             Result = authentication_service:authenticate(Username, Pwd),
             process_authentiaction_result(Result, Stdout, Stderr, ExecContext);
         {?USER_KEY, _User} ->
-            process_error(Stderr, ?ALREADY_LOGGED_MESSAGE, ?ALREADY_LOGGED_CODE, ExecContext)
+            command_utils:process_error(Stderr, ?ALREADY_LOGGED_MESSAGE, ?ALREADY_LOGGED_CODE, ExecContext)
     end.
 
 -spec process_authentiaction_result(Result :: {'authentication_complete', User :: #user{}} | {'authentication_fail', Reason :: term()},
@@ -66,34 +66,15 @@ process_command(Username, PwdString, Stdout, Stderr, ExecContext) ->
     {ReturnValue :: integer(), ExecContext :: [{Key :: atom(), Value :: term()}]}.
 process_authentiaction_result({authentication_complete, User}, Stdout, _Stderr, ExecContext) ->
     GreetingMessage = list_utils:get_value_by_key_with_default(ExecContext, ?GREETING_MESSAGE_KEY, 1, ?DEFAULT_GREETING),
-    send_output(Stdout, GreetingMessage),
+    command_utils:send_output(Stdout, GreetingMessage),
     NewExecContext = lists:keystore(?USER_KEY, 1, ExecContext, {?USER_KEY, User}),
     {0, NewExecContext};
 process_authentiaction_result({authentication_fail, unknown_username}, _Stdout, Stderr, ExecContext) ->
-    process_error(Stderr, ?UNKNOWN_USER_MESSAGE, ?UNKNOWN_USER_CODE, ExecContext);
+    command_utils:process_error(Stderr, ?UNKNOWN_USER_MESSAGE, ?UNKNOWN_USER_CODE, ExecContext);
 process_authentiaction_result({authentication_fail, bad_password}, _Stdout, Stderr, ExecContext) ->
-    process_error(Stderr, ?BAD_PASSWORD_MESSAGE, ?BAD_PASSWORD_CODE, ExecContext);
+    command_utils:process_error(Stderr, ?BAD_PASSWORD_MESSAGE, ?BAD_PASSWORD_CODE, ExecContext);
 process_authentiaction_result({authentication_fail, _Reason}, _Stdout, Stderr, ExecContext) ->
-    process_error(Stderr, ?LOGIN_FAILED_MESSAGE, ?LOGIN_FAILED_CODE, ExecContext).
-
-%% TODO (std_string) : move into common place
--spec process_error(Stderr :: pid(), Message :: string(), ReturnCode :: integer(), ExecContext :: [{Key :: atom(), Value :: term()}]) ->
-    {ReturnValue :: integer(), ExecContext :: [{Key :: atom(), Value :: term()}]}.
-process_error(Stderr, Message, ReturnCode, ExecContext) ->
-    send_error(Stderr, Message),
-    {ReturnCode, ExecContext}.
-
-%% TODO (std_string) : move into common place
--spec send_output(Stdout :: pid(), Message :: string()) -> 'ok'.
-send_output(Stdout, Message) ->
-    gen_server:call(Stdout, {output, Message}),
-    ok.
-
-%% TODO (std_string) : move into common place
--spec send_error(Stderr :: pid(), Message :: string()) -> 'ok'.
-send_error(Stderr, Message) ->
-    gen_server:call(Stderr, {error, Message}),
-    ok.
+    command_utils:process_error(Stderr, ?LOGIN_FAILED_MESSAGE, ?LOGIN_FAILED_CODE, ExecContext).
 
 -spec create_pwd_hash(PwdString :: string()) -> binary().
 create_pwd_hash(PwdString) ->
