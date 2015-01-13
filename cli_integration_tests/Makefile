@@ -6,8 +6,6 @@ COMMANDS_SOURCE=test_commands/config_terminal_command.erl \
                 test_commands/exit_command.erl \
                 test_commands/interface_command.erl \
                 test_commands/interface_range_command.erl \
-                test_commands/login_command.erl \
-                test_commands/logout_command.erl \
                 test_commands/name_command.erl \
                 test_commands/noname_command.erl \
                 test_commands/noswitchport_vlan_command.erl \
