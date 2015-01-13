@@ -1,0 +1,44 @@
+EBIN=ebin
+COMMON_EBIN=../cli_common/ebin
+
+COMMANDS_SOURCE=test_commands/config_terminal_command.erl \
+                test_commands/end_command.erl \
+                test_commands/exit_command.erl \
+                test_commands/interface_command.erl \
+                test_commands/interface_range_command.erl \
+                test_commands/login_command.erl \
+                test_commands/logout_command.erl \
+                test_commands/name_command.erl \
+                test_commands/noname_command.erl \
+                test_commands/noswitchport_vlan_command.erl \
+                test_commands/novlan_command.erl \
+                test_commands/ping_command.erl \
+                test_commands/show_vlan_command.erl \
+                test_commands/switchport_vlan_command.erl \
+                test_commands/vlan_command.erl
+SOURCE=
+TEST_SOURCE=
+
+INCLUDE_FLAGS=-I include
+
+COMMANDS_TARGETS=$(COMMANDS_SOURCE:%.erl=$(EBIN)/%.beam)
+TARGETS=$(SOURCE:%.erl=$(EBIN)/%.beam)
+TEST_TARGETS=$(TEST_SOURCE:%.erl=$(EBIN)/%.beam)
+
+TESTS_LIST = $(basename $(notdir $(TEST_SOURCE)))
+
+$(EBIN)/%.beam: %.erl
+	erlc -pa $(EBIN) -pa $(COMMON_EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
+
+all: pre_build $(TARGETS) $(TEST_TARGETS) $(COMMANDS_TARGETS)
+	
+
+test: all
+	# tests
+	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
+
+pre_build:
+	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
+
+clean:
+	$(shell rm -rf $(EBIN)/*)
