@@ -8,11 +8,11 @@ FRONTEND_DATA = cli_frontend/data
 COMMON_EBIN = cli_common/ebin
 TERMINAL_BIN = cli_terminal/bin
 
-INTEGRATION_TESTS = cli_integration_tests
-INTEGRATION_TESTS_BACKEND_EBIN = $(INTEGRATION_TESTS)/backend_ebin
-INTEGRATION_TESTS_COMMON_EBIN = $(INTEGRATION_TESTS)/common_ebin
-INTEGRATION_TESTS_FRONTEND_EBIN = $(INTEGRATION_TESTS)/frontend_ebin
-INTEGRATION_TESTS_TERMINAL_BIN = $(INTEGRATION_TESTS)/cli_terminal_bin
+INTEGRATION_TESTS_OLD = cli_integration_tests_old
+INTEGRATION_TESTS_OLD_BACKEND_EBIN = $(INTEGRATION_TESTS_OLD)/backend_ebin
+INTEGRATION_TESTS_OLD_COMMON_EBIN = $(INTEGRATION_TESTS_OLD)/common_ebin
+INTEGRATION_TESTS_OLD_FRONTEND_EBIN = $(INTEGRATION_TESTS_OLD)/frontend_ebin
+INTEGRATION_TESTS_OLD_TERMINAL_BIN = $(INTEGRATION_TESTS_OLD)/cli_terminal_bin
 
 DEPLOY = deploy
 DEPLOY_BACKEND_EBIN = cli_backend_ebin
@@ -48,26 +48,26 @@ post_build:
 test: all
 	for directory in $(TEST_SUBDIRS); do $(MAKE) -C $$directory test; done
 
-integration_test: all
-	$(shell rm -rf $(INTEGRATION_TESTS_BACKEND_EBIN))
-	$(shell mkdir $(INTEGRATION_TESTS_BACKEND_EBIN))
-	$(shell rm -rf $(INTEGRATION_TESTS_COMMON_EBIN))
-	$(shell mkdir $(INTEGRATION_TESTS_COMMON_EBIN))
-	$(shell rm -rf $(INTEGRATION_TESTS_FRONTEND_EBIN))
-	$(shell mkdir $(INTEGRATION_TESTS_FRONTEND_EBIN))
-	$(shell rm -rf $(INTEGRATION_TESTS_TERMINAL_BIN))
-	$(shell mkdir $(INTEGRATION_TESTS_TERMINAL_BIN))
-	$(shell cp -f -t $(INTEGRATION_TESTS_BACKEND_EBIN) $(BACKEND_EBIN)/*)
-	$(shell cp -f -t $(INTEGRATION_TESTS_COMMON_EBIN) $(COMMON_EBIN)/*)
-	$(shell cp -f -t $(INTEGRATION_TESTS_FRONTEND_EBIN) $(FRONTEND_EBIN)/*)
-	$(shell cp -f -t $(INTEGRATION_TESTS_TERMINAL_BIN) $(TERMINAL_BIN)/*)
-	$(MAKE) -C $(INTEGRATION_TESTS) test
+integration_test_old: all
+	$(shell rm -rf $(INTEGRATION_TESTS_OLD_BACKEND_EBIN))
+	$(shell mkdir $(INTEGRATION_TESTS_OLD_BACKEND_EBIN))
+	$(shell rm -rf $(INTEGRATION_TESTS_OLD_COMMON_EBIN))
+	$(shell mkdir $(INTEGRATION_TESTS_OLD_COMMON_EBIN))
+	$(shell rm -rf $(INTEGRATION_TESTS_OLD_FRONTEND_EBIN))
+	$(shell mkdir $(INTEGRATION_TESTS_OLD_FRONTEND_EBIN))
+	$(shell rm -rf $(INTEGRATION_TESTS_OLD_TERMINAL_BIN))
+	$(shell mkdir $(INTEGRATION_TESTS_OLD_TERMINAL_BIN))
+	$(shell cp -f -t $(INTEGRATION_TESTS_OLD_BACKEND_EBIN) $(BACKEND_EBIN)/*)
+	$(shell cp -f -t $(INTEGRATION_TESTS_OLD_COMMON_EBIN) $(COMMON_EBIN)/*)
+	$(shell cp -f -t $(INTEGRATION_TESTS_OLD_FRONTEND_EBIN) $(FRONTEND_EBIN)/*)
+	$(shell cp -f -t $(INTEGRATION_TESTS_OLD_TERMINAL_BIN) $(TERMINAL_BIN)/*)
+	$(MAKE) -C $(INTEGRATION_TESTS_OLD) test
 
 clean:
 	for directory in $(SOURCE_SUBDIRS); do $(MAKE) -C $$directory clean; done
 	for directory in $(TEST_SUBDIRS); do $(MAKE) -C $$directory clean; done
 	$(MAKE) -C cli_command_parser_prototype clean
-	$(MAKE) -C cli_integration_tests clean
+	$(MAKE) -C cli_integration_tests_old clean
 
 deploy: all
 	$(shell rm -rf $(DEPLOY))
