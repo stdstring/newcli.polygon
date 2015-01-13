@@ -11,17 +11,17 @@
 -include("crypto_defs.hrl").
 
 %% TODO (std_string) : move into common place
--define(BAD_ARGS_MESSAGE, "Bad arguments").
+-define(BAD_ARGS_MESSAGE, "Bad arguments\n").
 -define(BAD_ARGS_CODE, 255).
--define(ALREADY_LOGGED_MESSAGE, "User is already logged").
+-define(ALREADY_LOGGED_MESSAGE, "User is already logged\n").
 -define(ALREADY_LOGGED_CODE, 255).
--define(UNKNOWN_USER_MESSAGE, "Login's attempt is failed due to the following: unknown user").
+-define(UNKNOWN_USER_MESSAGE, "Login's attempt is failed due to the following: unknown user\n").
 -define(UNKNOWN_USER_CODE, 255).
--define(BAD_PASSWORD_MESSAGE, "Login's attempt is failed due to the following: bad password").
+-define(BAD_PASSWORD_MESSAGE, "Login's attempt is failed due to the following: bad password\n").
 -define(BAD_PASSWORD_CODE, 255).
--define(LOGIN_FAILED_MESSAGE, "Login's attempt is failed").
+-define(LOGIN_FAILED_MESSAGE, "Login's attempt is failed\n").
 -define(LOGIN_FAILED_CODE, 255).
--define(DEFAULT_GREETING, "Default greeting message").
+-define(DEFAULT_GREETING, "Default greeting message\n").
 
 %% ====================================================================
 %% API functions

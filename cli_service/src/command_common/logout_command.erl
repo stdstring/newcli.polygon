@@ -10,11 +10,11 @@
 -include("command_defs.hrl").
 
 %% TODO (std_string) : move into common place
--define(BAD_ARGS_MESSAGE, "Bad arguments").
+-define(BAD_ARGS_MESSAGE, "Bad arguments\n").
 -define(BAD_ARGS_CODE, 255).
--define(MISSING_USER_MESSAGE, "Missing user").
+-define(MISSING_USER_MESSAGE, "Missing user\n").
 -define(MISSING_USER_CODE, 255).
--define(LOGOUT_TEMPLATE, "User ~p is logged out").
+-define(LOGOUT_TEMPLATE, "User ~p is logged out\n").
 
 %% ====================================================================
 %% API functions

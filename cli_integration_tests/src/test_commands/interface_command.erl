@@ -1,4 +1,4 @@
-%% @author stdstring
+%% @author std-string
 
 -module(interface_command).
 
@@ -7,7 +7,7 @@
 -export([get_name/0, get_command_body/0, get_help/0, execute/4]).
 
 %% TODO (std_string) : move into common place
--define(BAD_ARGS_MESSAGE, "Bad arguments").
+-define(BAD_ARGS_MESSAGE, "Bad arguments\n").
 -define(BAD_ARGS_CODE, 255).
 
 %% ====================================================================
