@@ -13,7 +13,9 @@ COMMANDS_SOURCE=src/test_commands/config_terminal_command.erl \
                 src/test_commands/ping_command.erl \
                 src/test_commands/show_vlan_command.erl \
                 src/test_commands/switchport_vlan_command.erl \
-                src/test_commands/vlan_command.erl
+                src/test_commands/vlan_command.erl \
+                src/integration_tests_common.erl \
+                src/integration_tests_manager.erl
 SOURCE=
 TEST_SOURCE=
 
