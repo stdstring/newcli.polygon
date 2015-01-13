@@ -1,19 +1,19 @@
 EBIN=ebin
 COMMON_EBIN=../cli_common/ebin
 
-COMMANDS_SOURCE=test_commands/config_terminal_command.erl \
-                test_commands/end_command.erl \
-                test_commands/exit_command.erl \
-                test_commands/interface_command.erl \
-                test_commands/interface_range_command.erl \
-                test_commands/name_command.erl \
-                test_commands/noname_command.erl \
-                test_commands/noswitchport_vlan_command.erl \
-                test_commands/novlan_command.erl \
-                test_commands/ping_command.erl \
-                test_commands/show_vlan_command.erl \
-                test_commands/switchport_vlan_command.erl \
-                test_commands/vlan_command.erl
+COMMANDS_SOURCE=src/test_commands/config_terminal_command.erl \
+                src/test_commands/end_command.erl \
+                src/test_commands/exit_command.erl \
+                src/test_commands/interface_command.erl \
+                src/test_commands/interface_range_command.erl \
+                src/test_commands/name_command.erl \
+                src/test_commands/noname_command.erl \
+                src/test_commands/noswitchport_vlan_command.erl \
+                src/test_commands/novlan_command.erl \
+                src/test_commands/ping_command.erl \
+                src/test_commands/show_vlan_command.erl \
+                src/test_commands/switchport_vlan_command.erl \
+                src/test_commands/vlan_command.erl
 SOURCE=
 TEST_SOURCE=
 
