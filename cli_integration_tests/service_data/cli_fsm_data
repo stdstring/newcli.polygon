@@ -1,0 +1,31 @@
+[
+%% {'states', [{Statename :: atom(), Representation :: string(), [AllowedCommands :: atom()]}]}
+{states, [{nonauth_mode}, "", [login]},
+          {fundamental_mode, "", [config_terminal, ping, show_vlan, logout]},
+          {global_config_mode, "config", [interface, interface_range, vlan, no_vlan, 'end', exit, show_vlan, logout]},
+          {interface_config_mode, "config-if", [switchport_vlan, no_switchport_vlan, 'end', exit, show_vlan, logout]},
+          {interface_range_config_mode, "config-if-range", [switchport_vlan, no_switchport_vlan, 'end', exit, show_vlan, logout]},
+          {vlan_config_mode, "config-vlan", [name_vlan, no_name_vlan, vlan, no_vlan, 'end', exit, show_vlan, logout]}]},
+%% {'transitions', [{FromState :: atom(), ToState :: atom(), CommandName :: atom()}]}
+{transitions, [{nonauth_mode, fundamental_mode, login},
+               {fundamental_mode, global_config_mode, config_terminal},
+               {global_config_mode, interface_config_mode, interface},
+               {global_config_mode, interface_range_config_mode, interface_range},
+               {global_config_mode, vlan_config_mode, vlan},
+               {global_config_mode, vlan_config_mode, no_vlan},
+               {vlan_config_mode, global_config_mode, exit},
+               {interface_range_config_mode, global_config_mode, exit},
+               {interface_config_mode, global_config_mode, exit},
+               {global_config_mode, fundamental_mode, exit},
+               {vlan_config_mode, fundamental_mode, 'end'},
+               {interface_range_config_mode, fundamental_mode, 'end'},
+               {interface_config_mode, fundamental_mode, 'end'},
+               {global_config_mode, fundamental_mode, 'end'},
+               {vlan_config_mode, nonauth_mode, logout},
+               {interface_range_config_mode, nonauth_mode, logout},
+               {interface_config_mode, nonauth_mode, logout},
+               {global_config_mode, nonauth_mode, logout},
+               {fundamental_mode, nonauth_mode, logout}]},
+%% {'initial_state', StateName :: atom()}
+{initial_state, fundamental_mode}
+].

@@ -1,4 +1,5 @@
 EBIN=ebin
+SERVICE_EBIN=service_ebin
 COMMON_EBIN=../cli_common/ebin
 
 COMMANDS_SOURCE=src/test_commands/config_terminal_command.erl \
@@ -13,11 +14,10 @@ COMMANDS_SOURCE=src/test_commands/config_terminal_command.erl \
                 src/test_commands/ping_command.erl \
                 src/test_commands/show_vlan_command.erl \
                 src/test_commands/switchport_vlan_command.erl \
-                src/test_commands/vlan_command.erl \
-                src/integration_tests_common.erl \
-                src/integration_tests_manager.erl
-SOURCE=
-TEST_SOURCE=
+                src/test_commands/vlan_command.erl
+SOURCE=src/integration_tests_common.erl \
+       src/integration_tests_manager.erl
+TEST_SOURCE=src/cli_service_integration_tests.erl
 
 INCLUDE_FLAGS=-I include
 
@@ -34,8 +34,10 @@ all: pre_build $(TARGETS) $(TEST_TARGETS) $(COMMANDS_TARGETS)
 	
 
 test: all
+	# prerequisites
+	$(shell cp -f -t $(SERVICE_EBIN) service_prerequisites/*)
 	# tests
-	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
+	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) $(SERVICE_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 
 pre_build:
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)

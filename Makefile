@@ -8,7 +8,10 @@ FRONTEND_DATA = cli_frontend/data
 COMMON_EBIN = cli_common/ebin
 TERMINAL_BIN = cli_terminal/bin
 
+SERVICE_EBIN = cli_service/ebin
+
 INTEGRATION_TESTS = cli_integration_tests
+INTEGRATION_TESTS_SERVICE_EBIN = $(INTEGRATION_TESTS)/service_ebin
 
 INTEGRATION_TESTS_OLD = cli_integration_tests_old
 INTEGRATION_TESTS_OLD_BACKEND_EBIN = $(INTEGRATION_TESTS_OLD)/backend_ebin
@@ -66,6 +69,9 @@ integration_test_old: all
 	$(MAKE) -C $(INTEGRATION_TESTS_OLD) test
 
 integration_test: all
+	$(shell rm -rf $(INTEGRATION_TESTS_SERVICE_EBIN))
+	$(shell mkdir $(INTEGRATION_TESTS_SERVICE_EBIN))
+	$(shell cp -f -t $(INTEGRATION_TESTS_SERVICE_EBIN) $(SERVICE_EBIN)/*)
 	$(MAKE) -C $(INTEGRATION_TESTS) test
 
 clean:
