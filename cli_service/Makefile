@@ -34,6 +34,8 @@ SOURCE=src/command/code_generator.erl \
        src/config_reader.erl \
        src/prompt_factory.erl
 
+COPY=src/cli_service_application.app
+
 INCLUDE_FLAGS=-I include -I ../cli_command_parser_include
 
 TARGETS = $(SOURCE:%.erl=$(EBIN)/%.beam)
@@ -41,11 +43,14 @@ TARGETS = $(SOURCE:%.erl=$(EBIN)/%.beam)
 $(EBIN)/%.beam: %.erl
 	erlc -pa $(EBIN) -pa $(COMMON_EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
-all: pre_build $(TARGETS)
+all: pre_build $(TARGETS) post_build
 	
 
 pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
+
+post_build:
+	$(shell cp -f -t $(EBIN) $(COPY))
 
 clean:
 	$(shell rm -rf $(EBIN)/*)

@@ -1,6 +1,6 @@
 [
 %% {'states', [{Statename :: atom(), Representation :: string(), [AllowedCommands :: atom()]}]}
-{states, [{nonauth_mode}, "", [login]},
+{states, [{nonauth_mode, "", [login]},
           {fundamental_mode, "", [config_terminal, ping, show_vlan, logout]},
           {global_config_mode, "config", [interface, interface_range, vlan, no_vlan, 'end', exit, show_vlan, logout]},
           {interface_config_mode, "config-if", [switchport_vlan, no_switchport_vlan, 'end', exit, show_vlan, logout]},
@@ -27,5 +27,5 @@
                {global_config_mode, nonauth_mode, logout},
                {fundamental_mode, nonauth_mode, logout}]},
 %% {'initial_state', StateName :: atom()}
-{initial_state, fundamental_mode}
+{initial_state, nonauth_mode}
 ].
