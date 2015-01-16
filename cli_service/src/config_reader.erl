@@ -33,6 +33,10 @@ process({?CLI_FSM_CONFIG_KEY, CliFsmData}, Config, MainConfigDir) ->
     CliFsmSource = list_utils:get_value_by_key(CliFsmData, ?CLI_FSM_DATA_SOURCE, 1, missing_cli_fsm_def),
     CliFsm = erlang_term_utils:read_from_file(filename:absname(CliFsmSource, MainConfigDir)),
     Config#global_config{cli_fsm = CliFsm};
+process({?TERMINAL_CONFIG_KEY, TerminalData}, Config, _MainConfigDir) ->
+    PortNumber = list_utils:get_value_by_key_with_default(TerminalData, ?TERMINAL_PORT_NUMBER, 1, ?DEFAULT_PORT_NUMBER),
+    TerminalConfig = #cli_terminal_config{port_number = PortNumber},
+    Config#global_config{cli_terminal = TerminalConfig};
 process(Other, Config, _MainConfigDir) ->
     ConfigOther = Config#global_config.other,
     Config#global_config{other = [Other] ++ ConfigOther}.

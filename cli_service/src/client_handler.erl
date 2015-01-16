@@ -10,6 +10,7 @@
 -include("common_defs.hrl").
 
 -define(COMMAND_CREATION_ERROR, "Command's creation is failed due to the following reason: ~w\n").
+-define(COMMAND_ALREADY_RUN, "There is running the other command, now\n").
 
 -export([start/2, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1]).
 -export([send_output/2, send_error/2, finish_command/3, finish_exec/3]).
@@ -22,6 +23,7 @@
 
 -spec start(GlobalConfig :: #global_config{}, Endpoint :: pid()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(GlobalConfig, Endpoint) ->
+    io:format("client_handler:start ~n", []),
     gen_server:start_link(?MODULE, [GlobalConfig, Endpoint], []).
 
 -spec process_command(Handler :: pid(), CommandLine :: string()) -> boolean().
@@ -62,14 +64,20 @@ finish_exec(Handler, ReturnCode, ExecutionState) ->
 
 init([GlobalConfig, Endpoint]) ->
     %% for catching exit signals from commands
+    io:format("client_handler:init ~n", []),
     process_flag(trap_exit, true),
-    CommandModule = module_name_generator:generator(?ENTRY_MODULE_PREFIX),
+    CommandModule = module_name_generator:generate(?ENTRY_MODULE_PREFIX),
+    io:format("client_handler:init CommandModule=~p~n", [CommandModule]),
     case cli_fsm:start(GlobalConfig#global_config.cli_fsm) of
-        {ok, CliFsm} -> #client_handler_state{config = GlobalConfig,
-                                              endpoint = Endpoint,
-                                              command_module = CommandModule,
-                                              cli_fsm =CliFsm};
-        {error, Reason} -> {stop, Reason}
+        {ok, CliFsm} ->
+            State = #client_handler_state{config = GlobalConfig,
+                                          endpoint = Endpoint,
+                                          command_module = CommandModule,
+                                          cli_fsm =CliFsm},
+            {ok, State};
+        {error, Reason} ->
+            io:format("cli_fsm:start error=~p~n", [Reason]),
+            {stop, Reason}
     end.
 
 handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_command = undefined} = State) ->
@@ -87,7 +95,8 @@ handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_comman
             process_command_creation_error(State, Reason),
             {reply, false, State}
     end;
-handle_call({process_command, _CommandLine}, _From, State) ->
+handle_call({?PROCESS, _CommandLine}, _From, State) ->
+    command_helper:send_error(State, ?COMMAND_ALREADY_RUN),
     {reply, false, State};
 handle_call(?CURRENT_STATE, _From, State) ->
     Prompt = prompt_factory:generate_prompt(State),

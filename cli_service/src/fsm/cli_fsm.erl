@@ -21,6 +21,7 @@
 -spec start(SourceData :: [{Key :: atom(), Value :: term()}]) ->
     {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(SourceData) ->
+    io:format("cli_fsm:start ~n", []),
     gen_fsm:start_link(?MODULE, SourceData, []).
 
 -spec process_command(FsmPid :: pid(), CommandName :: atom()) -> #cli_fsm_state_info{}.
@@ -32,6 +33,7 @@ get_current_state(FsmPid) ->
     gen_fsm:sync_send_event(FsmPid, current_state).
 
 init(SourceData) ->
+    io:format("cli_fsm:init~n", []),
     StateData = create_state(SourceData),
     {ok, processing, StateData}.
 

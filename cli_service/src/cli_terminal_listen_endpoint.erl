@@ -18,15 +18,19 @@
 
 -spec start(Config :: #cli_terminal_config{}) -> {'ok', Pid :: pid()}.
 start(Config) ->
+    io:format("cli_terminal_listen_endpoint:start~n", []),
     proc_lib:start_link(?MODULE, init, [Config]).
 
 init(#cli_terminal_config{port_number = PortNumber}) ->
+    io:format("cli_terminal_listen_endpoint:init port=~p~n", [PortNumber]),
     case gen_tcp:listen(PortNumber, [binary, {packet, 4}, {active, once}]) of
         {ok, ListenSocket} ->
+            io:format("cli_terminal_listen_endpoint:init ok~n", []),
             register(?LISTEN_ENDPOINT_NAME, self()),
             proc_lib:init_ack({ok, self()}),
             process_listen(#listen_state{listen_socket = ListenSocket});
         {error, Reason} ->
+            io:format("cli_terminal_listen_endpoint:init error=~p~n", [Reason]),
             proc_lib:init_ack({error, {listen_error, Reason}})
     end.
 

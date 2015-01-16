@@ -32,6 +32,7 @@ check_service() ->
 
 -spec interact_with_service() -> {OutputResponse :: {'command_out', CommandOut :: string()}, EndResponse :: {'end', Prompt :: string()}}.
 interact_with_service() ->
+    %% {ok, Socket} = gen_tcp:connect({127, 0, 0, 1}, 6666, [binary, {packet, 4}, {active, false}]),
     {ok, Socket} = gen_tcp:connect(?SERVICE_ENDPOINT_ADDRESS, ?SERVICE_ENDPOINT_PORT, [binary, {packet, 4}, {active, false}]),
     gen_tcp:send(Socket, term_to_binary(?COMMAND)),
     {ok, OutputPacket} = gen_tcp:recv(Socket, 0),
