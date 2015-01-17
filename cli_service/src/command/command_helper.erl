@@ -25,8 +25,7 @@ send_error(State, Error) when is_record(State, client_handler_state) ->
 send_end(State) when is_record(State, client_handler_state) ->
     %%ExecutionState = State#client_handler_state.execution_state,
     Endpoint = State#client_handler_state.endpoint,
-    %%Prompt = prompt_factory:generate_prompt(ExecutionState),
-    Prompt = "",
+    Prompt = prompt_factory:generate_prompt(State),
     cli_terminal_endpoint:handle_end(Endpoint, Prompt).
 
 
