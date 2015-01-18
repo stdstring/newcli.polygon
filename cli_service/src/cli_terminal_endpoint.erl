@@ -18,7 +18,6 @@
 -spec start(GlobalConfig :: #global_config{}, Socket :: term()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(GlobalConfig, Socket) ->
     io:format("cli_terminal_endpoint:start~n", []),
-    %%io:format("Socket other side:~p~n", [inet:peername(Socket)]),
     gen_server:start_link(?MODULE, [GlobalConfig, Socket], []).
 
 -spec handle_output(Endpoint :: pid(), Output :: string()) -> 'ok'.
