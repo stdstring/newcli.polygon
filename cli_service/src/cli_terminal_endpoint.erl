@@ -18,6 +18,7 @@
 -spec start(GlobalConfig :: #global_config{}, Socket :: term()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(GlobalConfig, Socket) ->
     io:format("cli_terminal_endpoint:start~n", []),
+    %%io:format("Socket other side:~p~n", [inet:peername(Socket)]),
     gen_server:start_link(?MODULE, [GlobalConfig, Socket], []).
 
 -spec handle_output(Endpoint :: pid(), Output :: string()) -> 'ok'.
@@ -37,7 +38,9 @@ handle_end(Endpoint, Prompt) ->
 
 init([GlobalConfig, Socket]) ->
     io:format("cli_terminal_endpoint:init ~n", []),
-    case client_handler:start(GlobalConfig, self()) of
+    %% TODO (std_string) : process error case
+    {ok, SocketOtherSide} = inet:peername(Socket),
+    case client_handler:start(GlobalConfig, self(), SocketOtherSide) of
         {ok, ClientHandler} ->
             io:format("client_handler:start success ~n", []),
             {ok, #cli_terminal_state{socket = Socket, client_handler = ClientHandler}};

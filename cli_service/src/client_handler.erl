@@ -12,7 +12,7 @@
 -define(COMMAND_CREATION_ERROR, "Command's creation is failed due to the following reason: ~w\n").
 -define(COMMAND_ALREADY_RUN, "There is running the other command, now\n").
 
--export([start/2, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1]).
+-export([start/3, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1]).
 -export([send_output/2, send_error/2, finish_command/3, finish_exec/3]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -21,10 +21,11 @@
 %% API functions
 %% ====================================================================
 
--spec start(GlobalConfig :: #global_config{}, Endpoint :: pid()) -> {'ok', Pid :: pid()} | {'error', Reason :: term()}.
-start(GlobalConfig, Endpoint) ->
+-spec start(GlobalConfig :: #global_config{}, Endpoint :: pid(), SocketOtherSide :: {Address :: tuple(), Port :: pos_integer()}) ->
+    {'ok', Pid :: pid()} | {'error', Reason :: term()}.
+start(GlobalConfig, Endpoint, SocketOtherSide) ->
     io:format("client_handler:start ~n", []),
-    gen_server:start_link(?MODULE, [GlobalConfig, Endpoint], []).
+    gen_server:start_link(?MODULE, [GlobalConfig, Endpoint, SocketOtherSide], []).
 
 -spec process_command(Handler :: pid(), CommandLine :: string()) -> boolean().
 process_command(Handler, CommandLine) ->
@@ -62,11 +63,11 @@ finish_command(Handler, ReturnCode, ExecutionState) ->
 finish_exec(Handler, ReturnCode, ExecutionState) ->
     gen_server:cast(Handler, {?FINISH_EXEC, ReturnCode, ExecutionState}).
 
-init([GlobalConfig, Endpoint]) ->
+init([GlobalConfig, Endpoint, SocketOtherSide]) ->
     %% for catching exit signals from commands
     io:format("client_handler:init ~n", []),
     process_flag(trap_exit, true),
-    CommandModule = module_name_generator:generate(?ENTRY_MODULE_PREFIX),
+    CommandModule = module_name_generator:generate(?ENTRY_MODULE_PREFIX, SocketOtherSide),
     io:format("client_handler:init CommandModule=~p~n", [CommandModule]),
     case cli_fsm:start(GlobalConfig#global_config.cli_fsm) of
         {ok, CliFsm} ->
