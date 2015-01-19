@@ -3,6 +3,7 @@ COMMON_EBIN=common_ebin
 BACKEND_EBIN=backend_ebin
 BACKEND_COMMANDS_EBIN=backend_commands_ebin
 FRONTEND_EBIN=frontend_ebin
+TERMINAL_BIN=cli_terminal_bin
 
 COMMANDS_SOURCE=backend_commands/command_behaviour.erl \
                 backend_commands/config_terminal_command.erl \
@@ -65,3 +66,4 @@ clean:
 	$(shell rm -rf $(BACKEND_EBIN)/*)
 	$(shell rm -rf $(BACKEND_COMMANDS_EBIN)/*)
 	$(shell rm -rf $(FRONTEND_EBIN)/*)
+	$(shell rm -rf $(TERMINAL_BIN)/*)

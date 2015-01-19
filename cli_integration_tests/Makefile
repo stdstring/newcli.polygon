@@ -1,5 +1,6 @@
 EBIN=ebin
 SERVICE_EBIN=service_ebin
+TERMINAL_BIN=cli_terminal_bin
 COMMON_EBIN=../cli_common/ebin
 
 COMMANDS_SOURCE=src/test_commands/config_terminal_command.erl \
@@ -45,3 +46,5 @@ pre_build:
 
 clean:
 	$(shell rm -rf $(EBIN)/*)
+	$(shell rm -rf $(SERVICE_EBIN)/*)
+	$(shell rm -rf $(TERMINAL_BIN)/*)

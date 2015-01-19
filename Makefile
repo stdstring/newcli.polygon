@@ -83,6 +83,7 @@ clean:
 	for directory in $(TEST_SUBDIRS); do $(MAKE) -C $$directory clean; done
 	$(MAKE) -C cli_command_parser_prototype clean
 	$(MAKE) -C cli_integration_tests_old clean
+	$(MAKE) -C cli_integration_tests clean
 
 deploy: all
 	$(shell rm -rf $(DEPLOY))
