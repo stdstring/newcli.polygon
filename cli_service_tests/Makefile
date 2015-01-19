@@ -1,5 +1,6 @@
 EBIN=ebin
 
+COMMON_EBIN = ../cli_common/ebin
 SRC_EBIN = ../cli_service/ebin
 
 SOURCE=src/code_generator/cli_fsm_mock.erl \
@@ -41,7 +42,7 @@ TEST_TARGETS = $(TEST_SOURCE:%.erl=$(EBIN)/%.beam)
 TESTS_LIST = $(basename $(notdir $(TEST_SOURCE)))
 
 $(EBIN)/%.beam: %.erl
-	erlc -pa $(EBIN) -pa $(SRC_EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
+	erlc -pa $(EBIN) -pa $(COMMON_EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
 all: pre_build $(TARGETS) $(TEST_TARGETS)
 

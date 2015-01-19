@@ -141,7 +141,7 @@ create_success_command_exps(Context, NewContext) ->
     [#expectation{source = io_buffer, func = start, args = [], result = {ok, ?BUFFER_REF}},
      #expectation{source = command_execution_checker, func = execution_precheck, args = [command_example, ?CLI_FSM_REF, User], result = true},
      #expectation{source = command_module, func = execute, args = [["iddqd","666"], ?BUFFER_REF, ?BUFFER_REF, Context], result = {0, NewContext}},
-     #expectation{source = cli_fsm, func = process_command, args = [command_example, ?CLI_FSM_REF], result = ok},
+     #expectation{source = cli_fsm, func = process_command, args = [?CLI_FSM_REF, command_example], result = ok},
      #expectation{source = io_buffer, func = get_data, args = [?BUFFER_REF, both], result = [{output, "IDDQD"}, {error, "IDKFA"}]},
      #expectation{source = client_handler, func = send_output, args = [?CLIENT_HANDLER_REF, "IDDQD"], result = ok},
      #expectation{source = client_handler, func = send_error, args = [?CLIENT_HANDLER_REF, "IDKFA"], result = ok},
