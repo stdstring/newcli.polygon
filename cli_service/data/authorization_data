@@ -1,6 +1,6 @@
 %% [{command_name, access_level}]
 [
-{login, 0},
+{login, undefined},
 {logout, 0},
 {config_terminal, 15},
 {interface, 15},

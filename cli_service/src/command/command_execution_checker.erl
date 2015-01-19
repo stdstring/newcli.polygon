@@ -11,10 +11,10 @@
 %% API functions
 %% ====================================================================
 
--spec execution_precheck(CommandName :: atom(), CliFsm :: pid(), User :: #user{}) ->
+-spec execution_precheck(CommandName :: atom(), CliFsm :: pid(), User :: #user{} | '') ->
     'true' | {'false', 'access_denied'} | {'false', 'authorization_bad_config'} | {'false', 'unsuitable_command'}.
 execution_precheck(CommandName, CliFsm, User) ->
-    case authorization_service:authorize(User, CommandName) of
+    case authorization_service:authorize_command(User, CommandName) of
         {authorization_result, access_allowed} -> execution_cli_precheck(CommandName, CliFsm);
         {authorization_result, access_denied} -> {false, access_denied};
         {authorization_fail, unknown_command} -> {false, authorization_bad_config}

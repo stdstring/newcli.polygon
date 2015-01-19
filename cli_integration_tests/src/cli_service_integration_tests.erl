@@ -1,3 +1,5 @@
+%% @author std-string
+
 -module(cli_service_integration_tests).
 
 -include_lib("eunit/include/eunit.hrl").

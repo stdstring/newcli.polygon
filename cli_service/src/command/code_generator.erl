@@ -266,7 +266,7 @@ generate_process_fail_fun(ModuleDefs) ->
 -spec generate_fsm_notification_command(CommandName :: atom(), ModuleDefs :: #module_defs{}) -> tuple().
 generate_fsm_notification_command(CommandName, ModuleDefs) ->
     %% cli_fsm:process_command(CliFsm, CommandName),
-    NotificationArgs = [{atom, 0, CommandName}, {var, 0, 'CliFsm'}],
+    NotificationArgs = [{var, 0, 'CliFsm'}, {atom, 0, CommandName}],
     {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.cli_fsm_module}, {atom, 0, process_command}}, NotificationArgs}.
 
 -spec generate_send_error_command(ModuleDefs :: #module_defs{}) -> tuple().

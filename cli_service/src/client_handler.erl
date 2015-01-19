@@ -61,6 +61,7 @@ finish_command(Handler, ReturnCode, ExecutionState) ->
 
 -spec finish_exec(Handler :: pid(), ReturnCode :: integer(), ExecutionState :: [{Key :: atom(), Value :: term()}]) -> 'ok'.
 finish_exec(Handler, ReturnCode, ExecutionState) ->
+    io:format("client_handler:finish_exec~n"),
     gen_server:cast(Handler, {?FINISH_EXEC, ReturnCode, ExecutionState}).
 
 init([GlobalConfig, Endpoint, SocketOtherSide]) ->

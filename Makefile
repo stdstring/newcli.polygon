@@ -12,6 +12,7 @@ SERVICE_EBIN = cli_service/ebin
 
 INTEGRATION_TESTS = cli_integration_tests
 INTEGRATION_TESTS_SERVICE_EBIN = $(INTEGRATION_TESTS)/service_ebin
+INTEGRATION_TESTS_TERMINAL_BIN = $(INTEGRATION_TESTS)/cli_terminal_bin
 
 INTEGRATION_TESTS_OLD = cli_integration_tests_old
 INTEGRATION_TESTS_OLD_BACKEND_EBIN = $(INTEGRATION_TESTS_OLD)/backend_ebin
@@ -71,7 +72,10 @@ integration_test_old: all
 integration_test: all
 	$(shell rm -rf $(INTEGRATION_TESTS_SERVICE_EBIN))
 	$(shell mkdir $(INTEGRATION_TESTS_SERVICE_EBIN))
+	$(shell rm -rf $(INTEGRATION_TESTS_TERMINAL_BIN))
+	$(shell mkdir $(INTEGRATION_TESTS_TERMINAL_BIN))
 	$(shell cp -f -t $(INTEGRATION_TESTS_SERVICE_EBIN) $(SERVICE_EBIN)/*)
+	$(shell cp -f -t $(INTEGRATION_TESTS_TERMINAL_BIN) $(TERMINAL_BIN)/*)
 	$(MAKE) -C $(INTEGRATION_TESTS) test
 
 clean:

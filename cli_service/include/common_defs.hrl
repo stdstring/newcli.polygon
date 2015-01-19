@@ -7,7 +7,7 @@
 -define(DEFAULT_PORT_NUMBER, 65535).
 
 -record(cli_terminal_config, {port_number = ?DEFAULT_PORT_NUMBER :: 1..65535, max_client_count = 10 :: pos_integer()}).
--record(global_config, {device_name = "" :: string(),
+-record(global_config, {device_name = "CliDemo" :: string(),
                         cli_terminal = #cli_terminal_config{} :: #cli_terminal_config{},
                         commands = [] :: [{CommandName :: atom(), CommandModule :: atom()}],
                         cli_fsm = [] :: [{Key :: atom(), Value :: term()}],

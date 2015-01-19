@@ -26,6 +26,7 @@ start(SourceData) ->
 
 -spec process_command(FsmPid :: pid(), CommandName :: atom()) -> #cli_fsm_state_info{}.
 process_command(FsmPid, CommandName) ->
+    io:format("cli_fsm:process_command pid=~p~n", [FsmPid]),
     gen_fsm:sync_send_event(FsmPid, {command, CommandName}).
 
 -spec get_current_state(FsmPid :: pid()) -> #cli_fsm_state_info{}.
