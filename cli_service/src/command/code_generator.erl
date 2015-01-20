@@ -56,7 +56,7 @@
 %%         {0, NewContext} ->
 %%             process_success(CliFsm, Buffer, ClientHandler, NewContext);
 %%         {ReturnValue, NewContext} ->
-%%             Message = "Command failed with return code " ++ integer_to_list(ReturnValue),
+%%             Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
 %%             process_fail(Message, ReturnValue, Buffer, ClientHandler, NewContext)
 %%     end.
 %%
@@ -171,7 +171,7 @@ generate_process_command_fun(#command{module = Module, arguments =Args}) ->
     %%         {0, NewContext} ->
     %%             process_success(CliFsm, Buffer, ClientHandler, NewContext);
     %%         {ReturnValue, NewContext} ->
-    %%             Message = "Command failed with return code " ++ integer_to_list(ReturnValue),
+    %%             Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
     %%             process_fail(Message, ReturnValue, Buffer, ClientHandler, NewContext)
     %%     end.
     CommandArgs = [generate_arg_list(Args), ?BUFFER, ?BUFFER, ?CONTEXT],
@@ -203,9 +203,11 @@ generate_arg_list([#argument{type = string, value = Value} | Rest], Result) ->
 
 -spec generate_command_fail_message_command() -> tuple().
 generate_command_fail_message_command() ->
-    %% Message = "Command failed with return code " ++ integer_to_list(ReturnValue)
-    ReturnCodeStr = {call, 0, {remote, 0, {atom, 0, erlang}, {atom, 0, integer_to_list}}, [?RETURN_VALUE]},
-    {op, 0, '++', {string, 0, ?COMMAND_FAIL_MESSAGE}, ReturnCodeStr}.
+    %% Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue])
+    %%ReturnCodeStr = {call, 0, {remote, 0, {atom, 0, erlang}, {atom, 0, integer_to_list}}, [?RETURN_VALUE]},
+    %%{op, 0, '++', {string, 0, ?COMMAND_FAIL_MESSAGE}, ReturnCodeStr}.
+    Args = [{string, 0, ?COMMAND_FAIL_TEMPLATE}, {cons, 0, ?RETURN_VALUE, {nil, 0}}],
+    {call, 0, {remote, 0, {atom, 0, string_utils}, {atom, 0, format}}, Args}.
 
 
 -spec generate_process_success_fun(CommandName :: atom(), ModuleDefs :: #module_defs{}) -> tuple().

@@ -92,9 +92,10 @@ std::string create_command(std::string const &login, std::string const &password
     std::string command(LOGIN_COMMAND_PREFIX);
     command.push_back(' ');
     command.append(login);
-    command.push_back(' ');
+    command.append(" \"");
     std::string password_base64 = to_base64(password);
     command.append(password_base64);
+    command.push_back('\"');
     return command;
 }
 

@@ -38,6 +38,8 @@ execute(Args, Stdout, Stderr, ExecContext) ->
         false -> command_utils:process_error(Stderr, ?BAD_ARGS_MESSAGE, ?BAD_ARGS_CODE, ExecContext);
         true ->
             [Username, Password] = Args,
+            io:format("login_command username=~p~n", [Username]),
+            io:format("login_command password=~p~n", [Password]),
             process_command(Username, Password, Stdout, Stderr, ExecContext)
     end.
 
@@ -52,6 +54,7 @@ check_args(_Other) -> false.
 process_command(Username, PwdString, Stdout, Stderr, ExecContext) ->
     case lists:keyfind(?USER_KEY, 1, ExecContext) of
         false ->
+            io:format("login_command decoded password=~p~n", [base64:decode_to_string(PwdString)]),
             Pwd = create_pwd_hash(base64:decode_to_string(PwdString)),
             Result = authentication_service:authenticate(Username, Pwd),
             process_authentiaction_result(Result, Stdout, Stderr, ExecContext);
