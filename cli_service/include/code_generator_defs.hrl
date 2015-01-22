@@ -9,5 +9,4 @@
 -define(UNSUITABLE_COMMAND_MESSAGE, "Unsuitable command\n").
 -define(ACCESS_DENIED_MESSAGE, "Access denied\n").
 -define(BAD_CONFIG_MESSAGE, "Bad authorization config\n").
-%%-define(COMMAND_FAIL_MESSAGE, "Command fails with return code ").
 -define(COMMAND_FAIL_TEMPLATE, "Command execution failed. Return code is ~w\n").

@@ -22,16 +22,21 @@ generate_prompt(State) ->
     DeviceName = State#client_handler_state.config#global_config.device_name,
     CliFsm = State#client_handler_state.cli_fsm,
     CliFsmState = cli_fsm:get_current_state(CliFsm),
-    CurrentStateRepr = CliFsmState#cli_fsm_state_info.current_state_representation,
+    CurrentStateRepr = generate_state_repr(CliFsmState#cli_fsm_state_info.current_state_representation),
     generate_prompt(User, DeviceName, CurrentStateRepr).
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
+-spec generate_prompt(User :: #user{} | undefined, DeviceName :: string(), CurrentStateRepr :: string()) -> string().
 generate_prompt(#user{username = Username, access_level = ?MAX_ACCESS_LEVEL}, DeviceName, CurrentStateRepr) ->
     string_utils:format(?PROMPT_FORMAT, [Username, DeviceName, CurrentStateRepr, ?ADMIN_FOOTER]);
 generate_prompt(#user{username = Username}, DeviceName, CurrentStateRepr) ->
     string_utils:format(?PROMPT_FORMAT, [Username, DeviceName, CurrentStateRepr, ?USER_FOOTER]);
 generate_prompt(undefined, DeviceName, CurrentStateRepr) ->
     string_utils:format(?PROMPT_FORMAT, ["", DeviceName, CurrentStateRepr, ?USER_FOOTER]).
+
+-spec generate_state_repr(StateRepr :: string()) -> string().
+generate_state_repr("") -> "";
+generate_state_repr(StateRepr) -> " (" ++ StateRepr ++ ")".

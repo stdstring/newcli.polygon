@@ -52,10 +52,15 @@ handle_call({expected, Expected}, _From, State) ->
     {reply, true, State#mock_state{expected = Expected}};
 handle_call(finish, _From, State) ->
     {reply, State#mock_state.expected, State};
+handle_call(#actual{}, _From, #mock_state{expected = []}) ->
+    ?debugFmt("handle_call fails for []~n", []),
+    {reply, false, #mock_state{expected = []}};
 handle_call(#actual{source = Source, func = Func, args = Args}, _From, #mock_state{expected = Expected}) ->
     case check_expectation(Expected, Source, Func, Args) of
         {true, Result, Rest} -> {reply, {true, Result}, #mock_state{expected = Rest}};
-        false -> {reply, false, #mock_state{expected = []}}
+        false ->
+            ?debugFmt("handle_call fails for ~p~n", [Expected]),
+            {reply, false, #mock_state{expected = []}}
     end.
 
 handle_cast(stop, State) ->

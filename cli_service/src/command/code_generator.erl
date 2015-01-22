@@ -47,6 +47,8 @@
 %% process_buffer_fail(ClientHandler, Context) ->
 %%     process_flag(trap_exit, true),
 %%     client_handler:send_error(ClientHandler, "buffer initialization message"),
+%%     Message = string_utils:format("Command execution failed. Return code is ~w\n", [255]),
+%%     client_handler:send_error(ClientHandler, Message),
 %%     client_handler:finish_exec(ClientHandler, 255)
 %%     process_flag(trap_exit, false),
 %%     {255, Context}.
@@ -56,8 +58,7 @@
 %%         {0, NewContext} ->
 %%             process_success(CliFsm, Buffer, ClientHandler, NewContext);
 %%         {ReturnValue, NewContext} ->
-%%             Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
-%%             process_fail(Message, ReturnValue, Buffer, ClientHandler, NewContext)
+%%             process_fail(ReturnValue, Buffer, ClientHandler, NewContext)
 %%     end.
 %%
 %% process_success(CliFsm, Buffer, ClientHandler, Context) ->
@@ -68,9 +69,11 @@
 %%     process_flag(trap_exit, false),
 %%     {0, Context}.
 %%
-%% process_fail(Message, ReturnValue, Buffer, ClientHandler, Context) ->
+%% process_fail(FailMessage, ReturnValue, Buffer, ClientHandler, Context) ->
 %%     process_flag(trap_exit, true),
 %%     send_output(Buffer, ClientHandler),
+%%     client_handler:send_error(ClientHandler, FailMessage),
+%%     Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
 %%     client_handler:send_error(ClientHandler, Message),
 %%     client_handler:finish_exec(ClientHandler, ReturnValue),
 %%     process_flag(trap_exit, false),
@@ -94,8 +97,17 @@ generate(EntryModuleName, EntryFunName, Command, ModuleDefs) ->
     ProcessSuccessFun = generate_process_success_fun(CommandName, ModuleDefs),
     BufferFailFun = generate_process_buffer_fail_fun(ModuleDefs),
     ProcessFailFun = generate_process_fail_fun(ModuleDefs),
+    ProcessCommandFailFun = generate_process_command_fail_fun(ModuleDefs),
     SendOutputFun = generate_send_output_fun(ModuleDefs),
-    CompileResult = compile:forms([ModuleForm, ExportForm, EntryFun, ProcessFun, ProcessSuccessFun, BufferFailFun, ProcessFailFun, SendOutputFun]),
+    CompileResult = compile:forms([ModuleForm,
+                                   ExportForm,
+                                   EntryFun,
+                                   ProcessFun,
+                                   ProcessSuccessFun,
+                                   BufferFailFun,
+                                   ProcessFailFun,
+                                   ProcessCommandFailFun,
+                                   SendOutputFun]),
     case CompileResult of
         {ok, EntryModuleName, Binary} -> {true, Binary};
         _Other -> {false, undefined}
@@ -171,16 +183,14 @@ generate_process_command_fun(#command{module = Module, arguments =Args}) ->
     %%         {0, NewContext} ->
     %%             process_success(CliFsm, Buffer, ClientHandler, NewContext);
     %%         {ReturnValue, NewContext} ->
-    %%             Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
-    %%             process_fail(Message, ReturnValue, Buffer, ClientHandler, NewContext)
+    %%             process_fail(ReturnValue, Buffer, ClientHandler, NewContext)
     %%     end.
     CommandArgs = [generate_arg_list(Args), ?BUFFER, ?BUFFER, ?CONTEXT],
     CaseExpr = {call, 0, {remote, 0, {atom, 0, Module}, {atom, 0, ?COMMAND_EXEC_FUN}}, CommandArgs},
     SuccessBody = [{call, 0, {atom, 0, ?PROCESS_SUCCESS_FUN}, [?CLI_FSM, ?BUFFER, ?CLIENT_HANDLER, {var, 0, 'NewContext'}]}],
     SuccessPattern = [{tuple, 0, [{atom, 0, 0}, {var, 0, 'NewContext'}]}],
     SuccessClause = {clause, 0, SuccessPattern, [], SuccessBody},
-    Message = generate_command_fail_message_command(),
-    ProcessFailArgs = [Message, ?RETURN_VALUE, ?BUFFER, ?CLIENT_HANDLER, {var, 0, 'NewContext'}],
+    ProcessFailArgs = [?RETURN_VALUE, ?BUFFER, ?CLIENT_HANDLER, {var, 0, 'NewContext'}],
     FailBody = [{call, 0, {atom, 0, ?PROCESS_FAIL_FUN}, ProcessFailArgs}],
     FailPattern = [{tuple, 0, [?RETURN_VALUE, {var, 0, 'NewContext'}]}],
     FailClause = {clause, 0, FailPattern, [], FailBody},
@@ -201,12 +211,15 @@ generate_arg_list([#argument{type = string, value = Value} | Rest], Result) ->
     NewResult = {cons, 0, {string, 0, Value}, Result},
     generate_arg_list(Rest, NewResult).
 
--spec generate_command_fail_message_command() -> tuple().
-generate_command_fail_message_command() ->
+%%-spec generate_command_fail_message_command() -> tuple().
+%%generate_command_fail_message_command() ->
+%%    %% Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue])
+%%    generate_command_fail_message_command(?RETURN_VALUE).
+
+-spec generate_command_fail_message_command(ReturnValue :: tuple()) -> tuple().
+generate_command_fail_message_command(ReturnValue) ->
     %% Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue])
-    %%ReturnCodeStr = {call, 0, {remote, 0, {atom, 0, erlang}, {atom, 0, integer_to_list}}, [?RETURN_VALUE]},
-    %%{op, 0, '++', {string, 0, ?COMMAND_FAIL_MESSAGE}, ReturnCodeStr}.
-    Args = [{string, 0, ?COMMAND_FAIL_TEMPLATE}, {cons, 0, ?RETURN_VALUE, {nil, 0}}],
+    Args = [{string, 0, ?COMMAND_FAIL_TEMPLATE}, {cons, 0, ReturnValue, {nil, 0}}],
     {call, 0, {remote, 0, {atom, 0, string_utils}, {atom, 0, format}}, Args}.
 
 
@@ -234,23 +247,50 @@ generate_process_buffer_fail_fun(ModuleDefs) ->
     %% process_buffer_fail(ClientHandler, Context) ->
     %%     process_flag(trap_exit, true),
     %%     client_handler:send_error(ClientHandler, "buffer initialization message"),
+    %%     Message = string_utils:format("Command execution failed. Return code is ~w\n", [255]),
+    %%     client_handler:send_error(ClientHandler, Message),
     %%     client_handler:finish_exec(ClientHandler, 255)
     %%     process_flag(trap_exit, false),
     %%     {255, Context}.
     SetupGuard = generate_trap_guard_command(true),
     SendErrorCall = generate_send_error_command(ModuleDefs, {string, 0, ?BUFFER_START_FAIL_MESSAGE}),
+    SendCommandFailMessage = generate_command_fail_message_command({integer, 0, 255}),
+    SendCommandFail = generate_send_error_command(ModuleDefs, SendCommandFailMessage),
     FinishExec = generate_finish_exec({integer, 0, 255}, ModuleDefs),
     ReleaseGuard = generate_trap_guard_command(false),
     ReturnValue = {tuple, 0, [{integer, 0, 255}, ?CONTEXT]},
-    Body = [SetupGuard, SendErrorCall, FinishExec, ReleaseGuard, ReturnValue],
+    Body = [SetupGuard, SendErrorCall, SendCommandFail, FinishExec, ReleaseGuard, ReturnValue],
     FunClause = {clause, 0, [?CLIENT_HANDLER, ?CONTEXT], [], Body},
     {function, 0, ?PROCESS_BUFFER_FAIL_FUN, 2, [FunClause]}.
 
--spec generate_process_fail_fun(ModuleDefs :: #module_defs{}) -> tuple().
-generate_process_fail_fun(ModuleDefs) ->
-    %% process_fail(Message, ReturnValue, Buffer, ClientHandler, Context) ->
+-spec generate_process_command_fail_fun(ModuleDefs :: #module_defs{}) -> tuple().
+generate_process_command_fail_fun(ModuleDefs) ->
+    %% process_fail(ReturnValue, Buffer, ClientHandler, Context) ->
     %%     process_flag(trap_exit, true),
     %%     send_output(Buffer, ClientHandler),
+    %%     Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
+    %%     client_handler:send_error(ClientHandler, Message),
+    %%     client_handler:finish_exec(ClientHandler, ReturnValue),
+    %%     process_flag(trap_exit, false),
+    %%     {ReturnValue, Context}.
+    SetupGuard = generate_trap_guard_command(true),
+    SendOutput = {call, 0, {atom, 0, ?SEND_OUTPUT_FUN}, [?BUFFER, ?CLIENT_HANDLER]},
+    Message = generate_command_fail_message_command(?RETURN_VALUE),
+    SendFailMessage = generate_send_error_command(ModuleDefs, Message),
+    FinishExec = generate_finish_exec(?RETURN_VALUE, ModuleDefs),
+    ReleaseGuard = generate_trap_guard_command(false),
+    ReturnValue = {tuple, 0, [?RETURN_VALUE, ?CONTEXT]},
+    Body = [SetupGuard, SendOutput, SendFailMessage, FinishExec, ReleaseGuard, ReturnValue],
+    FunClause = {clause, 0, [?RETURN_VALUE, ?BUFFER, ?CLIENT_HANDLER, ?CONTEXT], [], Body},
+    {function, 0, ?PROCESS_FAIL_FUN, 4, [FunClause]}.
+
+-spec generate_process_fail_fun(ModuleDefs :: #module_defs{}) -> tuple().
+generate_process_fail_fun(ModuleDefs) ->
+    %% process_fail(FailMessage, ReturnValue, Buffer, ClientHandler, Context) ->
+    %%     process_flag(trap_exit, true),
+    %%     send_output(Buffer, ClientHandler),
+    %%     client_handler:send_error(ClientHandler, FailMessage),
+    %%     Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
     %%     client_handler:send_error(ClientHandler, Message),
     %%     client_handler:finish_exec(ClientHandler, ReturnValue),
     %%     process_flag(trap_exit, false),
@@ -258,10 +298,12 @@ generate_process_fail_fun(ModuleDefs) ->
     SetupGuard = generate_trap_guard_command(true),
     SendOutput = {call, 0, {atom, 0, ?SEND_OUTPUT_FUN}, [?BUFFER, ?CLIENT_HANDLER]},
     SendErrorCall = generate_send_error_command(ModuleDefs),
+    SendCommandFailMessage = generate_command_fail_message_command(?RETURN_VALUE),
+    SendCommandFail = generate_send_error_command(ModuleDefs, SendCommandFailMessage),
     FinishExec = generate_finish_exec(?RETURN_VALUE, ModuleDefs),
     ReleaseGuard = generate_trap_guard_command(false),
     ReturnValue = {tuple, 0, [?RETURN_VALUE, ?CONTEXT]},
-    Body = [SetupGuard, SendOutput, SendErrorCall, FinishExec, ReleaseGuard, ReturnValue],
+    Body = [SetupGuard, SendOutput, SendErrorCall, SendCommandFail, FinishExec, ReleaseGuard, ReturnValue],
     FunClause = {clause, 0, [?MESSAGE, ?RETURN_VALUE, ?BUFFER, ?CLIENT_HANDLER, ?CONTEXT], [], Body},
     {function, 0, ?PROCESS_FAIL_FUN, 5, [FunClause]}.
 

@@ -44,10 +44,10 @@ handle_call({error, Message}, _From, #io_buffer_state{data = Data}) ->
 handle_call({get_data, DataType}, _From, #io_buffer_state{data = Data} = State) ->
     case DataType of
         output ->
-            {reply, lists:filter(fun({Type, _Message}) -> Type == output end, Data), State};
+            {reply, lists:reverse(lists:filter(fun({Type, _Message}) -> Type == output end, Data)), State};
         error ->
-            {reply, lists:filter(fun({Type, _Message}) -> Type == error end, Data), State};
-        both -> {reply, Data, State}
+            {reply, lists:reverse(lists:filter(fun({Type, _Message}) -> Type == error end, Data)), State};
+        both -> {reply, lists:reverse(Data), State}
     end;
 handle_call({reset}, _From, _State) ->
     {reply, ok, #io_buffer_state{}};
