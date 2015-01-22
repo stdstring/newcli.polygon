@@ -30,7 +30,7 @@ check_service() ->
     {OutputResponse, EndResponse} = interact_with_service(),
     io:format(user, "Output = ~p~n", [OutputResponse]),
     io:format(user, "End = ~p~n", [EndResponse]),
-    ?assertEqual({command_err,"Command's creation is failed due to the following reason: enotsup\n"}, OutputResponse),
+    ?assertEqual({command_err, "Command's creation is failed due to the following reason: enotsup\n"}, OutputResponse),
     ?assertEqual({'end',"@CliDemo>"}, EndResponse),
     ok.
 

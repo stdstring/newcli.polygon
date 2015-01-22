@@ -20,6 +20,7 @@ SOURCE=src/integration_tests_common.erl \
        src/integration_tests_manager.erl
 TEST_SOURCE=src/cli_service_integration_tests.erl \
             src/command_integration_tests.erl \
+            src/help_integration_tests.erl \
             src/lifecycle_integration_tests.erl \
             src/login_integration_tests.erl \
             src/transition_integration_tests.erl
