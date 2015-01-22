@@ -22,3 +22,8 @@
 -define(BAD_ARGS, "Bad arguments").
 -define(ACCESS_DENIED, "Access denied").
 -define(UNKNOWN_COMMAND, "Command's creation is failed due to the following reason: command_not_found").
+-define(UNSUITABLE_COMMAND, "Unsuitable command").
+-define(CONFIG_TERM, "root@CliDemo#configure terminal").
+-define(INTERFACE, "root@CliDemo (config)#interface someinterface 0/1").
+-define(INTERFACE_RANGE, "root@CliDemo (config)#interface range someinterface 0/1,3-5").
+-define(VLAN, "root@CliDemo (config)#vlan 666").

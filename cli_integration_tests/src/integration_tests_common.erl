@@ -4,7 +4,7 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--export([start_cli_service/0, stop_cli_service/1, create_tests_entry/1, clear_abnormal_execution/0]).
+-export([start_cli_service/0, stop_cli_service/1, create_tests_entry/1, clear_abnormal_execution/0, process/3, check_normal_execution/0]).
 
 -include("integration_tests_defs.hrl").
 
@@ -48,6 +48,23 @@ clear_abnormal_execution() ->
     lists:foreach(fun(Filename) -> file:delete(Filename) end, ?CRASH_DUMP_FILES),
     ok.
 
+-spec process(Input :: [string()], ExpectedOutput :: [string()], State :: #integration_test_state{}) -> 'ok' | no_return().
+process(Input, ExpectedOutput, #integration_test_state{terminal_cmd = TerminalCmd}) ->
+    InputData = string:join(Input, "\n") ++ "\n",
+    ?assertEqual(ok, file:write_file(?INPUT_DATA, InputData)),
+    OutputData = os:cmd(TerminalCmd),
+    OutputDataParts = string:tokens(OutputData, "\n"),
+    ?assertEqual(length(ExpectedOutput), length(OutputDataParts)),
+    ActualOutput = lists:sublist(OutputDataParts, length(ExpectedOutput)),
+    ?assertEqual(ExpectedOutput, ActualOutput),
+    check_normal_execution(),
+    ok.
+
+-spec check_normal_execution() -> 'ok'.
+check_normal_execution() ->
+    lists:foreach(fun(Filename) -> ?assertNot(filelib:is_regular(Filename)) end, ?CRASH_DUMP_FILES),
+    ok.
+
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
@@ -88,20 +105,3 @@ wait_node_exit(Node, Count, WaitTime) ->
     fun((#integration_test_state{}) -> 'ok').
 create_tests_instantiator(Description, Input, Output) ->
     fun(State) -> [{Description, fun() -> process(Input, Output, State) end}] end.
-
--spec process(Input :: [string()], ExpectedOutput :: [string()], State :: #integration_test_state{}) -> 'ok' | no_return().
-process(Input, ExpectedOutput, #integration_test_state{terminal_cmd = TerminalCmd}) ->
-    InputData = string:join(Input, "\n") ++ "\n",
-    ?assertEqual(ok, file:write_file(?INPUT_DATA, InputData)),
-    OutputData = os:cmd(TerminalCmd),
-    OutputDataParts = string:tokens(OutputData, "\n"),
-    ?assertEqual(length(ExpectedOutput), length(OutputDataParts)),
-    ActualOutput = lists:sublist(OutputDataParts, length(ExpectedOutput)),
-    ?assertEqual(ExpectedOutput, ActualOutput),
-    check_normal_execution(),
-    ok.
-
--spec check_normal_execution() -> 'ok'.
-check_normal_execution() ->
-    lists:foreach(fun(Filename) -> ?assertNot(filelib:is_regular(Filename)) end, ?CRASH_DUMP_FILES),
-    ok.

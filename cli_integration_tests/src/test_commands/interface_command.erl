@@ -31,5 +31,5 @@ execute(Args, _Stdout, Stderr, ExecContext) ->
 %% ====================================================================
 
 -spec check_args(Args :: [term()]) -> boolean().
-check_args([_InterfaceId]) -> true;
-check_args(_Other) -> false.
+check_args([]) -> false;
+check_args(_Other) -> true.

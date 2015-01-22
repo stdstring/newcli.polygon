@@ -12,7 +12,7 @@
                {global_config_mode, interface_config_mode, interface},
                {global_config_mode, interface_range_config_mode, interface_range},
                {global_config_mode, vlan_config_mode, vlan},
-               {global_config_mode, vlan_config_mode, no_vlan},
+               {global_config_mode, vlan_config_mode, novlan},
                {vlan_config_mode, global_config_mode, exit},
                {interface_range_config_mode, global_config_mode, exit},
                {interface_config_mode, global_config_mode, exit},
