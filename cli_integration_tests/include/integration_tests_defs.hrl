@@ -9,9 +9,9 @@
 -define(SERVICE_ENDPOINT_PORT, 6666).
 
 %% common output
-%%-define(ADMIN_LOGIN, ["@CliDemo>login", "login:root", "password:"]).
-%%-define(GUEST_LOGIN, ["@CliDemo>login", "login:guest", "password:"]).
 -define(LOGIN(Username), ["@CliDemo>login", "login:" ++ Username, "password:"]).
+-define(ADMIN_LOGIN, ?LOGIN("root")).
+-define(GUEST_LOGIN, ?LOGIN("guest")).
 %%-define(GREETING, "some greeting message").
 -define(GREETING, "Default greeting message").
 -define(LOGOUT_RESULT(Username), ["User \"" ++ Username ++ "\" is logged out", "@CliDemo>"]).
