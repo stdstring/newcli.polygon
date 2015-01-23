@@ -4,7 +4,7 @@
 
 -include("integration_tests_defs.hrl").
 
--define(CONFIG_LOGOUT, ["root@CliDemo (config)#logout"] ++ ?LOGOUT_RESULT("root")).
+-define(CONFIG_LOGOUT, ["root@CliDemo (config)#logout"] ++ ?ADMIN_LOGOUT_RESULT).
 
 integration_test_() ->
     integration_tests_common:create_tests_entry([
@@ -16,13 +16,13 @@ integration_test_() ->
          ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM] ++ ?CONFIG_LOGOUT},
         {"transition: enter into interface configuration mode",
          ["login", "root", "iddqd", "configure terminal", "interface someinterface 0/1", "logout"],
-         ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, ?INTERFACE, "root@CliDemo (config-if)#logout"] ++ ?LOGOUT_RESULT("root")},
+         ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, ?INTERFACE, "root@CliDemo (config-if)#logout"] ++ ?ADMIN_LOGOUT_RESULT},
         {"transition: enter into interface range configuration mode",
          ["login", "root", "iddqd", "configure terminal", "interface range someinterface 0/1,3-5", "logout"],
-         ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, ?INTERFACE_RANGE, "root@CliDemo (config-if-range)#logout"] ++ ?LOGOUT_RESULT("root")},
+         ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, ?INTERFACE_RANGE, "root@CliDemo (config-if-range)#logout"] ++ ?ADMIN_LOGOUT_RESULT},
         {"transition: enter into vlan configuration mode",
          ["login", "root", "iddqd", "configure terminal", "vlan 666", "logout"],
-         ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, ?VLAN, "root@CliDemo (config-vlan)#logout"] ++ ?LOGOUT_RESULT("root")},
+         ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, ?VLAN, "root@CliDemo (config-vlan)#logout"] ++ ?ADMIN_LOGOUT_RESULT},
         {"transition: exit from interface configuration mode",
          ["login", "root", "iddqd", "configure terminal", "interface someinterface 0/1", "exit", "logout"],
          ?ADMIN_LOGIN ++ [?GREETING, ?CONFIG_TERM, ?INTERFACE, "root@CliDemo (config-if)#exit"] ++ ?CONFIG_LOGOUT},
