@@ -12,6 +12,7 @@ SOURCE=src/command/code_generator.erl \
        src/command/module_name_generator.erl \
        src/command_config/lex_analyzer_config.erl \
        src/command_config/name_search_config.erl \
+       src/command_config/name_search_factory.erl \
        src/command_config/syntax_analyzer_config.erl \
        src/fsm/cli_fsm_behaviour.erl \
        src/fsm/cli_fsm.erl \
