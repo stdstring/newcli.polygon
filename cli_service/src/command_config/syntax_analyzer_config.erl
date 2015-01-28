@@ -46,22 +46,66 @@ command_action(_NameTable, undefined, ?WORD_TOKEN(Word)) ->
     {'true', State :: term()} | {'false', Reason :: term()}.
 args_action(_NameTable, #command_frame{} = CommandFrame, ?WORD_TOKEN(Word)) ->
     process_word(CommandFrame, Word);
-%%args_action(_NameTable, #help_command{} = HelpCommand, ?WORD_TOKEN(Word)) ->
-%%    process_word(HelpCommand, Word);
+args_action(_NameTable, #help_command_frame{} = HelpCommandFrame, ?WORD_TOKEN(Word)) ->
+    process_word(HelpCommandFrame, Word);
 args_action(_NameTable, #command_frame{} = CommandFrame, ?STRING_TOKEN(String)) ->
     process_string(CommandFrame, String);
-%%args_action(_NameTable, #help_command{} = HelpCommand, ?STRING_TOKEN(String)) ->
-%%    process_string(HelpCommand, String);
-%%args_action(NameTable, #command_frame{} = CommandFrame, ?END_TOKEN) ->
-%%    process_end(NameTable, CommandFrame);
-%%args_action(NameTable, #help_command{} = HelpCommand, ?END_TOKEN) ->
-%%    process_end(NameTable, HelpCommand).
+args_action(_NameTable, #help_command_frame{} = HelpCommandFrame, ?STRING_TOKEN(String)) ->
+    process_string(HelpCommandFrame, String);
 args_action(NameTable, #command_frame{} = CommandFrame, ?END_TOKEN) ->
-    process_end(NameTable, CommandFrame).
+    process_end(NameTable, CommandFrame);
+args_action(NameTable, #help_command_frame{} = HelpCommandFrame, ?END_TOKEN) ->
+    process_end(NameTable, HelpCommandFrame).
 
--spec generate_result(Items :: [#frame_item{}], NameTable :: name_search_table()) ->
+-spec process_word(State :: term(), Word :: string()) ->
+    {'true', State :: term()} | {'false', Reason :: term()}.
+process_word(#command_frame{items = Items}, Word) ->
+    case try_parse_help_command(Word, Items) of
+        {true, HelpCommandFrame} -> {true, HelpCommandFrame};
+        false ->
+            NewCommandFrame = #command_frame{items = [#frame_item{type = word, value = Word}] ++ Items},
+            {true, NewCommandFrame}
+    end;
+process_word(#help_command_frame{arguments = Args} = HelpCommandFrame, Word) ->
+    NewArgs = [#argument{type = word, value = Word}] ++ Args,
+    {true, HelpCommandFrame#help_command_frame{arguments = NewArgs}}.
+
+-spec process_string(State :: term(), String :: string()) ->
+    {'true', State :: term()} | {'false', Reason :: term()}.
+process_string(#command_frame{items = Items}, String) ->
+    NewCommandFrame = #command_frame{items = [#frame_item{type = string, value = String}] ++ Items},
+    {true, NewCommandFrame};
+process_string(#help_command_frame{arguments = Args} = HelpCommandFrame, String) ->
+    NewArgs = [#argument{type = string, value = String}] ++ Args,
+    {true, HelpCommandFrame#help_command_frame{arguments = NewArgs}}.
+
+-spec process_end(NameTable :: term(), State :: term()) ->
+    {'true', Result :: term()} | {'false', Reason :: term()}.
+process_end(NameTable, #command_frame{items = Items} = Frame) ->
+    generate_result(Frame#command_frame{items = lists:reverse(Items)}, NameTable);
+process_end(NameTable, #help_command_frame{arguments = Args} = Frame) ->
+    generate_result(Frame#help_command_frame{arguments = lists:reverse(Args)}, NameTable).
+
+-spec try_parse_help_command(Word :: string(), Items :: [#frame_item{}]) -> {'true', #help_command_frame{}} | 'false'.
+try_parse_help_command(?HELP_COMMAND, Items) ->
+    {true, #help_command_frame{items = lists:reverse(Items)}};
+try_parse_help_command(Word, Items) ->
+    case lists:reverse(Word) of
+        [?HELP_COMMAND_CHAR | Prefix] ->
+            {true, #help_command_frame{items = lists:reverse(Items), prefix = lists:reverse(Prefix)}};
+        _Other -> false
+    end.
+
+-spec generate_result(Frame :: #command_frame{} | #help_command_frame{}, NameTable :: name_search_table()) ->
+    {'true', Value :: term()} | 'false'.
+generate_result(#command_frame{items = Items}, NameTable) ->
+    generate_command_result(Items, NameTable);
+generate_result(#help_command_frame{}, _NameTable) ->
+    false.
+
+-spec generate_command_result(Items :: [#frame_item{}], NameTable :: name_search_table()) ->
     {'true', Module :: atom(), Args :: [term()]} | 'false'.
-generate_result(Items, NameTable) ->
+generate_command_result(Items, NameTable) ->
     case frame_item_search:search_best(Items, NameTable) of
         {true, Module, RestItems} ->
             Args = lists:map(fun(#frame_item{type = Type, value = Value}) -> #argument{type = Type, value = Value} end, RestItems),
@@ -69,62 +113,13 @@ generate_result(Items, NameTable) ->
         false -> false
     end.
 
--spec process_word(State :: term(), Word :: string()) ->
-    {'true', State :: term()} | {'false', Reason :: term()}.
-%%process_word(#command_frame{items = Items}, Word) ->
-%%    case try_parse_help_command(Word, Items) of
-%%        {true, HelpCommand} -> {true, HelpCommand};
-%%        false ->
-%%            NewCommandFrame = #command_frame{items = [#frame_item{type = word, value = Word}] ++ Items},
-%%            {true, NewCommandFrame}
+%%-spec generate_help_result(HelpCommandFrame :: #help_command_frame{}, NameTable :: name_search_table()) ->
+%%generate_help_result(#help_command_frame{items = [], prefix = "",  arguments = _Args}, NameTable) ->
+%%    SearchResult = frame_item_search:search_suitable([], NameTable),
+%%    ;
+%%generate_help_result(#help_command_frame{items = Items, prefix = "",  arguments = _Args}, NameTable) ->
+%%    case frame_item_search:search_exact(Items, NameTable) of
+%%        {true, Module} ->;
+%%        false
 %%    end;
-%%process_word(#help_command{arguments = Args} = HelpCommand, Word) ->
-%%    NewArgs = [#argument{type = word, value = Word}] ++ Args,
-%%    {true, HelpCommand#help_command{arguments = NewArgs}}.
-process_word(#command_frame{items = Items}, Word) ->
-    case try_parse_help_command(Word, Items) of
-        {true, _HelpCommand} -> {false, enotsup};
-        false ->
-            NewCommandFrame = #command_frame{items = [#frame_item{type = word, value = Word}] ++ Items},
-            {true, NewCommandFrame}
-    end.
-
--spec process_string(State :: term(), String :: string()) ->
-    {'true', State :: term()} | {'false', Reason :: term()}.
-%%process_string(#command_frame{items = Items}, String) ->
-%%    NewCommandFrame = #command_frame{items = [#frame_item{type = string, value = String}] ++ Items},
-%%    {true, NewCommandFrame};
-%%process_string(#help_command{arguments = Args} = HelpCommand, String) ->
-%%    NewArgs = [#argument{type = string, value = String}] ++ Args,
-%%    {true, HelpCommand#help_command{arguments = NewArgs}}.
-process_string(#command_frame{items = Items}, String) ->
-    NewCommandFrame = #command_frame{items = [#frame_item{type = string, value = String}] ++ Items},
-    {true, NewCommandFrame}.
-
--spec process_end(NameTable :: term(), State :: term()) ->
-    {'true', Result :: term()} | {'false', Reason :: term()}.
-%%process_end(NameTable, #command_frame{items = Items}) ->
-%%    case generate_result(lists:reverse(Items), NameTable) of
-%%        {true, Module, Args} -> {true, #command{module = Module, arguments = Args}};
-%%        false -> {false, command_not_found}
-%%    end;
-%%process_end(_NameTable, #help_command{arguments = Args} = HelpCommand) ->
-%%    FinalHelpCommand = HelpCommand#help_command{arguments = lists:reverse(Args)},
-%%    {true, FinalHelpCommand}.
-process_end(NameTable, #command_frame{items = Items}) ->
-    case generate_result(lists:reverse(Items), NameTable) of
-        {true, Module, Args} -> {true, #command{module = Module, arguments = Args}};
-        false -> {false, command_not_found}
-    end.
-
--spec try_parse_help_command(Word :: string(), Items :: [#frame_item{}]) -> {'true', #help_command{}} | 'false'.
-try_parse_help_command(?HELP_COMMAND, Items) ->
-    Parts = lists:map(fun(#frame_item{value = Value}) -> Value end, lists:reverse(Items)),
-    {true, #help_command{parts = Parts}};
-try_parse_help_command(Word, Items) ->
-    case lists:reverse(Word) of
-        [?HELP_COMMAND_CHAR | Prefix] ->
-            Parts = lists:map(fun(#frame_item{value = Value}) -> Value end, lists:reverse(Items)),
-            {true, #help_command{parts = Parts, prefix = lists:reverse(Prefix)}};
-        _Other -> false
-    end.
+%%generate_help_result(#help_command_frame{items = Items, prefix = Prefix,  arguments = _Args}, NameTable) ->

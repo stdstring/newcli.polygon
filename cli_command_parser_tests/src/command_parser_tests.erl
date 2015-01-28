@@ -62,6 +62,6 @@ fail_execution(Source, LexConfig, SyntaxConfig, Reason) ->
     Result = command_parser:process(Source, LexConfig, SyntaxConfig),
     ?_assertEqual({false, Reason}, Result).
 
-help_execution(Source, LexConfig, SyntaxConfig, Parts, Prefix, Args) ->
+help_execution(Source, LexConfig, SyntaxConfig, Items, Prefix, Args) ->
     Result = command_parser:process(Source, LexConfig, SyntaxConfig),
-    ?_assertEqual({true, #help_command{parts = Parts, prefix = Prefix, arguments = Args}}, Result).
+    ?_assertEqual({true, {Items, Prefix, Args}}, Result).

@@ -61,6 +61,6 @@ fail_execution(TokenList, Config, Reason) ->
     Result = syntax_analyzer:process(TokenList, Config),
     ?_assertEqual({false, Reason}, Result).
 
-help_execution(TokenList, Config, Parts, Prefix, Args) ->
+help_execution(TokenList, Config, Items, Prefix, Args) ->
     Result = syntax_analyzer:process(TokenList, Config),
-    ?_assertEqual({true, #help_command{parts = Parts, prefix = Prefix, arguments = Args}}, Result).
+    ?_assertEqual({true, {Items, Prefix, Args}}, Result).
