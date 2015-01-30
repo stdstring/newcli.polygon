@@ -43,16 +43,16 @@ search_best_test_() ->
 
 search_suitable_test_() ->
     NameTable = name_search_config:create(),
-    [search_suitable_check("search ping", [?PING_MODULE], [?WORD("ping")], NameTable),
-     search_suitable_check("search p", [?PING_MODULE], [?WORD("p")], NameTable),
-     search_suitable_check("search pong", [], [?WORD("pong")], NameTable),
-     search_suitable_check("search interface", [?INTERFACE_MODULE, ?IFRANGE_MODULE], [?WORD("interface")], NameTable),
-     search_suitable_check("search i", [?INTERFACE_MODULE, ?IFRANGE_MODULE], [?WORD("i")], NameTable),
-     search_suitable_check("search interface range", [?IFRANGE_MODULE], [?WORD("interface"), ?WORD("range")], NameTable),
-     search_suitable_check("search interface r", [?IFRANGE_MODULE], [?WORD("interface"), ?WORD("r")], NameTable),
-     search_suitable_check("search no", [?NOVLAN_MODULE, ?NOSWACCESS_VLAN_MODULE, ?NONAME_MODULE], [?WORD("no")], NameTable),
-     search_suitable_check("search \"ping\"", [?PING_MODULE], [?STRING("ping")], NameTable),
-     search_suitable_check("search ping with other type", [], [?FRAME_ITEM(some_type, "ping")], NameTable)].
+    [search_suitable_check("search ping", ?PING_MODULE, 0, [?WORD("ping")], NameTable),
+     search_suitable_check("search p", ?PING_MODULE, 0, [?WORD("p")], NameTable),
+     search_suitable_check("search pong", undefined, 0, [?WORD("pong")], NameTable),
+     search_suitable_check("search interface", ?INTERFACE_MODULE, 1, [?WORD("interface")], NameTable),
+     search_suitable_check("search i", ?INTERFACE_MODULE, 1, [?WORD("i")], NameTable),
+     search_suitable_check("search interface range", ?IFRANGE_MODULE, 0, [?WORD("interface"), ?WORD("range")], NameTable),
+     search_suitable_check("search interface r", ?IFRANGE_MODULE, 0, [?WORD("interface"), ?WORD("r")], NameTable),
+     search_suitable_check("search no", undefined, 3, [?WORD("no")], NameTable),
+     search_suitable_check("search \"ping\"", ?PING_MODULE, 0, [?STRING("ping")], NameTable),
+     search_suitable_check("search ping with other type", undefined, 0, [?FRAME_ITEM(some_type, "ping")], NameTable)].
 
 search_exact_test_() ->
     NameTable = name_search_config:create(),
@@ -75,8 +75,9 @@ success_search_best_check(Description, Module, Args, Items, NameTable) ->
 fail_search_best_check(Description, Items, NameTable) ->
     {Description, ?_assertEqual(false, frame_item_search:search_best(Items, NameTable))}.
 
-search_suitable_check(Description, Expected, Items, NameTable) ->
-    {Description, ?_assertEqual(Expected, frame_item_search:search_suitable(Items, NameTable))}.
+search_suitable_check(Description, ExpectedModule, ExpectedModulesCount, Items, NameTable) ->
+    {ExactModule, Modules} = frame_item_search:search_suitable(Items, NameTable),
+    {Description, fun() -> ?assertEqual(ExpectedModule, ExactModule), ?assertEqual(ExpectedModulesCount, length(Modules)) end}.
 
 success_search_exact_check(Description, Module, Items, NameTable) ->
     {Description, ?_assertEqual({true, Module}, frame_item_search:search_exact(Items, NameTable))}.

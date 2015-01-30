@@ -16,11 +16,19 @@
 search_best(FrameItems, NameTable) ->
     search_best_impl([], FrameItems, undefined, NameTable).
 
--spec search_suitable(FrameItems :: [#frame_item{}], NameTable :: name_search_table()) -> [atom()].
+%%-spec search_suitable(FrameItems :: [#frame_item{}], NameTable :: name_search_table()) -> [atom()].
+%%search_suitable(FrameItems, NameTable) ->
+%%    case transform_frame_items(FrameItems) of
+%%        {true, Values} -> search_suitable_impl(Values, NameTable);
+%%        false -> []
+%%    end.
+
+-spec search_suitable(FrameItems :: [#frame_item{}], NameTable :: name_search_table()) ->
+    {ExactModule :: 'undefined' | atom(), Modules :: name_search_table()}.
 search_suitable(FrameItems, NameTable) ->
     case transform_frame_items(FrameItems) of
         {true, Values} -> search_suitable_impl(Values, NameTable);
-        false -> []
+        false -> {undefined, []}
     end.
 
 -spec search_exact(FrameItems :: [#frame_item{}], NameTable :: name_search_table()) ->
@@ -50,14 +58,22 @@ transform_frame_items([#frame_item{type = string, value = Word} | Rest], Result)
 transform_frame_items([#frame_item{} | _Rest], _Result) ->
     false.
 
--spec search_suitable_impl(Values :: [string()], NameTable :: name_search_table()) -> [atom()].
+%%-spec search_suitable_impl(Values :: [string()], NameTable :: name_search_table()) -> [atom()].
+%%search_suitable_impl(Values, NameTable) ->
+%%    case name_search:search(Values, NameTable) of
+%%        {true, Module, RowsRest} ->
+%%            [Module] ++ lists:map(fun({_SearchItem, Value}) -> Value end, RowsRest);
+%%        {incomplete, RowsRest} ->
+%%            lists:map(fun({_SearchItem, Value}) -> Value end, RowsRest);
+%%        false -> []
+%%    end.
+
+-spec search_suitable_impl(Values :: [string()], NameTable :: name_search_table()) -> name_search_table().
 search_suitable_impl(Values, NameTable) ->
     case name_search:search(Values, NameTable) of
-        {true, Module, RowsRest} ->
-            [Module] ++ lists:map(fun({_SearchItem, Value}) -> Value end, RowsRest);
-        {incomplete, RowsRest} ->
-            lists:map(fun({_SearchItem, Value}) -> Value end, RowsRest);
-        false -> []
+        {true, Module, RowsRest} -> {Module, RowsRest};
+        {incomplete, RowsRest} -> {undefined, RowsRest};
+        false -> {undefined, []}
     end.
 
 -spec search_exact_impl(Values :: [string()], NameTable :: name_search_table()) ->
