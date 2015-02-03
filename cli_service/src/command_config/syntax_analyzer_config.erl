@@ -99,9 +99,16 @@ try_parse_help_command(Word, Items) ->
 -spec generate_result(Frame :: #command_frame{} | #help_command_frame{}, NameTable :: name_search_table()) ->
     {'true', Value :: term()} | 'false'.
 generate_result(#command_frame{items = Items}, NameTable) ->
-    generate_command_result(Items, NameTable);
-generate_result(#help_command_frame{}, _NameTable) ->
-    false.
+    case generate_command_result(Items, NameTable) of
+        {true, Module, Args} -> {true, #command{module = Module, arguments = Args}};
+        false -> {false, unknown_command}
+    end;
+generate_result(#help_command_frame{arguments = Args} = HelpCommandFrame, NameTable) ->
+    case generate_help_result(HelpCommandFrame, NameTable) of
+        false -> {false, unknown_help};
+        {true, Module} -> {true, #help_exact_command{module = Module, arguments = Args}};
+        Modules -> {true, #help_suitable_command{modules = Modules, arguments = Args}}
+    end.
 
 -spec generate_command_result(Items :: [#frame_item{}], NameTable :: name_search_table()) ->
     {'true', Module :: atom(), Args :: [term()]} | 'false'.
@@ -113,13 +120,19 @@ generate_command_result(Items, NameTable) ->
         false -> false
     end.
 
-%%-spec generate_help_result(HelpCommandFrame :: #help_command_frame{}, NameTable :: name_search_table()) ->
-%%generate_help_result(#help_command_frame{items = [], prefix = "",  arguments = _Args}, NameTable) ->
-%%    SearchResult = frame_item_search:search_suitable([], NameTable),
-%%    ;
-%%generate_help_result(#help_command_frame{items = Items, prefix = "",  arguments = _Args}, NameTable) ->
-%%    case frame_item_search:search_exact(Items, NameTable) of
-%%        {true, Module} ->;
-%%        false
-%%    end;
-%%generate_help_result(#help_command_frame{items = Items, prefix = Prefix,  arguments = _Args}, NameTable) ->
+-spec generate_help_result(HelpCommandFrame :: #help_command_frame{}, NameTable :: name_search_table()) ->
+    'false' | {'true', Module :: atom()} | [atom()].
+generate_help_result(#help_command_frame{items = [], prefix = ""}, NameTable) ->
+    {undefined, SearchResult} = frame_item_search:search_suitable([], NameTable),
+    lists:map(fun({_SearchItems, Value}) -> Value end, SearchResult);
+generate_help_result(#help_command_frame{items = Items, prefix = ""}, NameTable) ->
+    frame_item_search:search_exact(Items, NameTable);
+generate_help_result(#help_command_frame{items = Items, prefix = Prefix}, NameTable) ->
+    {_Module, SearchResult} = frame_item_search:search_suitable(Items, NameTable),
+    WordIndex = length(Items) + 1,
+    FilterFun = fun(SearchItems, _Value) ->
+        {Word, _MinLength} = lists:nth(WordIndex, SearchItems),
+        lists:prefix(Prefix, Word)
+    end,
+    FilterResult = lists:filter(FilterFun, SearchResult),
+    lists:map(fun({_SearchItems, Value}) -> Value end, FilterResult).

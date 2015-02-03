@@ -12,6 +12,23 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+-define(FULL_HELP_RESULT, [?PING_MODULE,
+                           ?CONF_TERM_MODULE,
+                           ?LOGIN_MODULE,
+                           ?LOGOUT_MODULE,
+                           ?INTERFACE_MODULE,
+                           ?IFRANGE_MODULE,
+                           ?VLAN_MODULE,
+                           ?NOVLAN_MODULE,
+                           ?SWACCESS_VLAN_MODULE,
+                           ?NOSWACCESS_VLAN_MODULE,
+                           ?NAME_MODULE,
+                           ?NONAME_MODULE,
+                           ?END_MODULE,
+                           ?EXIT_MODULE,
+                           ?SHOW_VLAN_MODULE]).
+
+
 %% ====================================================================
 %% Test functions
 %% ====================================================================
@@ -31,24 +48,32 @@ process_test_() ->
      {"process '\"pong\"'",
       fail_execution("\"pong\"", LexConfig, SyntaxConfig, bad_token)},
      {"process 'pong XXX'",
-      fail_execution("pong XXX", LexConfig, SyntaxConfig, command_not_found)}].
+      fail_execution("pong XXX", LexConfig, SyntaxConfig, unknown_command)}].
 
 process_help_test_() ->
     LexConfig = lex_analyzer_config:create(true),
     NameData = name_search_config:create(),
     SyntaxConfig = syntax_analyzer_config:create(NameData),
     [{"process '?'",
-      help_execution("?", LexConfig, SyntaxConfig, [], "", [])},
+      help_suitable_execution("?", LexConfig, SyntaxConfig, ?FULL_HELP_RESULT, [])},
      {"process '? XXX'",
-      help_execution("? XXX", LexConfig, SyntaxConfig, [], "", [?WORD_ARG("XXX")])},
+      help_suitable_execution("? XXX", LexConfig, SyntaxConfig, ?FULL_HELP_RESULT, [?WORD_ARG("XXX")])},
      {"process 'YYY ?'",
-      help_execution("YYY ?", LexConfig, SyntaxConfig, ["YYY"], "", [])},
+      fail_help_exact_execution("YYY ?", LexConfig, SyntaxConfig)},
      {"process 'YYY ? XXX'",
-      help_execution("YYY ? XXX", LexConfig, SyntaxConfig, ["YYY"], "", [?WORD_ARG("XXX")])},
+      fail_help_exact_execution("YYY ? XXX", LexConfig, SyntaxConfig)},
+     {"process 'ping ?'",
+      success_help_exact_execution("ping ?", LexConfig, SyntaxConfig, ?PING_MODULE, [])},
+     {"process 'ping ? XXX'",
+      success_help_exact_execution("ping ? XXX", LexConfig, SyntaxConfig, ?PING_MODULE, [?WORD_ARG("XXX")])},
      {"process 'YYY ZZ?'",
-      help_execution("YYY ZZ?", LexConfig, SyntaxConfig, ["YYY"], "ZZ", [])},
+      help_suitable_execution("YYY ZZ?", LexConfig, SyntaxConfig, [], [])},
      {"process 'YYY ZZ? XXX'",
-      help_execution("YYY ZZ? XXX", LexConfig, SyntaxConfig, ["YYY"], "ZZ", [?WORD_ARG("XXX")])}].
+      help_suitable_execution("YYY ZZ? XXX", LexConfig, SyntaxConfig, [], [?WORD_ARG("XXX")])},
+     {"process 'i?'",
+      help_suitable_execution("i?", LexConfig, SyntaxConfig, [?INTERFACE_MODULE, ?IFRANGE_MODULE], [])},
+     {"process 'i? XXX'",
+      help_suitable_execution("i? XXX", LexConfig, SyntaxConfig, [?INTERFACE_MODULE, ?IFRANGE_MODULE], [?WORD_ARG("XXX")])}].
 
 %% ====================================================================
 %% Internal functions
@@ -62,6 +87,18 @@ fail_execution(Source, LexConfig, SyntaxConfig, Reason) ->
     Result = command_parser:process(Source, LexConfig, SyntaxConfig),
     ?_assertEqual({false, Reason}, Result).
 
-help_execution(Source, LexConfig, SyntaxConfig, Items, Prefix, Args) ->
+%%help_execution(Source, LexConfig, SyntaxConfig, Items, Prefix, Args) ->
+%%    Result = command_parser:process(Source, LexConfig, SyntaxConfig),
+%%    ?_assertEqual({true, {Items, Prefix, Args}}, Result).
+
+help_suitable_execution(Source, LexConfig, SyntaxConfig, Modules, Args) ->
     Result = command_parser:process(Source, LexConfig, SyntaxConfig),
-    ?_assertEqual({true, {Items, Prefix, Args}}, Result).
+    ?_assertEqual({true, #help_suitable_command{modules = Modules, arguments = Args}}, Result).
+
+success_help_exact_execution(Source, LexConfig, SyntaxConfig, Module, Args) ->
+    Result = command_parser:process(Source, LexConfig, SyntaxConfig),
+    ?_assertEqual({true, #help_exact_command{module = Module, arguments = Args}}, Result).
+
+fail_help_exact_execution(Source, LexConfig, SyntaxConfig) ->
+    Result = command_parser:process(Source, LexConfig, SyntaxConfig),
+    ?_assertEqual({false, unknown_help}, Result).
