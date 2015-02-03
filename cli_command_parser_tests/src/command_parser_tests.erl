@@ -12,23 +12,6 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--define(FULL_HELP_RESULT, [?PING_MODULE,
-                           ?CONF_TERM_MODULE,
-                           ?LOGIN_MODULE,
-                           ?LOGOUT_MODULE,
-                           ?INTERFACE_MODULE,
-                           ?IFRANGE_MODULE,
-                           ?VLAN_MODULE,
-                           ?NOVLAN_MODULE,
-                           ?SWACCESS_VLAN_MODULE,
-                           ?NOSWACCESS_VLAN_MODULE,
-                           ?NAME_MODULE,
-                           ?NONAME_MODULE,
-                           ?END_MODULE,
-                           ?EXIT_MODULE,
-                           ?SHOW_VLAN_MODULE]).
-
-
 %% ====================================================================
 %% Test functions
 %% ====================================================================
@@ -55,9 +38,9 @@ process_help_test_() ->
     NameData = name_search_config:create(),
     SyntaxConfig = syntax_analyzer_config:create(NameData),
     [{"process '?'",
-      help_suitable_execution("?", LexConfig, SyntaxConfig, ?FULL_HELP_RESULT, [])},
+      help_suitable_execution("?", LexConfig, SyntaxConfig, ?ALL_MODULES, [])},
      {"process '? XXX'",
-      help_suitable_execution("? XXX", LexConfig, SyntaxConfig, ?FULL_HELP_RESULT, [?WORD_ARG("XXX")])},
+      help_suitable_execution("? XXX", LexConfig, SyntaxConfig, ?ALL_MODULES, [?WORD_ARG("XXX")])},
      {"process 'YYY ?'",
       fail_help_exact_execution("YYY ?", LexConfig, SyntaxConfig)},
      {"process 'YYY ? XXX'",
@@ -86,10 +69,6 @@ success_execution(Source, LexConfig, SyntaxConfig, Module, Args) ->
 fail_execution(Source, LexConfig, SyntaxConfig, Reason) ->
     Result = command_parser:process(Source, LexConfig, SyntaxConfig),
     ?_assertEqual({false, Reason}, Result).
-
-%%help_execution(Source, LexConfig, SyntaxConfig, Items, Prefix, Args) ->
-%%    Result = command_parser:process(Source, LexConfig, SyntaxConfig),
-%%    ?_assertEqual({true, {Items, Prefix, Args}}, Result).
 
 help_suitable_execution(Source, LexConfig, SyntaxConfig, Modules, Args) ->
     Result = command_parser:process(Source, LexConfig, SyntaxConfig),

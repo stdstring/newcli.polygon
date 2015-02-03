@@ -11,22 +11,6 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--define(FULL_HELP_RESULT, [?PING_MODULE,
-                           ?CONF_TERM_MODULE,
-                           ?LOGIN_MODULE,
-                           ?LOGOUT_MODULE,
-                           ?INTERFACE_MODULE,
-                           ?IFRANGE_MODULE,
-                           ?VLAN_MODULE,
-                           ?NOVLAN_MODULE,
-                           ?SWACCESS_VLAN_MODULE,
-                           ?NOSWACCESS_VLAN_MODULE,
-                           ?NAME_MODULE,
-                           ?NONAME_MODULE,
-                           ?END_MODULE,
-                           ?EXIT_MODULE,
-                           ?SHOW_VLAN_MODULE]).
-
 %% ====================================================================
 %% Test functions
 %% ====================================================================
@@ -53,9 +37,9 @@ process_help_test_() ->
     NameTable = name_search_config:create(),
     Config = syntax_analyzer_config:create(NameTable),
     [{"parse '?'",
-      help_suitable_execution([?WORD_TOKEN("?"), ?END_TOKEN], Config, ?FULL_HELP_RESULT, [])},
+      help_suitable_execution([?WORD_TOKEN("?"), ?END_TOKEN], Config, ?ALL_MODULES, [])},
      {"parse '? XXX'",
-      help_suitable_execution([?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config, ?FULL_HELP_RESULT, [?WORD_ARG("XXX")])},
+      help_suitable_execution([?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config, ?ALL_MODULES, [?WORD_ARG("XXX")])},
      {"parse 'YYY ?'",
       fail_help_exact_execution([?WORD_TOKEN("YYY"), ?WORD_TOKEN("?"), ?END_TOKEN], Config)},
      {"parse 'YYY ? XXX'",
