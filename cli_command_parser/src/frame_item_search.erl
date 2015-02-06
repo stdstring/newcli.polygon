@@ -2,7 +2,8 @@
 
 -module(frame_item_search).
 
--export([search_best/2, search_suitable/2, search_exact/2]).
+%%-export([search_best/2, search_suitable/2, search_exact/2]).
+-export([search_best/2]).
 
 -include("frame_defs.hrl").
 -include("name_search_defs.hrl").
@@ -16,73 +17,56 @@
 search_best(FrameItems, NameTable) ->
     search_best_impl([], FrameItems, undefined, NameTable).
 
-%%-spec search_suitable(FrameItems :: [#frame_item{}], NameTable :: name_search_table()) -> [atom()].
+%%-spec search_suitable(FrameItems :: [#frame_item{}], NameTable :: name_search_table()) ->
+%%    {ExactModule :: 'undefined' | atom(), Modules :: name_search_table()}.
 %%search_suitable(FrameItems, NameTable) ->
 %%    case transform_frame_items(FrameItems) of
 %%        {true, Values} -> search_suitable_impl(Values, NameTable);
-%%        false -> []
+%%        false -> {undefined, []}
 %%    end.
 
--spec search_suitable(FrameItems :: [#frame_item{}], NameTable :: name_search_table()) ->
-    {ExactModule :: 'undefined' | atom(), Modules :: name_search_table()}.
-search_suitable(FrameItems, NameTable) ->
-    case transform_frame_items(FrameItems) of
-        {true, Values} -> search_suitable_impl(Values, NameTable);
-        false -> {undefined, []}
-    end.
-
--spec search_exact(FrameItems :: [#frame_item{}], NameTable :: name_search_table()) ->
-    {'true', Module :: atom()} | 'false'.
-search_exact(FrameItems, NameTable) ->
-    case transform_frame_items(FrameItems) of
-        {true, Values} -> search_exact_impl(Values, NameTable);
-        false -> false
-    end.
+%%-spec search_exact(FrameItems :: [#frame_item{}], NameTable :: name_search_table()) ->
+%%    {'true', Module :: atom()} | 'false'.
+%%search_exact(FrameItems, NameTable) ->
+%%    case transform_frame_items(FrameItems) of
+%%        {true, Values} -> search_exact_impl(Values, NameTable);
+%%        false -> false
+%%    end.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
--spec transform_frame_items(FrameItems :: [#frame_item{}]) -> {'true', Words :: [string()]} | false.
-transform_frame_items(FrameItems) ->
-    transform_frame_items(FrameItems, []).
+%%-spec transform_frame_items(FrameItems :: [#frame_item{}]) -> {'true', Words :: [string()]} | false.
+%%transform_frame_items(FrameItems) ->
+%%    transform_frame_items(FrameItems, []).
 
--spec transform_frame_items(FrameItems :: [#frame_item{}], Result :: [string()]) ->
-     {'true', Words :: [string()]} | false.
-transform_frame_items([], Result) ->
-    {true, lists:reverse(Result)};
-transform_frame_items([#frame_item{type = word, value = Word} | Rest], Result) ->
-    transform_frame_items(Rest, [Word] ++ Result);
-transform_frame_items([#frame_item{type = string, value = Word} | Rest], Result) ->
-    transform_frame_items(Rest, [Word] ++ Result);
-transform_frame_items([#frame_item{} | _Rest], _Result) ->
-    false.
+%%-spec transform_frame_items(FrameItems :: [#frame_item{}], Result :: [string()]) ->
+%%     {'true', Words :: [string()]} | false.
+%%transform_frame_items([], Result) ->
+%%    {true, lists:reverse(Result)};
+%%transform_frame_items([#frame_item{type = word, value = Word} | Rest], Result) ->
+%%    transform_frame_items(Rest, [Word] ++ Result);
+%%transform_frame_items([#frame_item{type = string, value = Word} | Rest], Result) ->
+%%    transform_frame_items(Rest, [Word] ++ Result);
+%%transform_frame_items([#frame_item{} | _Rest], _Result) ->
+%%    false.
 
-%%-spec search_suitable_impl(Values :: [string()], NameTable :: name_search_table()) -> [atom()].
+%%-spec search_suitable_impl(Values :: [string()], NameTable :: name_search_table()) -> name_search_table().
 %%search_suitable_impl(Values, NameTable) ->
 %%    case name_search:search(Values, NameTable) of
-%%        {true, Module, RowsRest} ->
-%%            [Module] ++ lists:map(fun({_SearchItem, Value}) -> Value end, RowsRest);
-%%        {incomplete, RowsRest} ->
-%%            lists:map(fun({_SearchItem, Value}) -> Value end, RowsRest);
-%%        false -> []
+%%        {true, Module, RowsRest} -> {Module, RowsRest};
+%%        {incomplete, RowsRest} -> {undefined, RowsRest};
+%%        false -> {undefined, []}
 %%    end.
 
--spec search_suitable_impl(Values :: [string()], NameTable :: name_search_table()) -> name_search_table().
-search_suitable_impl(Values, NameTable) ->
-    case name_search:search(Values, NameTable) of
-        {true, Module, RowsRest} -> {Module, RowsRest};
-        {incomplete, RowsRest} -> {undefined, RowsRest};
-        false -> {undefined, []}
-    end.
-
--spec search_exact_impl(Values :: [string()], NameTable :: name_search_table()) ->
-    {'true', Module :: atom()} | 'false'.
-search_exact_impl(Values, NameTable) ->
-    case name_search:search(Values, NameTable) of
-        {true, Module, _RowsRest} -> {true, Module};
-        _Other -> false
-    end.
+%%-spec search_exact_impl(Values :: [string()], NameTable :: name_search_table()) ->
+%%    {'true', Module :: atom()} | 'false'.
+%%search_exact_impl(Values, NameTable) ->
+%%    case name_search:search(Values, NameTable) of
+%%        {true, Module, _RowsRest} -> {true, Module};
+%%        _Other -> false
+%%    end.
 
 -spec search_best_impl(WordsUsed :: [string()],
                       FrameItems :: [#frame_item{}],

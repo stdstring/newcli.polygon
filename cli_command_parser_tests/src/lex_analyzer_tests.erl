@@ -37,14 +37,14 @@ parse_test_() ->
      check_fail("ping \"", bad_input, ConfigList),
      check_fail("ping \"XXX", bad_input, ConfigList)].
 
-parse_help_test_() ->
-    ConfigList = lex_analyzer_config:create_parsers_config(),
-    [check_success("?", [?WORD_TOKEN("?"), ?END_TOKEN], ConfigList, true),
-     check_success("? XXX", [?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, true),
-     check_success("YYY ?", [?WORD_TOKEN("YYY"), ?WORD_TOKEN("?"), ?END_TOKEN], ConfigList, true),
-     check_success("YYY ? XXX", [?WORD_TOKEN("YYY"), ?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, true),
-     check_success("YYY ZZ?", [?WORD_TOKEN("YYY"), ?WORD_TOKEN("ZZ?"), ?END_TOKEN], ConfigList, true),
-     check_success("YYY ZZ? XXX", [?WORD_TOKEN("YYY"), ?WORD_TOKEN("ZZ?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, true)].
+%%parse_help_test_() ->
+%%    ConfigList = lex_analyzer_config:create_parsers_config(),
+%%    [check_success("?", [?WORD_TOKEN("?"), ?END_TOKEN], ConfigList, true),
+%%     check_success("? XXX", [?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, true),
+%%     check_success("YYY ?", [?WORD_TOKEN("YYY"), ?WORD_TOKEN("?"), ?END_TOKEN], ConfigList, true),
+%%     check_success("YYY ? XXX", [?WORD_TOKEN("YYY"), ?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, true),
+%%     check_success("YYY ZZ?", [?WORD_TOKEN("YYY"), ?WORD_TOKEN("ZZ?"), ?END_TOKEN], ConfigList, true),
+%%     check_success("YYY ZZ? XXX", [?WORD_TOKEN("YYY"), ?WORD_TOKEN("ZZ?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], ConfigList, true)].
 
 different_token_parsers_test_() ->
     ConfigList = lex_analyzer_config:create_parsers_config(),

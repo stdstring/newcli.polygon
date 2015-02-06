@@ -33,29 +33,29 @@ process_test_() ->
      {"try parse 'call 666' with unknown token",
       fail_execution([?WORD_TOKEN("call"), ?TOKEN(integer, 666), ?END_TOKEN], Config, bad_token)}].
 
-process_help_test_() ->
-    NameTable = name_search_config:create(),
-    Config = syntax_analyzer_config:create(NameTable),
-    [{"parse '?'",
-      help_suitable_execution([?WORD_TOKEN("?"), ?END_TOKEN], Config, ?ALL_MODULES, [])},
-     {"parse '? XXX'",
-      help_suitable_execution([?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config, ?ALL_MODULES, [?WORD_ARG("XXX")])},
-     {"parse 'YYY ?'",
-      fail_help_exact_execution([?WORD_TOKEN("YYY"), ?WORD_TOKEN("?"), ?END_TOKEN], Config)},
-     {"parse 'YYY ? XXX'",
-      fail_help_exact_execution([?WORD_TOKEN("YYY"), ?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config)},
-     {"parse 'ping ?'",
-      success_help_exact_execution([?WORD_TOKEN("ping"), ?WORD_TOKEN("?"), ?END_TOKEN], Config, ?PING_MODULE, [])},
-     {"parse 'ping ? XXX'",
-      success_help_exact_execution([?WORD_TOKEN("ping"), ?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config, ?PING_MODULE, [?WORD_ARG("XXX")])},
-     {"parse 'YYY ZZ?'",
-      help_suitable_execution([?WORD_TOKEN("YYY"), ?WORD_TOKEN("ZZ?"), ?END_TOKEN], Config, [], [])},
-     {"parse 'YYY ZZ? XXX'",
-      help_suitable_execution([?WORD_TOKEN("YYY"), ?WORD_TOKEN("ZZ?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config, [], [?WORD_ARG("XXX")])},
-     {"parse 'i?'",
-      help_suitable_execution([?WORD_TOKEN("i?"), ?END_TOKEN], Config, [?INTERFACE_MODULE, ?IFRANGE_MODULE], [])},
-     {"parse 'i? XXX'",
-      help_suitable_execution([?WORD_TOKEN("i?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config, [?INTERFACE_MODULE, ?IFRANGE_MODULE], [?WORD_ARG("XXX")])}].
+%%process_help_test_() ->
+%%    NameTable = name_search_config:create(),
+%%    Config = syntax_analyzer_config:create(NameTable),
+%%    [{"parse '?'",
+%%      help_suitable_execution([?WORD_TOKEN("?"), ?END_TOKEN], Config, ?ALL_MODULES, [])},
+%%     {"parse '? XXX'",
+%%      help_suitable_execution([?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config, ?ALL_MODULES, [?WORD_ARG("XXX")])},
+%%     {"parse 'YYY ?'",
+%%      fail_help_exact_execution([?WORD_TOKEN("YYY"), ?WORD_TOKEN("?"), ?END_TOKEN], Config)},
+%%     {"parse 'YYY ? XXX'",
+%%      fail_help_exact_execution([?WORD_TOKEN("YYY"), ?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config)},
+%%     {"parse 'ping ?'",
+%%      success_help_exact_execution([?WORD_TOKEN("ping"), ?WORD_TOKEN("?"), ?END_TOKEN], Config, ?PING_MODULE, [])},
+%%     {"parse 'ping ? XXX'",
+%%      success_help_exact_execution([?WORD_TOKEN("ping"), ?WORD_TOKEN("?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config, ?PING_MODULE, [?WORD_ARG("XXX")])},
+%%     {"parse 'YYY ZZ?'",
+%%      help_suitable_execution([?WORD_TOKEN("YYY"), ?WORD_TOKEN("ZZ?"), ?END_TOKEN], Config, [], [])},
+%%     {"parse 'YYY ZZ? XXX'",
+%%      help_suitable_execution([?WORD_TOKEN("YYY"), ?WORD_TOKEN("ZZ?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config, [], [?WORD_ARG("XXX")])},
+%%     {"parse 'i?'",
+%%      help_suitable_execution([?WORD_TOKEN("i?"), ?END_TOKEN], Config, [?INTERFACE_MODULE, ?IFRANGE_MODULE], [])},
+%%     {"parse 'i? XXX'",
+%%      help_suitable_execution([?WORD_TOKEN("i?"), ?WORD_TOKEN("XXX"), ?END_TOKEN], Config, [?INTERFACE_MODULE, ?IFRANGE_MODULE], [?WORD_ARG("XXX")])}].
 
 %% ====================================================================
 %% Internal functions
@@ -69,14 +69,14 @@ fail_execution(TokenList, Config, Reason) ->
     Result = syntax_analyzer:process(TokenList, Config),
     ?_assertEqual({false, Reason}, Result).
 
-help_suitable_execution(TokenList, Config, Modules, Args) ->
-    Result = syntax_analyzer:process(TokenList, Config),
-    ?_assertEqual({true, #help_suitable_command{modules = Modules, arguments = Args}}, Result).
+%%help_suitable_execution(TokenList, Config, Modules, Args) ->
+%%    Result = syntax_analyzer:process(TokenList, Config),
+%%    ?_assertEqual({true, #help_suitable_command{modules = Modules, arguments = Args}}, Result).
 
-success_help_exact_execution(TokenList, Config, Module, Args) ->
-    Result = syntax_analyzer:process(TokenList, Config),
-    ?_assertEqual({true, #help_exact_command{module = Module, arguments = Args}}, Result).
+%%success_help_exact_execution(TokenList, Config, Module, Args) ->
+%%    Result = syntax_analyzer:process(TokenList, Config),
+%%    ?_assertEqual({true, #help_exact_command{module = Module, arguments = Args}}, Result).
 
-fail_help_exact_execution(TokenList, Config) ->
-    Result = syntax_analyzer:process(TokenList, Config),
-    ?_assertEqual({false, unknown_help}, Result).
+%%fail_help_exact_execution(TokenList, Config) ->
+%%    Result = syntax_analyzer:process(TokenList, Config),
+%%    ?_assertEqual({false, unknown_help}, Result).
