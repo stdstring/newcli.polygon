@@ -21,6 +21,7 @@ all: pre_build
                                              -L/usr/lib/x86_64-linux-gnu -lreadline -lhistory\
                                              -L/usr/lib/erlang/lib/erl_interface-3.7.13/lib -lerl_interface -lei\
                                              -lpthread
+	$(CC) $(CFLAGS) -I/usr/include/readline/ -o $(BIN)/readline_example src/readline_example.cpp -L/usr/lib/x86_64-linux-gnu -lreadline -lhistory
 
 pre_build: clean
 	$(shell if [ ! -d "./$(BIN)/" ]; then mkdir $(BIN); fi)
