@@ -170,32 +170,6 @@ std::string trim_full(std::string const& source)
     return trim_right(trim_left_result);
 }
 
-/*void signal_handler(int signo)
-{
-    if (signo == SIGINT)
-    {
-        std::cout << "^C" << std::endl;
-        rl_callback_handler_remove();
-        rl_callback_handler_install(prompt, readline_handler);
-    }
-    if (signo == SIGQUIT)
-    {
-        std::cout << "^\\" << std::endl;
-        rl_callback_handler_remove();
-        running = false;
-    }
-    if (signo == SIGWINCH)
-    {
-        // ??
-    }
-    if (signo == SIGTSTP)
-    {
-        std::cout << "^Z" << std::endl;
-        rl_callback_handler_remove();
-        running = false;
-    }
-}*/
-
 void clear_input_handler()
 {
     rl_callback_handler_remove();
