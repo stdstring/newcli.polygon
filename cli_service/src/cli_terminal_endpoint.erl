@@ -11,6 +11,20 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
+-define(COMMAND_START(CommandLine), {command, CommandLine}).
+-define(COMMAND_OUTPUT(Output), {command_out, Output}).
+-define(COMMAND_ERROR(Error), {command_err, Error}).
+-define(COMMAND_END(Prompt), {'end', Prompt}).
+-define(COMMAND_INT, {interrupt}).
+-define(CURRENT_STATE_REQUEST, {current_state_request}).
+-define(CURRENT_STATE_RESPONSE(Prompt), {current_state_response, Prompt}).
+-define(EXTENSION_REQUEST(CommandLine), {extension_request, CommandLine}).
+-define(EXTENSION_RESPONSE(ExtensionList), {extension_response, ExtensionList}).
+-define(EXIT, {exit}).
+-define(ERROR, {error}).
+
+-define(NO_RESPONSE, no_response).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -23,17 +37,17 @@ start(GlobalConfig, Socket) ->
 -spec handle_output(Endpoint :: pid(), Output :: string()) -> 'ok'.
 handle_output(Endpoint, Output) ->
     io:format("cli_terminal_endpoint:handle_output Output=~p~n", [Output]),
-    gen_server:cast(Endpoint, {command_out, Output}).
+    gen_server:cast(Endpoint, ?COMMAND_OUTPUT(Output)).
 
 -spec handle_error(Endpoint :: pid(), Error :: string()) -> 'ok'.
 handle_error(Endpoint, Error) ->
     io:format("cli_terminal_endpoint:handle_error Error=~p~n", [Error]),
-    gen_server:cast(Endpoint, {command_err, Error}).
+    gen_server:cast(Endpoint, ?COMMAND_ERROR(Error)).
 
 -spec handle_end(Endpoint :: pid(), Prompt :: string()) -> 'ok'.
 handle_end(Endpoint, Prompt) ->
     io:format("cli_terminal_endpoint:handle_end Prompt=~p~n", [Prompt]),
-    gen_server:cast(Endpoint, {'end', Prompt}).
+    gen_server:cast(Endpoint, ?COMMAND_END(Prompt)).
 
 init([GlobalConfig, Socket]) ->
     io:format("cli_terminal_endpoint:init ~n", []),
@@ -84,41 +98,41 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% ====================================================================
 
 -spec process_request(Request :: term(), State :: #cli_terminal_state{}) -> Response :: term().
-process_request({command, CommandLine}, State) ->
+process_request(?COMMAND_START(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     %%case client_handler:process_command(ClientHandler, CommandLine) of
     %%    true -> no_response;
     %%    false -> {error, "There is running the other command, now\n"}
     %%end;
     client_handler:process_command(ClientHandler, CommandLine),
-    no_response;
-process_request({interrupt}, State) ->
+    ?NO_RESPONSE;
+process_request(?COMMAND_INT, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     client_handler:interrupt_command(ClientHandler),
-    no_response;
-process_request({current_state_request}, State) ->
+    ?NO_RESPONSE;
+process_request(?CURRENT_STATE_REQUEST, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     Prompt = client_handler:get_current_state(ClientHandler),
-    {current_state_response, Prompt};
-process_request({extension_request, CommandLine}, State) ->
+    ?CURRENT_STATE_RESPONSE(Prompt);
+process_request(?EXTENSION_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     ExtensionList = client_handler:get_extensions(ClientHandler, CommandLine),
-    {extension_response, ExtensionList};
-process_request({exit}, _State) ->
+    ?EXTENSION_RESPONSE(ExtensionList);
+process_request(?EXIT, _State) ->
     %% some action
-    no_response.
+    ?NO_RESPONSE.
 
 -spec process_response(Response :: term(), State :: #cli_terminal_state{}) -> 'ok' | {'error', Reason :: atom()}.
-process_response(no_response, _State) -> ok;
-process_response({command_out, _Out} = Response, State) ->
+process_response(?NO_RESPONSE, _State) -> ok;
+process_response(?COMMAND_OUTPUT(_Out) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
-process_response({command_err, _Err} = Response, State) ->
+process_response(?COMMAND_ERROR(_Err) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
-process_response({'end', _Prompt} = Response, State) ->
+process_response(?COMMAND_END(_Prompt) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
-process_response({error} = Response, State) ->
+process_response(?ERROR = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
-process_response({current_state_response, _Data} = Response, State) ->
+process_response(?CURRENT_STATE_RESPONSE(_Data) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
-process_response({extension_response, _Data} = Response, State) ->
+process_response(?EXTENSION_RESPONSE(_Data) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)).
