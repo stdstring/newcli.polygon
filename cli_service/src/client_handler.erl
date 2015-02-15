@@ -12,8 +12,18 @@
 -define(COMMAND_CREATION_ERROR, "Command's creation is failed due to the following reason: ~w\n").
 -define(COMMAND_ALREADY_RUN, "There is running the other command, now\n").
 
--export([start/3, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1]).
--export([send_output/2, send_error/2, finish_command/3, finish_exec/3]).
+-export([start/3,
+         process_command/2,
+         interrupt_command/1,
+         get_current_state/1,
+         get_extensions/2,
+         exit/1,
+         send_output/2,
+         send_error/2,
+         finish_command/3,
+         finish_exec/3,
+         get_help/2,
+         get_suitable_commands/2]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -24,7 +34,6 @@
 -spec start(GlobalConfig :: #global_config{}, Endpoint :: pid(), SocketOtherSide :: {Address :: tuple(), Port :: pos_integer()}) ->
     {'ok', Pid :: pid()} | {'error', Reason :: term()}.
 start(GlobalConfig, Endpoint, SocketOtherSide) ->
-    io:format("client_handler:start ~n", []),
     gen_server:start_link(?MODULE, [GlobalConfig, Endpoint, SocketOtherSide], []).
 
 -spec process_command(Handler :: pid(), CommandLine :: string()) -> boolean().
@@ -61,15 +70,20 @@ finish_command(Handler, ReturnCode, ExecutionState) ->
 
 -spec finish_exec(Handler :: pid(), ReturnCode :: integer(), ExecutionState :: [{Key :: atom(), Value :: term()}]) -> 'ok'.
 finish_exec(Handler, ReturnCode, ExecutionState) ->
-    io:format("client_handler:finish_exec~n"),
     gen_server:cast(Handler, {?FINISH_EXEC, ReturnCode, ExecutionState}).
+
+-spec get_help(Handler :: pid(), CommandLine :: string()) -> string().
+get_help(Handler, CommandLine) ->
+    gen_server:call(Handler, {?HELP, CommandLine}).
+
+-spec get_suitable_commands(Handler :: pid(), CommandLine :: string()) -> [string()].
+get_suitable_commands(Handler, CommandLine) ->
+    gen_server:call(Handler, {?SUITABLE_COMMANDS, CommandLine}).
 
 init([GlobalConfig, Endpoint, SocketOtherSide]) ->
     %% for catching exit signals from commands
-    io:format("client_handler:init ~n", []),
     process_flag(trap_exit, true),
     CommandModule = module_name_generator:generate(?ENTRY_MODULE_PREFIX, SocketOtherSide),
-    io:format("client_handler:init CommandModule=~p~n", [CommandModule]),
     case cli_fsm:start(GlobalConfig#global_config.cli_fsm) of
         {ok, CliFsm} ->
             State = #client_handler_state{config = GlobalConfig,
@@ -78,7 +92,6 @@ init([GlobalConfig, Endpoint, SocketOtherSide]) ->
                                           cli_fsm =CliFsm},
             {ok, State};
         {error, Reason} ->
-            io:format("cli_fsm:start error=~p~n", [Reason]),
             {stop, Reason}
     end.
 
@@ -105,7 +118,13 @@ handle_call(?CURRENT_STATE, _From, State) ->
     {reply, Prompt, State};
 handle_call({?EXTENSIONS, _CommandLine}, _From, State) ->
     Extensions = [],
-    {reply, Extensions, State}.
+    {reply, Extensions, State};
+handle_call({?HELP, _CommandLine}, _From, State) ->
+    Help = "",
+    {reply, Help, State};
+handle_call({?SUITABLE_COMMANDS, _CommandLine}, _From, State) ->
+    Commands = [],
+    {reply, Commands, State}.
 
 handle_cast(Request, State) ->
     NewState = command_executor:process(Request, State),
