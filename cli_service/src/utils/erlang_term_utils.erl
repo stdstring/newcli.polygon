@@ -2,10 +2,11 @@
 
 -module(erlang_term_utils).
 
+-export([read_from_file/1, write_to_file/2, append_to_file/2]).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([read_from_file/1, write_to_file/2, append_to_file/2]).
 
 -spec read_from_file(Filename :: string()) -> term() | no_return().
 read_from_file(Filename) ->

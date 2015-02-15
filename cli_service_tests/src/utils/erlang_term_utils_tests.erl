@@ -1,4 +1,4 @@
-%% @author stdstring
+%% @author std-string
 
 -module(erlang_term_utils_tests).
 

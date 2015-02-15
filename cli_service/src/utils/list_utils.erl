@@ -2,11 +2,11 @@
 
 -module(list_utils).
 
+-export([get_value_by_key/4, get_value_by_key_with_default/4]).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
-
--export([get_value_by_key/4, get_value_by_key_with_default/4]).
 
 -spec get_value_by_key(Source :: [tuple()], Key :: term(), KeyPosition :: integer(), KeyMissingError :: term()) -> term() | tuple().
 get_value_by_key(Source, Key, KeyPosition, KeyMissingError) ->

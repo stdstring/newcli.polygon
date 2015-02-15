@@ -13,6 +13,7 @@ SOURCE=src/code_generator/cli_fsm_mock.erl \
 TEST_SOURCE=src/code_generator/code_generator_tests.erl \
             src/code_generator/dynamic_code_generation_tests.erl \
             src/command_config/name_search_factory_tests.erl \
+            src/utils/commandline_parser_tests.erl\
             src/utils/crypto_utils_tests.erl \
             src/utils/erlang_term_utils_tests.erl \
             src/utils/list_utils_tests.erl \

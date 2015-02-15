@@ -1,4 +1,4 @@
-%% @author stdstring
+%% @author std-string
 
 -module(string_utils_tests).
 

@@ -1,4 +1,4 @@
-%% @author stdstring
+%% @author std-string
 
 -module(name_search_factory_tests).
 

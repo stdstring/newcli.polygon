@@ -20,6 +20,7 @@ SOURCE=src/command/code_generator.erl \
        src/services/authentication_service.erl \
        src/services/authorization_service_behaviour.erl \
        src/services/authorization_service.erl \
+       src/utils/commandline_parser.erl \
        src/utils/crypto_utils.erl \
        src/utils/erlang_term_utils.erl \
        src/utils/list_utils.erl \
