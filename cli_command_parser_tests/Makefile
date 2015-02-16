@@ -10,6 +10,7 @@ TEST_SOURCE=src/char_category_tests.erl \
             src/command_parser_tests.erl \
             src/frame_item_search_tests.erl \
             src/lex_analyzer_tests.erl \
+            src/name_search_helper_tests.erl \
             src/name_search_tests.erl \
             src/syntax_analyzer_tests.erl
 
