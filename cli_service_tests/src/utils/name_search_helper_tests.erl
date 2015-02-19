@@ -20,15 +20,15 @@ search_exact_test_() ->
 
 search_suitable_test_() ->
     NameTable = create_config(),
-    [search_suitable("search ''", [], ?ALL_MODULES, NameTable),
-     search_suitable("search 'p'", ["p"], [?PING_MODULE], NameTable),
-     search_suitable("search 'p'", [], "p", [?PING_MODULE], NameTable),
-     search_suitable("search 'i'", ["i"], [?INTERFACE_MODULE, ?IFRANGE_MODULE], NameTable),
-     search_suitable("search 'i'", [], "i", [?INTERFACE_MODULE, ?IFRANGE_MODULE], NameTable),
-     search_suitable("search 'i r'", ["i", "r"], [?IFRANGE_MODULE], NameTable),
-     search_suitable("search 'i'", ["i"], "r", [?IFRANGE_MODULE], NameTable),
-     search_suitable("search 'n'", ["n"], [?NOVLAN_MODULE, ?NOSWACCESS_VLAN_MODULE, ?NAME_MODULE, ?NONAME_MODULE], NameTable),
-     search_suitable("search 'n'", [], "n", [?NOVLAN_MODULE, ?NOSWACCESS_VLAN_MODULE, ?NAME_MODULE, ?NONAME_MODULE], NameTable)].
+    [search_suitable("search ''", [], {"", ?ALL_MODULES}, NameTable),
+     search_suitable("search 'p'", ["p"], {"ping", [?PING_MODULE]}, NameTable),
+     search_suitable("search 'p'", [], "p", {"ping", [?PING_MODULE]}, NameTable),
+     search_suitable("search 'i'", ["i"], {"interface", [?INTERFACE_MODULE, ?IFRANGE_MODULE]}, NameTable),
+     search_suitable("search 'i'", [], "i", {"interface", [?INTERFACE_MODULE, ?IFRANGE_MODULE]}, NameTable),
+     search_suitable("search 'i r'", ["i", "r"], {"range", [?IFRANGE_MODULE]}, NameTable),
+     search_suitable("search 'i'", ["i"], "r", {"range", [?IFRANGE_MODULE]}, NameTable),
+     search_suitable("search 'n'", ["n"], {"n", [?NOVLAN_MODULE, ?NOSWACCESS_VLAN_MODULE, ?NAME_MODULE, ?NONAME_MODULE]}, NameTable),
+     search_suitable("search 'n'", [], "n", {"n", [?NOVLAN_MODULE, ?NOSWACCESS_VLAN_MODULE, ?NAME_MODULE, ?NONAME_MODULE]}, NameTable)].
 
 %% ====================================================================
 %% Internal functions

@@ -20,7 +20,9 @@ search_exact(Words, Table) ->
 
 -spec search_suitable(Words :: [string()], Table :: name_search_table()) -> [term()].
 search_suitable([], Table) ->
-    lists:map(fun({_SearchItems, Value}) -> Value end, Table);
+    %%lists:map(fun({_SearchItems, Value}) -> Value end, Table);
+    PreparedData = prepare_data(1, Table),
+    process_data(PreparedData);
 search_suitable(Words, Table) ->
     [Prefix | Rest] = lists:reverse(Words),
     search_suitable(lists:reverse(Rest), Prefix, Table).
@@ -41,11 +43,24 @@ search_suitable(Words, Prefix, Table) ->
 %% ====================================================================
 
 process_rows(Prefix, PrefixIndex, Rows) ->
-    lists:map(fun({_SearchItems, Value}) -> Value end, filter_by_prefix(Prefix, PrefixIndex, Rows)).
+    PreparedData = prepare_data(PrefixIndex, Rows),
+    FilterResult = filter_data(Prefix, PreparedData),
+    process_data(FilterResult).
 
-filter_by_prefix(Prefix, PrefixIndex, Rows) ->
-    FilterFun = fun({SearchItems, _Value}) ->
+prepare_data(PrefixIndex, Rows) ->
+    MapFun = fun({SearchItems, Value}) ->
         {Word, _MinLength} = lists:nth(PrefixIndex, SearchItems),
+        {Word, Value}
+    end,
+    lists:map(MapFun, Rows).
+
+filter_data(Prefix, PreparedData) ->
+    FilterFun = fun({Word, _Value}) ->
         lists:prefix(Prefix, Word)
     end,
-    lists:filter(FilterFun, Rows).
+    lists:filter(FilterFun, PreparedData).
+
+process_data(Result) ->
+    CommonPrefix = string_utils:get_common_prefix(lists:map(fun({Word, _Value}) -> Word end, Result)),
+    Values = lists:map(fun({_Word, Value}) -> Value end, Result),
+    {CommonPrefix, Values}.
