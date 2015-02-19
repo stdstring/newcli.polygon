@@ -32,6 +32,7 @@ SOURCE=src/command/code_generator.erl \
        src/cli_terminal_listen_supervisor.erl \
        src/cli_terminal_supervisor.erl \
        src/client_handler.erl \
+       src/client_handler_helper.erl \
        src/command_executor.erl \
        src/config_reader.erl \
        src/prompt_factory.erl

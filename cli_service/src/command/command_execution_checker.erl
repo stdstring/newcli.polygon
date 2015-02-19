@@ -5,13 +5,13 @@
 -include("authentication_defs.hrl").
 -include("cli_fsm_defs.hrl").
 
--export([execution_precheck/3]).
+-export([execution_precheck/3, select_suitable_commands/3]).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
--spec execution_precheck(CommandName :: atom(), CliFsm :: pid(), User :: #user{} | '') ->
+-spec execution_precheck(CommandName :: atom(), CliFsm :: pid(), User :: #user{} | 'undefined') ->
     'true' | {'false', 'access_denied'} | {'false', 'authorization_bad_config'} | {'false', 'unsuitable_command'}.
 execution_precheck(CommandName, CliFsm, User) ->
     case authorization_service:authorize_command(User, CommandName) of
@@ -19,6 +19,12 @@ execution_precheck(CommandName, CliFsm, User) ->
         {authorization_result, access_denied} -> {false, access_denied};
         {authorization_fail, unknown_command} -> {false, authorization_bad_config}
     end.
+
+-spec select_suitable_commands(Commands :: [atom()], CliFsm :: pid(), User :: #user{} | 'undefined') ->
+    [atom()].
+select_suitable_commands(Commands, CliFsm, User) ->
+    FilterFun = fun(Command) -> execution_precheck(Command:get_name(), CliFsm, User) == true end,
+    lists:filter(FilterFun, Commands).
 
 %% ====================================================================
 %% Internal functions

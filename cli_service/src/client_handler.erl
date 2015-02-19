@@ -96,8 +96,8 @@ init([GlobalConfig, Endpoint, SocketOtherSide]) ->
     end.
 
 handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_command = undefined} = State) ->
-    %% TODO (std_string) : think about caching
     GlobalConfig = State#client_handler_state.config,
+    %% TODO (std_string) : think about caching
     LexConfig = lex_analyzer_config:create(true),
     NameConfig = name_search_config:create(GlobalConfig#global_config.commands),
     SyntaxConfig = syntax_analyzer_config:create(NameConfig),
@@ -116,14 +116,14 @@ handle_call({?PROCESS, _CommandLine}, _From, State) ->
 handle_call(?CURRENT_STATE, _From, State) ->
     Prompt = prompt_factory:generate_prompt(State),
     {reply, Prompt, State};
-handle_call({?EXTENSIONS, _CommandLine}, _From, State) ->
-    Extensions = [],
+handle_call({?EXTENSIONS, CommandLine}, _From, State) ->
+    Extensions = client_handler_helper:get_extensions(CommandLine, State),
     {reply, Extensions, State};
-handle_call({?HELP, _CommandLine}, _From, State) ->
-    Help = "",
+handle_call({?HELP, CommandLine}, _From, State) ->
+    Help = client_handler_helper:get_help(CommandLine, State),
     {reply, Help, State};
-handle_call({?SUITABLE_COMMANDS, _CommandLine}, _From, State) ->
-    Commands = [],
+handle_call({?SUITABLE_COMMANDS, CommandLine}, _From, State) ->
+    Commands = client_handler_helper:get_suitable_commands(CommandLine, State),
     {reply, Commands, State}.
 
 handle_cast(Request, State) ->
