@@ -24,6 +24,7 @@ SOURCE=src/command/code_generator.erl \
        src/utils/crypto_utils.erl \
        src/utils/erlang_term_utils.erl \
        src/utils/list_utils.erl \
+       src/utils/name_search_helper.erl \
        src/utils/string_utils.erl \
        src/cli_service_application.erl \
        src/cli_service_supervisor.erl \

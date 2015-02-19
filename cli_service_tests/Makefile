@@ -1,6 +1,7 @@
 EBIN=ebin
 
 COMMON_EBIN = ../cli_common/ebin
+COMMAND_PARSER_EBIN = ../cli_command_parser/ebin
 SRC_EBIN = ../cli_service/ebin
 
 SOURCE=src/code_generator/cli_fsm_mock.erl \
@@ -17,6 +18,7 @@ TEST_SOURCE=src/code_generator/code_generator_tests.erl \
             src/utils/crypto_utils_tests.erl \
             src/utils/erlang_term_utils_tests.erl \
             src/utils/list_utils_tests.erl \
+            src/utils/name_search_helper_tests.erl \
             src/utils/string_utils_tests.erl
 
 INCLUDE_FLAGS=-I include -I ../cli_service/include -I ../cli_command_parser_include
@@ -33,7 +35,7 @@ $(EBIN)/%.beam: %.erl
 all: pre_build $(TARGETS) $(TEST_TARGETS)
 
 test: all
-	for TEST_NAME in $(TESTS_LIST); do erl -noshell -pa $(EBIN) $(SRC_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
+	for TEST_NAME in $(TESTS_LIST); do erl -noshell -pa $(EBIN) $(COMMAND_PARSER_EBIN) $(SRC_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 
 pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
