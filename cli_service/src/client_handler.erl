@@ -117,13 +117,13 @@ handle_call(?CURRENT_STATE, _From, State) ->
     Prompt = prompt_factory:generate_prompt(State),
     {reply, Prompt, State};
 handle_call({?EXTENSIONS, CommandLine}, _From, State) ->
-    Extensions = client_handler_helper:get_extensions(CommandLine, State),
-    {reply, Extensions, State};
+    {Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
+    {reply, {Prefix, Commands}, State};
 handle_call({?HELP, CommandLine}, _From, State) ->
     Help = client_handler_helper:get_help(CommandLine, State),
     {reply, Help, State};
 handle_call({?SUITABLE_COMMANDS, CommandLine}, _From, State) ->
-    Commands = client_handler_helper:get_suitable_commands(CommandLine, State),
+    {_Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
     {reply, Commands, State}.
 
 handle_cast(Request, State) ->

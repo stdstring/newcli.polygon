@@ -5,16 +5,13 @@
 -include("authentication_defs.hrl").
 -include("common_defs.hrl").
 
--export([get_extensions/2, get_help/2, get_suitable_commands/2]).
+-export([get_help/2, get_suitable_commands/2]).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
-get_extensions(_CommandLine, _State) ->
-    %%Words = commandline_parser:parse(CommandLine),
-    [].
-
+-spec get_help(CommandLine :: string(), State :: #client_handler_state{}) -> string().
 get_help(CommandLine, State) ->
     GlobalConfig = State#client_handler_state.config,
     %% TODO (std_string) : think about caching
@@ -32,20 +29,24 @@ get_help(CommandLine, State) ->
         false -> ""
     end.
 
+-spec get_suitable_commands(CommandLine :: string(), State :: #client_handler_state{}) ->
+    {CommonPrefix :: string(), Commands :: [string()]}.
 get_suitable_commands(CommandLine, State) ->
     Words = commandline_parser:parse(CommandLine),
-    SuitableCommands = get_commands(Words, State),
-    lists:map(fun(Command) -> string:join(Command:get_command_body(), " ") end, SuitableCommands).
+    {CommonPrefix, SuitableCommands} = get_commands(Words, State),
+    {CommonPrefix, lists:map(fun(Command) -> string:join(Command:get_command_body(), " ") end, SuitableCommands)}.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
+-spec get_commands(Words :: [string()], State :: #client_handler_state{}) ->
+    {CommonPrefix :: string(), SuitableCommands :: [atom()]}.
 get_commands(Words, State) ->
     GlobalConfig = State#client_handler_state.config,
     %% TODO (std_string) : think about caching
     NameConfig = name_search_config:create(GlobalConfig#global_config.commands),
-    SearchResult = name_search_helper:search_suitable(Words, NameConfig),
+    {CommonPrefix, Commands} = name_search_helper:search_suitable(Words, NameConfig),
     CliFsm = State#client_handler_state.cli_fsm,
     User = State#client_handler_state.user,
-    command_execution_checker:select_suitable_commands(SearchResult, CliFsm, User).
+    {CommonPrefix, command_execution_checker:select_suitable_commands(Commands, CliFsm, User)}.
