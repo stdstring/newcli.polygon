@@ -69,12 +69,21 @@
 %%     process_flag(trap_exit, false),
 %%     {0, Context}.
 %%
+%% process_fail(ReturnValue, Buffer, ClientHandler, Context) ->
+%%     process_flag(trap_exit, true),
+%%     Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
+%%     io_buffer:send_error(Buffer, Message),
+%%     send_output(Buffer, ClientHandler),
+%%     client_handler:finish_exec(ClientHandler, ReturnValue),
+%%     process_flag(trap_exit, false),
+%%     {ReturnValue, Context}.
+%%
 %% process_fail(FailMessage, ReturnValue, Buffer, ClientHandler, Context) ->
 %%     process_flag(trap_exit, true),
-%%     send_output(Buffer, ClientHandler),
-%%     client_handler:send_error(ClientHandler, FailMessage),
+%%     io_buffer:send_error(Buffer, FailMessage),
 %%     Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
-%%     client_handler:send_error(ClientHandler, Message),
+%%     io_buffer:send_error(Buffer, Message),
+%%     send_output(Buffer, ClientHandler),
 %%     client_handler:finish_exec(ClientHandler, ReturnValue),
 %%     process_flag(trap_exit, false),
 %%     {ReturnValue, Context}.
@@ -267,20 +276,21 @@ generate_process_buffer_fail_fun(ModuleDefs) ->
 generate_process_command_fail_fun(ModuleDefs) ->
     %% process_fail(ReturnValue, Buffer, ClientHandler, Context) ->
     %%     process_flag(trap_exit, true),
-    %%     send_output(Buffer, ClientHandler),
     %%     Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
-    %%     client_handler:send_error(ClientHandler, Message),
+    %%     io_buffer:send_error(Buffer, Message),
+    %%     send_output(Buffer, ClientHandler),
     %%     client_handler:finish_exec(ClientHandler, ReturnValue),
     %%     process_flag(trap_exit, false),
     %%     {ReturnValue, Context}.
     SetupGuard = generate_trap_guard_command(true),
-    SendOutput = {call, 0, {atom, 0, ?SEND_OUTPUT_FUN}, [?BUFFER, ?CLIENT_HANDLER]},
     Message = generate_command_fail_message_command(?RETURN_VALUE),
-    SendFailMessage = generate_send_error_command(ModuleDefs, Message),
+    SendFailMessageCallArgs = [?BUFFER, Message],
+    SendFailMessage = {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.io_buffer_module}, {atom, 0, send_error}}, SendFailMessageCallArgs},
+    SendOutput = {call, 0, {atom, 0, ?SEND_OUTPUT_FUN}, [?BUFFER, ?CLIENT_HANDLER]},
     FinishExec = generate_finish_exec(?RETURN_VALUE, ModuleDefs),
     ReleaseGuard = generate_trap_guard_command(false),
     ReturnValue = {tuple, 0, [?RETURN_VALUE, ?CONTEXT]},
-    Body = [SetupGuard, SendOutput, SendFailMessage, FinishExec, ReleaseGuard, ReturnValue],
+    Body = [SetupGuard, SendFailMessage, SendOutput, FinishExec, ReleaseGuard, ReturnValue],
     FunClause = {clause, 0, [?RETURN_VALUE, ?BUFFER, ?CLIENT_HANDLER, ?CONTEXT], [], Body},
     {function, 0, ?PROCESS_FAIL_FUN, 4, [FunClause]}.
 
@@ -288,22 +298,24 @@ generate_process_command_fail_fun(ModuleDefs) ->
 generate_process_fail_fun(ModuleDefs) ->
     %% process_fail(FailMessage, ReturnValue, Buffer, ClientHandler, Context) ->
     %%     process_flag(trap_exit, true),
-    %%     send_output(Buffer, ClientHandler),
-    %%     client_handler:send_error(ClientHandler, FailMessage),
+    %%     io_buffer:send_error(Buffer, FailMessage),
     %%     Message = string_utils:format("Command execution failed. Return code is ~w\n", [ReturnValue]),
-    %%     client_handler:send_error(ClientHandler, Message),
+    %%     io_buffer:send_error(Buffer, Message),
+    %%     send_output(Buffer, ClientHandler),
     %%     client_handler:finish_exec(ClientHandler, ReturnValue),
     %%     process_flag(trap_exit, false),
     %%     {ReturnValue, Context}.
     SetupGuard = generate_trap_guard_command(true),
+    SendErrorCallArgs = [?BUFFER, ?MESSAGE],
+    SendErrorCall = {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.io_buffer_module}, {atom, 0, send_error}}, SendErrorCallArgs},
+    CommandFailMessage = generate_command_fail_message_command(?RETURN_VALUE),
+    SendCommandFailArgs = [?BUFFER, CommandFailMessage],
+    SendCommandFail = {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.io_buffer_module}, {atom, 0, send_error}}, SendCommandFailArgs},
     SendOutput = {call, 0, {atom, 0, ?SEND_OUTPUT_FUN}, [?BUFFER, ?CLIENT_HANDLER]},
-    SendErrorCall = generate_send_error_command(ModuleDefs),
-    SendCommandFailMessage = generate_command_fail_message_command(?RETURN_VALUE),
-    SendCommandFail = generate_send_error_command(ModuleDefs, SendCommandFailMessage),
     FinishExec = generate_finish_exec(?RETURN_VALUE, ModuleDefs),
     ReleaseGuard = generate_trap_guard_command(false),
     ReturnValue = {tuple, 0, [?RETURN_VALUE, ?CONTEXT]},
-    Body = [SetupGuard, SendOutput, SendErrorCall, SendCommandFail, FinishExec, ReleaseGuard, ReturnValue],
+    Body = [SetupGuard, SendErrorCall, SendCommandFail, SendOutput, FinishExec, ReleaseGuard, ReturnValue],
     FunClause = {clause, 0, [?MESSAGE, ?RETURN_VALUE, ?BUFFER, ?CLIENT_HANDLER, ?CONTEXT], [], Body},
     {function, 0, ?PROCESS_FAIL_FUN, 5, [FunClause]}.
 
@@ -313,10 +325,10 @@ generate_fsm_notification_command(CommandName, ModuleDefs) ->
     NotificationArgs = [{var, 0, 'CliFsm'}, {atom, 0, CommandName}],
     {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.cli_fsm_module}, {atom, 0, process_command}}, NotificationArgs}.
 
--spec generate_send_error_command(ModuleDefs :: #module_defs{}) -> tuple().
-generate_send_error_command(ModuleDefs) ->
-    %% client_handler:send_error(ClientHandler, Message),
-    generate_send_error_command(ModuleDefs, ?MESSAGE).
+%%-spec generate_send_error_command(ModuleDefs :: #module_defs{}) -> tuple().
+%%generate_send_error_command(ModuleDefs) ->
+%%    %% client_handler:send_error(ClientHandler, Message),
+%%    generate_send_error_command(ModuleDefs, ?MESSAGE).
 
 -spec generate_send_error_command(ModuleDefs :: #module_defs{}, Message :: tuple()) -> tuple().
 generate_send_error_command(ModuleDefs, Message) ->
