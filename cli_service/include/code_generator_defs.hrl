@@ -10,3 +10,7 @@
 -define(ACCESS_DENIED_MESSAGE, "Access denied\n").
 -define(BAD_CONFIG_MESSAGE, "Bad authorization config\n").
 -define(COMMAND_FAIL_TEMPLATE, "Command execution failed. Return code is ~w\n").
+
+-define(IO_BUFFER_MODULE(ModuleDefs), {atom, 0, ModuleDefs#module_defs.io_buffer_module}).
+-define(CLIENT_HANDLER_MODULE(ModuleDefs), {atom, 0, ModuleDefs#module_defs.client_handler_module}).
+-define(CLI_FSM_MODULE(ModuleDefs), {atom, 0, ModuleDefs#module_defs.cli_fsm_module}).
