@@ -12,7 +12,6 @@
 -define(LOGIN(Username), ["@CliDemo>login", "login:" ++ Username, "password:"]).
 -define(ADMIN_LOGIN, ?LOGIN("root")).
 -define(GUEST_LOGIN, ?LOGIN("guest")).
-%%-define(GREETING, "some greeting message").
 -define(GREETING, "Default greeting message").
 -define(LOGOUT_RESULT(Username), ["User \"" ++ Username ++ "\" is logged out", "@CliDemo>"]).
 -define(ADMIN_LOGOUT_RESULT, ?LOGOUT_RESULT("root")).
@@ -23,7 +22,8 @@
 -define(PING_OUTPUT, ["ping line 1", "ping line 2", "ping line 3"]).
 -define(BAD_ARGS, "Bad arguments").
 -define(ACCESS_DENIED, "Access denied").
--define(UNKNOWN_COMMAND, "Command's creation is failed due to the following reason: command_not_found").
+-define(UNKNOWN_COMMAND, "Command's creation is failed due to the following reason: unknown_command").
+-define(UNSUITABLE_CHAR, "Command's creation is failed due to the following reason: unsuitable_char").
 -define(UNSUITABLE_COMMAND, "Unsuitable command").
 -define(CONFIG_TERM, "root@CliDemo#configure terminal").
 -define(INTERFACE, "root@CliDemo (config)#interface someinterface 0/1").

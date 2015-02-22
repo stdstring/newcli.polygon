@@ -6,7 +6,7 @@
 
 integration_test_() ->
     integration_tests_common:create_tests_entry([
-        {"help", ["p?"], ["@CliDemo>p?", "Command's creation is failed due to the following reason: enotsup", "@CliDemo>"]}]).
+        {"help", ["p?"], ["@CliDemo>p?", ?UNSUITABLE_CHAR, "@CliDemo>"]}]).
 %%        {"help: show single variant of commands",
 %%         ["p?"],
 %%         ["@CliDemo>p?", "ping", "@CliDemo>"]},
