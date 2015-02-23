@@ -84,6 +84,7 @@ clean:
 	$(MAKE) -C cli_command_parser_prototype clean
 	$(MAKE) -C cli_integration_tests_old clean
 	$(MAKE) -C cli_integration_tests clean
+	$(MAKE) -C cli_terminal_prototype clean
 
 deploy: all
 	$(shell rm -rf $(DEPLOY))
