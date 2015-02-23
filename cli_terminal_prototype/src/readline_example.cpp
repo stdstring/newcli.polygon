@@ -121,7 +121,8 @@ void init_readline()
 
 int help_key_handler(int count, int ch)
 {
-    std::cout << "?" << std::endl << "some help for you" << std::endl;
+    std::string data(rl_line_buffer, rl_end);
+    std::cout << "?" << std::endl << "some help for " << data << std::endl;
     rl_delete_text(0, rl_end);
     rl_done = 1;
     return 0;
