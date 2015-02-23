@@ -14,3 +14,4 @@
 -define(IO_BUFFER_MODULE(ModuleDefs), {atom, 0, ModuleDefs#module_defs.io_buffer_module}).
 -define(CLIENT_HANDLER_MODULE(ModuleDefs), {atom, 0, ModuleDefs#module_defs.client_handler_module}).
 -define(CLI_FSM_MODULE(ModuleDefs), {atom, 0, ModuleDefs#module_defs.cli_fsm_module}).
+-define(EXEC_CHECKER_MODULE(ModuleDefs), {atom, 0, ModuleDefs#module_defs.exec_checker_module}).

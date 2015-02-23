@@ -9,19 +9,6 @@
 -include("frame_defs.hrl").
 -include("command_defs.hrl").
 
-%%-define(COMMAND_EXEC_FUN, execute).
-%%-define(PROCESS_BUFFER_FAIL_FUN, process_buffer_fail).
-%%-define(PROCESS_COMMAND_FUN, process_command).
-%%-define(PROCESS_SUCCESS_FUN, process_success).
-%%-define(PROCESS_FAIL_FUN, process_fail).
-%%-define(SEND_OUTPUT_FUN, send_output).
-
-%%-define(BUFFER, {var, 0, 'Buffer'}).
-%%-define(CLI_FSM, {var, 0, 'CliFsm'}).
-%%-define(CLIENT_HANDLER, {var, 0, 'ClientHandler'}).
-%%-define(CONTEXT, {var, 0, 'Context'}).
-%%-define(MESSAGE, {var, 0, 'Message'}).
-%%-define(RETURN_VALUE, {var, 0, 'ReturnValue'}).
 
 %% ====================================================================
 %% API functions
@@ -147,7 +134,7 @@ generate_entry_func(CommandName, ModuleDefs, EntryFunName) ->
     BufferStartSuccessPattern = [{tuple, 0, [{atom, 0, ok}, ?BUFFER_VAR]}],
     BufferStartSuccessBody = [generate_precheck_command(CommandName, ModuleDefs)],
     BufferStartSuccessClause = {clause, 0, BufferStartSuccessPattern, [], BufferStartSuccessBody},
-    CaseExpr = {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.io_buffer_module}, {atom, 0, start}}, []},
+    CaseExpr = {call, 0, {remote, 0, ?IO_BUFFER_MODULE(ModuleDefs), {atom, 0, start}}, []},
     Body = [{'case', 0, CaseExpr, [BufferStartErrorClause, BufferStartSuccessClause]}],
     FunClause = {clause, 0, [?CLI_FSM_VAR, ?CLIENT_HANDLER_VAR, ?CONTEXT_VAR], [], Body},
     {function, 0, EntryFunName, 3, [FunClause]}.
@@ -177,7 +164,7 @@ generate_precheck_command(CommandName, ModuleDefs) ->
     SuccessClause = {clause, 0, [{atom, 0, true}], [], SuccessBody},
     User = generate_find_user_command(),
     CaseExprArgs = [{atom, 0, CommandName}, ?CLI_FSM_VAR, User],
-    CaseExpr = {call, 0, {remote, 0, {atom, 0, ModuleDefs#module_defs.exec_checker_module}, {atom, 0, execution_precheck}}, CaseExprArgs},
+    CaseExpr = {call, 0, {remote, 0, ?EXEC_CHECKER_MODULE(ModuleDefs), {atom, 0, execution_precheck}}, CaseExprArgs},
     {'case', 0, CaseExpr, [AccessDeniedClause, BadConfigClause, UnsuitableCommandClause, SuccessClause]}.
 
 %% User = list_utils:get_value_by_key_with_default(Context, user, 1, undefined),
