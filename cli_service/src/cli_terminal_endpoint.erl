@@ -16,6 +16,7 @@
 -define(COMMAND_ERROR(Error), {command_err, Error}).
 -define(COMMAND_END(Prompt), {'end', Prompt}).
 -define(COMMAND_INT, {interrupt}).
+-define(CURRENT_MODE_EXIT, {current_mode_exit}).
 -define(CURRENT_STATE_REQUEST, {current_state_request}).
 -define(CURRENT_STATE_RESPONSE(Prompt), {current_state_response, Prompt}).
 -define(EXTENSION_REQUEST(CommandLine), {extension_request, CommandLine}).
@@ -91,11 +92,11 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 -spec process_request(Request :: term(), State :: #cli_terminal_state{}) -> Response :: term().
 process_request(?COMMAND_START(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
-    %%case client_handler:process_command(ClientHandler, CommandLine) of
-    %%    true -> no_response;
-    %%    false -> {error, "There is running the other command, now\n"}
-    %%end;
     client_handler:process_command(ClientHandler, CommandLine),
+    ?NO_RESPONSE;
+process_request(?CURRENT_MODE_EXIT, _State) ->
+    %%ClientHandler = State#cli_terminal_state.client_handler,
+    %%client_handler:process_command(ClientHandler, CommandLine),
     ?NO_RESPONSE;
 process_request(?COMMAND_INT, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
