@@ -13,6 +13,7 @@
 #include "client_state.h"
 #include "cterm_ptr.h"
 #include "input_terminal_behavior.h"
+#include "message.h"
 #include "server_interaction_helper.h"
 #include "signal_safe_executer.h"
 #include "signal_utils.h"
@@ -65,6 +66,15 @@ void sigtstp_handler(int signo)
     install_signal_handlers();
 }
 
+int help_key_handler(int count, int ch)
+{
+    std::string data(rl_line_buffer, rl_end);
+    // processing ...
+    rl_delete_text(0, rl_end);
+    rl_done = 1;
+    return 0;
+}
+
 void install_signal_handlers()
 {
     std::unordered_map<int, signal_handler_t> handlers =
@@ -104,13 +114,16 @@ void input_handler(char *raw_data)
 char** completion_func_impl(const char *text, int start, int end)
 {
     std::string line = trim_full(text);
-    std::vector<std::string> extensions = retrieve_extensions(cstate.get_socketd(), line);
-    // NULL terminated array
-    size_t extensions_size = extensions.size();
-    if (0 == extensions_size)
+    extension_response response = retrieve_extensions(cstate.get_socketd(), line);
+    std::vector<std::string> &extensions = response.extensions;
+    std::string &common_prefix = response.common_prefix;
+    if (extensions.empty() && common_prefix.empty())
         return nullptr;
+    // NULL terminated array
+    size_t extensions_size = extensions.size() + 1;
     char** completion_array = (char**) malloc((extensions_size + 1) * sizeof(char*));
-    for(size_t index = 0; index < extensions_size; ++index)
+    completion_array[0] = duplicate_cstr(common_prefix);
+    for(size_t index = 1; index < extensions_size; ++index)
         completion_array[index] = duplicate_cstr(extensions.at(index));
     completion_array[extensions_size] = nullptr;
     return completion_array;

@@ -20,13 +20,13 @@
 -define(CURRENT_STATE_REQUEST, {current_state_request}).
 -define(CURRENT_STATE_RESPONSE(Prompt), {current_state_response, Prompt}).
 -define(EXTENSION_REQUEST(CommandLine), {extension_request, CommandLine}).
--define(EXTENSION_RESPONSE(ExtensionList), {extension_response, ExtensionList}).
+-define(EXTENSION_RESPONSE(CommonPrefix, ExtensionList), {extension_response, CommonPrefix, ExtensionList}).
 -define(EXIT, {exit}).
 -define(ERROR, {error}).
 -define(HELP_REQUEST(CommandLine), {help_request, CommandLine}).
 -define(HELP_RESPONSE(Help), {help_response, Help}).
 -define(SUITABLE_REQUEST(CommandLine), {suitable_commands_request, CommandLine}).
--define(SUITABLE_RESPONSE(CommandList), {suitable_commands_response, CommandList}).
+-define(SUITABLE_RESPONSE(CommandsList), {suitable_commands_response, CommandsList}).
 -define(NO_RESPONSE, no_response).
 
 %% ====================================================================
@@ -108,8 +108,8 @@ process_request(?CURRENT_STATE_REQUEST, State) ->
     ?CURRENT_STATE_RESPONSE(Prompt);
 process_request(?EXTENSION_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
-    ExtensionList = client_handler:get_extensions(ClientHandler, CommandLine),
-    ?EXTENSION_RESPONSE(ExtensionList);
+    {CommonPrefix, ExtensionList} = client_handler:get_extensions(ClientHandler, CommandLine),
+    ?EXTENSION_RESPONSE(CommonPrefix, ExtensionList);
 process_request(?EXIT, _State) ->
     %% some action
     ?NO_RESPONSE;
@@ -119,8 +119,8 @@ process_request(?HELP_REQUEST(CommandLine), State) ->
     ?HELP_RESPONSE(Help);
 process_request(?SUITABLE_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
-    CommandList = client_handler:get_suitable_commands(ClientHandler, CommandLine),
-    ?SUITABLE_RESPONSE(CommandList).
+    CommandsList = client_handler:get_suitable_commands(ClientHandler, CommandLine),
+    ?SUITABLE_RESPONSE(CommandsList).
 
 -spec process_response(Response :: term(), State :: #cli_terminal_state{}) -> 'ok' | {'error', Reason :: atom()}.
 process_response(?NO_RESPONSE, _State) -> ok;
@@ -134,7 +134,7 @@ process_response(?ERROR = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?CURRENT_STATE_RESPONSE(_Data) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
-process_response(?EXTENSION_RESPONSE(_Data) = Response, State) ->
+process_response(?EXTENSION_RESPONSE(_Prefix, _CommandsList) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?HELP_RESPONSE(_Help) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
