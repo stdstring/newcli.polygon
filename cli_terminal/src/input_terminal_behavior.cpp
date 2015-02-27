@@ -13,6 +13,7 @@
 #include "client_state.h"
 #include "cterm_ptr.h"
 #include "input_terminal_behavior.h"
+#include "help_processor.h"
 #include "message.h"
 #include "server_interaction_helper.h"
 #include "signal_safe_executer.h"
@@ -69,7 +70,10 @@ void sigtstp_handler(int signo)
 int help_key_handler(int count, int ch)
 {
     std::string data(rl_line_buffer, rl_end);
-    // processing ...
+    std::string help_string = process_help_string(cstate.get_socketd(), data);
+    if (!help_string.empty())
+        std::cout << "?" << std::endl << help_string;
+    std::cout << std::endl;
     rl_delete_text(0, rl_end);
     rl_done = 1;
     return 0;
@@ -141,6 +145,8 @@ void clear_input_handler()
     rl_callback_handler_remove();
     // completion
     rl_attempted_completion_function = nullptr;
+    // default binding for '?'
+    rl_bind_key('?', rl_insert);
 }
 
 void install_input_handler()
@@ -152,6 +158,8 @@ void install_input_handler()
     // readline handler
     std::string prompt = cstate.get_prompt();
     rl_callback_handler_install(prompt.c_str(), input_handler);
+    // binding for '?'
+    rl_bind_key('?', help_key_handler);
 }
 
 void process_char()

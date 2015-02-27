@@ -1,7 +1,11 @@
 #include <algorithm>
+#include <locale>
 #include <string>
+#include <sstream>
+
 #include <cstdlib>
 #include <cstring>
+
 #include "string_utils.h"
 
 namespace cli_terminal
@@ -33,6 +37,21 @@ char* duplicate_cstr(std::string const &source)
     char *buffer = (char*) malloc(length);
     memcpy(buffer, source.c_str(), length);
     return buffer;
+}
+
+std::string join(std::vector<std::string> const &parts, std::string const& separator)
+{
+    typedef std::vector<std::string>::const_iterator iterator_t;
+    iterator_t begin = parts.begin();
+    iterator_t end = parts.end();
+    std::stringstream buffer;
+    for(iterator_t iterator = begin; iterator != end; ++iterator)
+    {
+        if (iterator != begin)
+            buffer << separator;
+        buffer << (*iterator);
+    }
+    return buffer.str();
 }
 
 }
