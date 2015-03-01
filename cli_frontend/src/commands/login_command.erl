@@ -50,7 +50,7 @@ execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
 -spec process_command(CommandLineRest :: string(), ClientHandler :: pid(), ExecutionState :: #execution_state{}) ->
     {ReturnCode :: integer(), ExecutionState :: #execution_state{}}.
 process_command(CommandLineRest, ClientHandler, ExecutionState) ->
-    case commandline_parser:get_tokens(CommandLineRest) of
+    case commandline_old_parser:get_tokens(CommandLineRest) of
         [Login, PwdString] ->
             Pwd = create_pwd_hash(base64:decode_to_string(PwdString)),
             LoginCommand = #login{login_name = Login, password = Pwd},

@@ -8,6 +8,8 @@
 #include "message.h"
 #include "message_serialization.h"
 
+#include <iostream>
+
 namespace cli_terminal
 {
 
@@ -142,7 +144,7 @@ template<> extension_response deserialize(byte_array_ptr  const &source_data)
     int list_size = erl_length(data_term.get());
     if (list_size == -1)
         throw bad_message();
-    std::vector<std::string> extension_list(list_size);
+    std::vector<std::string> extension_list;
     ETERM *list = data_term.get();
     while (ERL_IS_CONS(list))
     {
@@ -194,7 +196,7 @@ template<> suitable_commands_response deserialize(byte_array_ptr const & source_
     int list_size = erl_length(data_term.get());
     if (list_size == -1)
         throw bad_message();
-    std::vector<std::string> commands_list(list_size);
+    std::vector<std::string> commands_list;
     ETERM *list = data_term.get();
     while (ERL_IS_CONS(list))
     {

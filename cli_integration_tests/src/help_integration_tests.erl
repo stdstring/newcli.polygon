@@ -5,8 +5,9 @@
 -include("integration_tests_defs.hrl").
 
 integration_test_() ->
+%%    [].
     integration_tests_common:create_tests_entry([
-        {"help", ["p?"], ["@CliDemo>p?", ?UNSUITABLE_CHAR, "@CliDemo>"]}]).
+        {"help", ["?"], ["@CliDemo>?", ?UNSUITABLE_CHAR, "@CliDemo>"]}]).
 %%        {"help: show single variant of commands",
 %%         ["p?"],
 %%         ["@CliDemo>p?", "ping", "@CliDemo>"]},

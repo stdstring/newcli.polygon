@@ -36,11 +36,11 @@ execute_impl(CommandLineRest, ClientHandler, ExecutionState) ->
         CommandLineRest == "" ->
             show_commands(SourceCommands, ClientHandler);
         HasTrailingSpace == false ->
-            Tokens = commandline_parser:get_tokens(CommandLineRest),
+            Tokens = commandline_old_parser:get_tokens(CommandLineRest),
             FilteredCommands = filter_commands(SourceCommands, Tokens),
             show_commands(FilteredCommands, ClientHandler);
         HasTrailingSpace == true ->
-            Tokens = commandline_parser:get_tokens(CommandLineRest),
+            Tokens = commandline_old_parser:get_tokens(CommandLineRest),
             Command = find_command(SourceCommands, Tokens),
             show_command(Command, ClientHandler)
     end,

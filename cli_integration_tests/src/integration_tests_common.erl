@@ -53,6 +53,7 @@ process(Input, ExpectedOutput, #integration_test_state{terminal_cmd = TerminalCm
     InputData = string:join(Input, "\n") ++ "\n",
     ?assertEqual(ok, file:write_file(?INPUT_DATA, InputData)),
     OutputData = os:cmd(TerminalCmd),
+    io:format(user, "Output = ~p~n", [OutputData]),
     OutputDataParts = string:tokens(OutputData, "\n"),
     ?assertEqual(length(ExpectedOutput), length(OutputDataParts)),
     ActualOutput = lists:sublist(OutputDataParts, length(ExpectedOutput)),

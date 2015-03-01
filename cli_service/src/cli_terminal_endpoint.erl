@@ -66,8 +66,11 @@ handle_cast(Request, State) ->
     {noreply, State}.
 
 handle_info({tcp, Socket, Data}, State) ->
+    io:format("data = ~p~n", [Data]),
     Request = binary_to_term(Data),
+    io:format("request = ~p~n", [Request]),
     Result = process_request(Request, State),
+    io:format("response = ~p~n", [Result]),
     case process_response(Result, State) of
         ok ->
             inet:setopts(Socket, [{active, once}]),

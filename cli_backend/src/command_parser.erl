@@ -64,7 +64,7 @@ find_command(CommandParserFsm, Rest, _Result, RecognizedCommand) ->
                           RecognizedCommand :: {CommandName :: atom(), CommandModule :: atom(), CommandLineRest :: string()} | 'undefined') ->
           no_return().
 process_token_parse(CommandParserFsm, Rest, RecognizedCommand) ->
-    {Token, NewRest} = commandline_parser:get_first_token(Rest),
+    {Token, NewRest} = commandline_old_parser:get_first_token(Rest),
     Result = command_parser_fsm:process_token(CommandParserFsm, Token),
     find_command(CommandParserFsm, NewRest, Result, RecognizedCommand).
 

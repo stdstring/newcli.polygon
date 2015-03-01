@@ -80,7 +80,7 @@ find_command_impl(CommandParserFsm, CommandLine, Rest, _Result, RecognizedComman
                           RecognizedCommand :: {CommandName :: atom(), CommandModule :: atom(), CommandLineRest :: string()} | 'undefined') ->
           no_return().
 process_token_parse(CommandParserFsm, CommandLine, Rest, RecognizedCommand) ->
-    {Token, NewRest} = commandline_parser:get_first_token(Rest),
+    {Token, NewRest} = commandline_old_parser:get_first_token(Rest),
     Result = command_parser_fsm:process_token(CommandParserFsm, Token),
     find_command_impl(CommandParserFsm, CommandLine, NewRest, Result, RecognizedCommand).
 

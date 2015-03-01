@@ -2,7 +2,7 @@ EBIN=ebin
 
 SRC_EBIN = ../cli_common/ebin
 
-SOURCE=src/commandline_parser_tests.erl \
+SOURCE=src/commandline_old_parser_tests.erl \
        src/config_utils_tests.erl \
        src/crypto_utils_tests.erl \
        src/erlang_term_utils_tests.erl \
