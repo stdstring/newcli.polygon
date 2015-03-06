@@ -16,7 +16,8 @@ parse_test_() ->
      check("parse '\"ab\\\"c\"'", "ab\"c", ["ab\"c"]),
      check("parse '\"ab\\\\c\"'", "ab\\c", ["ab\\c"]),
      check("parse 'abc\"xyz'", "abc\"xyz", ["abc\"xyz"]),
-     check("parse '\"abc\"xyz'", "\"abc\"xyz", ["abc\"xyz"])].
+     check("parse '\"abc\"xyz'", "\"abc\"xyz", ["abc\"xyz"]),
+     check("parse 'abc '", "abc ", ["abc"])].
 
 %% ====================================================================
 %% Internal functions

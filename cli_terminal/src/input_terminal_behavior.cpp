@@ -71,9 +71,9 @@ int help_key_handler(int count, int ch)
 {
     std::string data(rl_line_buffer, rl_end);
     std::string help_string = process_help_string(cstate.get_socketd(), data);
-    if (!help_string.empty())
-        std::cout << "?" << std::endl << help_string;
-    std::cout << std::endl;
+    if (help_string.empty())
+        return 0;
+    std::cout << "?" << std::endl << help_string << std::endl;
     rl_delete_text(0, rl_end);
     rl_done = 1;
     return 0;
@@ -117,7 +117,8 @@ void input_handler(char *raw_data)
 
 char** completion_func_impl(const char *text, int start, int end)
 {
-    std::string line = trim_full(text);
+    //std::string line = trim_full(text);
+    std::string line(rl_line_buffer, rl_end);
     extension_response response = retrieve_extensions(cstate.get_socketd(), line);
     std::vector<std::string> &extensions = response.extensions;
     std::string &common_prefix = response.common_prefix;
@@ -128,7 +129,7 @@ char** completion_func_impl(const char *text, int start, int end)
     char** completion_array = (char**) malloc((extensions_size + 1) * sizeof(char*));
     completion_array[0] = duplicate_cstr(common_prefix);
     for(size_t index = 1; index < extensions_size; ++index)
-        completion_array[index] = duplicate_cstr(extensions.at(index));
+        completion_array[index] = duplicate_cstr(extensions.at(index - 1));
     completion_array[extensions_size] = nullptr;
     return completion_array;
 }

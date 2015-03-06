@@ -34,7 +34,7 @@ authorize_command(undefined, CommandName) ->
 authorize_command(User, CommandName) when is_record(User, user) ->
     gen_server:call(?AUTHORIZATION_SERVICE, {authorize_command, User, CommandName}).
 
--spec authorize_commands(User :: #user{} | undefined, CommandNames :: [atom()]) -> [atom()].
+-spec authorize_commands(User :: #user{} | undefined, CommandNames :: [atom()]) -> [CommandName :: atom()].
 authorize_commands(undefined, CommandNames) ->
     gen_server:call(?AUTHORIZATION_SERVICE, {authorize_commands, undefined, CommandNames});
 authorize_commands(User, CommandNames) when is_record(User, user) ->

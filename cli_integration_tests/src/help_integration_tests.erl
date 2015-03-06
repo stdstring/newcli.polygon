@@ -5,21 +5,10 @@
 -include("integration_tests_defs.hrl").
 
 integration_test_() ->
-%%    [].
     integration_tests_common:create_tests_entry([
-        {"help", ["?"], ["@CliDemo>?", ?UNSUITABLE_CHAR, "@CliDemo>"]}]).
-%%        {"help: show single variant of commands",
-%%         ["p?"],
-%%         ["@CliDemo>p?", "ping", "@CliDemo>"]},
-%%        {"help: show several variants of commands",
-%%         ["i?"],
-%%         ["@CliDemo>i?", "interface\tinterface range", "@CliDemo>"]},
-%%        {"help: show variants for unknown command prefix",
-%%         ["iddqd?"],
-%%         ["@CliDemo>iddqd?", "Commands not found", "@CliDemo>"]},
-%%        {"help: show help for command",
-%%         ["interface ?"],
-%%         ["@CliDemo>interface ?", "interface {interface-id} command", "@CliDemo>"]},
-%%        {"help: show help for unknown command",
-%%         ["idkfa ?"],
-%%         ["@CliDemo>idkfa ?", "Help not found", "@CliDemo>"]}]).
+        {"help: show all suitable commands", "?", ["@CliDemo>?", "login", "@CliDemo>"]},
+        {"help: show suitable commands started with l", "l?", ["@CliDemo>l?", "login", "@CliDemo>"]},
+        {"help: show suitable commands started with p", "p?", ["@CliDemo>p"]},
+        {"help: show suitable commands started with login", "login?", ["@CliDemo>login?", "login", "@CliDemo>"]},
+        {"help: show help for login", "login ?", ["@CliDemo>login ?", "login help", "@CliDemo>"]}
+        ]).

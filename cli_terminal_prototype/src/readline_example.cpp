@@ -35,7 +35,7 @@ char** completion_func(const char *text, int start, int end);
 char* generator_func(const char *text, int state);
 
 const char *prompt = "readline usage example >>>";
-std::vector<std::string> completion_data = {"iddqd666", "idkfa777", "idclip888", "iddqd999"};
+//std::vector<std::string> completion_data = {"iddqd666", "idkfa777", "idclip888", "iddqd999"};
 bool running = true;
 
 void readline_handler(char *raw_data)
@@ -136,7 +136,29 @@ char* duplicate_cstr(std::string const &source)
     return buffer;
 }
 
+char* empty_entry_func(const char *text, int state)
+{
+    return nullptr;
+}
+
 char** completion_func(const char *text, int start, int end)
+{
+    size_t extensions_size = 3;
+    char** completion_array = (char**) malloc((extensions_size + 1) * sizeof(char*));
+    completion_array[0] = duplicate_cstr("iddqd_");
+    completion_array[1] = duplicate_cstr("iddqd_666");
+    completion_array[2] = duplicate_cstr("iddqd_999");
+    completion_array[3] = nullptr;
+    return completion_array;
+    /*size_t extensions_size = 1;
+    char** completion_array = (char**) malloc((extensions_size + 1) * sizeof(char*));
+    completion_array[0] = duplicate_cstr("");
+    completion_array[1] = nullptr;
+    return completion_array;*/
+    return nullptr;
+}
+
+/*char** completion_func(const char *text, int start, int end)
 {
     return rl_completion_matches(text, generator_func);
 }
@@ -149,7 +171,7 @@ char* generator_func(const char *text, int state)
     if (index < completion_data.size())
         return duplicate_cstr(completion_data.at(index++));
     return (char*) NULL;
-}
+}*/
 
 std::string trim_left(std::string const &source)
 {
@@ -181,6 +203,7 @@ void clear_input_handler()
 void setup_input_handler()
 {
     rl_attempted_completion_over = 1;
+    rl_completion_entry_function = empty_entry_func;
     rl_attempted_completion_function = completion_func;
     rl_sort_completion_matches = 0;
     rl_ignore_completion_duplicates = 0;

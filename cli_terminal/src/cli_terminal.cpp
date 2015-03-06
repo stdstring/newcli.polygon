@@ -42,12 +42,20 @@ void process_uncaught_exception()
     default_terminate_handler();
 }
 
+char* empty_completion_func(const char *text, int state)
+{
+    return nullptr;
+}
+
 void initialize()
 {    
     // erl runtime
     erl_init(NULL, 0);
     // readline
+    // completion
+    rl_completion_entry_function = empty_completion_func;
     rl_attempted_completion_over = 1;
+    rl_attempted_completion_function = nullptr;
     // singnals
     rl_catch_signals = 0;
     rl_catch_sigwinch = 0;

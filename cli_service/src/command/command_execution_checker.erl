@@ -5,7 +5,7 @@
 -include("authentication_defs.hrl").
 -include("cli_fsm_defs.hrl").
 
--export([execution_precheck/3, select_suitable_commands/3]).
+-export([execution_precheck/3, select_suitable_commands/2]).
 
 %% ====================================================================
 %% API functions
@@ -20,11 +20,10 @@ execution_precheck(CommandName, CliFsm, User) ->
         {authorization_fail, unknown_command} -> {false, authorization_bad_config}
     end.
 
--spec select_suitable_commands(Commands :: [atom()], CliFsm :: pid(), User :: #user{} | 'undefined') ->
-    [atom()].
-select_suitable_commands(Commands, CliFsm, User) ->
-    FilterFun = fun(Command) -> execution_precheck(Command:get_name(), CliFsm, User) == true end,
-    lists:filter(FilterFun, Commands).
+-spec select_suitable_commands(CliFsm :: pid(), User :: #user{} | 'undefined') -> [CommandName :: atom()].
+select_suitable_commands(CliFsm, User) ->
+    #cli_fsm_state_info{commands = Commands} = cli_fsm:get_current_state(CliFsm),
+    authorization_service:authorize_commands(User, Commands).
 
 %% ====================================================================
 %% Internal functions

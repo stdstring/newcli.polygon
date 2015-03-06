@@ -36,7 +36,7 @@ search_suitable(Words, Prefix, Table) ->
             process_rows(Prefix, PrefixIndex, Rows);
         {incomplete, Rows} ->
             process_rows(Prefix, PrefixIndex, Rows);
-        false -> []
+        false -> {"", []}
     end.
 
 %% ====================================================================

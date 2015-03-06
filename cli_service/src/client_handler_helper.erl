@@ -4,6 +4,7 @@
 
 -include("authentication_defs.hrl").
 -include("common_defs.hrl").
+-include("name_search_defs.hrl").
 
 -export([get_help/2, get_suitable_commands/2]).
 
@@ -16,23 +17,20 @@ get_help(CommandLine, State) ->
     GlobalConfig = State#client_handler_state.config,
     %% TODO (std_string) : think about caching
     NameConfig = name_search_config:create(GlobalConfig#global_config.commands),
+    CliFsm = State#client_handler_state.cli_fsm,
+    User = State#client_handler_state.user,
+    SuitableConfig = filter_name_search(NameConfig, CliFsm, User),
     Words = commandline_parser:parse(CommandLine),
-    case name_search_helper:search_exact(Words, NameConfig) of
-        {true, CommandModule} ->
-            CommandName = CommandModule:get_name(),
-            CliFsm = State#client_handler_state.cli_fsm,
-            User = State#client_handler_state.user,
-            case command_execution_checker:execution_precheck(CommandName, CliFsm, User) of
-                true -> CommandModule:get_help();
-                {false, _Reason} -> ""
-            end;
+    case name_search_helper:search_exact(Words, SuitableConfig) of
+        {true, CommandModule} -> CommandModule:get_help();
         false -> ""
     end.
 
 -spec get_suitable_commands(CommandLine :: string(), State :: #client_handler_state{}) ->
     {CommonPrefix :: string(), Commands :: [string()]}.
 get_suitable_commands(CommandLine, State) ->
-    Words = commandline_parser:parse(CommandLine),
+    %%Words = commandline_parser:parse(CommandLine),
+    Words = get_words(CommandLine),
     {CommonPrefix, SuitableCommands} = get_commands(Words, State),
     {CommonPrefix, lists:map(fun(Command) -> string:join(Command:get_command_body(), " ") end, SuitableCommands)}.
 
@@ -40,13 +38,31 @@ get_suitable_commands(CommandLine, State) ->
 %% Internal functions
 %% ====================================================================
 
+get_words("") -> [];
+get_words(CommandLine) ->
+    case lists:last(CommandLine) of
+        $\s -> commandline_parser:parse(CommandLine) ++ [""];
+        _Other -> commandline_parser:parse(CommandLine)
+    end.
+
 -spec get_commands(Words :: [string()], State :: #client_handler_state{}) ->
     {CommonPrefix :: string(), SuitableCommands :: [atom()]}.
 get_commands(Words, State) ->
     GlobalConfig = State#client_handler_state.config,
     %% TODO (std_string) : think about caching
     NameConfig = name_search_config:create(GlobalConfig#global_config.commands),
-    {CommonPrefix, Commands} = name_search_helper:search_suitable(Words, NameConfig),
     CliFsm = State#client_handler_state.cli_fsm,
     User = State#client_handler_state.user,
-    {CommonPrefix, command_execution_checker:select_suitable_commands(Commands, CliFsm, User)}.
+    SuitableConfig = filter_name_search(NameConfig, CliFsm, User),
+    name_search_helper:search_suitable(Words, SuitableConfig).
+
+-spec filter_name_search(NameConfig :: name_search_table(), CliFsm :: pid(), User :: #user{} | 'undefined') ->
+    name_search_table().
+filter_name_search(NameConfig, CliFsm, User) ->
+    SuitableCommands = command_execution_checker:select_suitable_commands(CliFsm, User),
+    %% TODO (std_string) : change name_search_table() - use command name instead of command module
+    FilterFun = fun({_SearchItems, CommandModule}) ->
+        CommandName = CommandModule:get_name(),
+        lists:any(fun(Name) -> Name == CommandName end, SuitableCommands)
+    end,
+    lists:filter(FilterFun, NameConfig).

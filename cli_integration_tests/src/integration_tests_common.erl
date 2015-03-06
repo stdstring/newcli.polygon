@@ -36,7 +36,7 @@ stop_cli_service(Service) ->
     wait_node_exit(?SERVICE_NODE, 10, 500),
     ok.
 
--spec create_tests_entry(Source :: {Description :: string(), Input :: [string()], Output :: [string()]}) ->
+-spec create_tests_entry(Source :: {Description :: string(), Input :: string() | [string()], Output :: [string()]}) ->
     {'foreach', fun(() -> #integration_test_state{}), fun((#integration_test_state{}) -> 'ok'), [fun((#integration_test_state{}) -> 'ok')]}.
 create_tests_entry(Source) ->
     MapFun = fun({Description, Input, Output}) -> create_tests_instantiator(Description, Input, Output) end,
@@ -48,12 +48,14 @@ clear_abnormal_execution() ->
     lists:foreach(fun(Filename) -> file:delete(Filename) end, ?CRASH_DUMP_FILES),
     ok.
 
--spec process(Input :: [string()], ExpectedOutput :: [string()], State :: #integration_test_state{}) -> 'ok' | no_return().
-process(Input, ExpectedOutput, #integration_test_state{terminal_cmd = TerminalCmd}) ->
+-spec process(Input :: string() | [string()], ExpectedOutput :: [string()], State :: #integration_test_state{}) ->
+    'ok' | no_return().
+process([Head | _] = Input, ExpectedOutput, #integration_test_state{} = State) when is_list(Head) ->
     InputData = string:join(Input, "\n") ++ "\n",
-    ?assertEqual(ok, file:write_file(?INPUT_DATA, InputData)),
+    process(InputData, ExpectedOutput, State);
+process([Char | _] = Input, ExpectedOutput, #integration_test_state{terminal_cmd = TerminalCmd}) when is_integer(Char) ->
+    ?assertEqual(ok, file:write_file(?INPUT_DATA, Input)),
     OutputData = os:cmd(TerminalCmd),
-    io:format(user, "Output = ~p~n", [OutputData]),
     OutputDataParts = string:tokens(OutputData, "\n"),
     ?assertEqual(length(ExpectedOutput), length(OutputDataParts)),
     ActualOutput = lists:sublist(OutputDataParts, length(ExpectedOutput)),
@@ -102,7 +104,7 @@ wait_node_exit(Node, Count, WaitTime) ->
         pang -> true
     end.
 
--spec create_tests_instantiator(Description :: string(), Input :: [string()], Output :: [string()]) ->
+-spec create_tests_instantiator(Description :: string(), Input :: string() | [string()], Output :: [string()]) ->
     fun((#integration_test_state{}) -> 'ok').
 create_tests_instantiator(Description, Input, Output) ->
     fun(State) -> [{Description, fun() -> process(Input, Output, State) end}] end.
