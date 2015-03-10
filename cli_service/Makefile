@@ -7,6 +7,7 @@ SOURCE=src/command/code_generator.erl \
        src/command/command_execution_checker.erl \
        src/command/command_factory.erl \
        src/command/command_helper.erl \
+       src/command/command_search.erl \
        src/command/io_buffer.erl \
        src/command_common/login_command.erl \
        src/command_common/logout_command.erl \

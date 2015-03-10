@@ -10,9 +10,9 @@
 %% API functions
 %% ====================================================================
 
--spec create(Commands :: [{CommandModule :: atom(), CommandBody :: [string()]}]) -> name_search_table().
+-spec create(Commands :: [{CommandName :: atom(), CommandBody :: [string()]}]) -> name_search_table().
 create(Commands) ->
-    InitData = lists:map(fun({Module, Body}) -> {[], Body, Module} end, Commands),
+    InitData = lists:map(fun({Name, Body}) -> {[], Body, Name} end, Commands),
     InitGroup = group(InitData),
     process_groups(InitGroup, []).
 
@@ -25,7 +25,7 @@ group(CommandData) ->
 
 group([], Group) -> dict:to_list(Group);
 group([CommandDataHead | CommandDataRest], Group) ->
-    {_ProcessedData, [Word | _WordsRest], _Module} = CommandDataHead,
+    {_ProcessedData, [Word | _WordsRest], _Name} = CommandDataHead,
     [Letter | _WordRest] = Word,
     case dict:find(Letter, Group) of
         {ok, LetterGroup} ->
@@ -55,32 +55,32 @@ process_group([{_Word, [CommandData]} | Rest], MinLength, Dest) ->
     process_group(Rest, MinLength, NewDest);
 process_group([{_Word, CommandDataList} | Rest], MinLength, Dest) ->
     NewCommandDataList = lists:map(fun(Data) -> update_command_data(Data, MinLength) end, CommandDataList),
-    {ReadyList, IncompleteList} = lists:splitwith(fun({_ProcessedData, WordsRest, _Module}) -> WordsRest == [] end, NewCommandDataList),
+    {ReadyList, IncompleteList} = lists:splitwith(fun({_ProcessedData, WordsRest, _Name}) -> WordsRest == [] end, NewCommandDataList),
     NewDest = process_command_data_list(ReadyList, Dest),
     case IncompleteList of
         [] -> process_group(Rest, MinLength, Dest);
-        [{ProcessedParts, Words, Module}] ->
-            process_group(Rest, MinLength, process_command_data(ProcessedParts, Words, Module, NewDest));
+        [{ProcessedParts, Words, Name}] ->
+            process_group(Rest, MinLength, process_command_data(ProcessedParts, Words, Name, NewDest));
         _Other ->
             IncompleteGroup = group(IncompleteList),
             process_group(Rest, MinLength, process_groups(IncompleteGroup, NewDest))
     end.
 
 process_command_data_list([], Dest) -> Dest;
-process_command_data_list([{ProcessedParts, Words, Module} | CommandDataRest], Dest) ->
-    NewDest = process_command_data(ProcessedParts, Words, Module, Dest),
+process_command_data_list([{ProcessedParts, Words, Name} | CommandDataRest], Dest) ->
+    NewDest = process_command_data(ProcessedParts, Words, Name, Dest),
     process_command_data_list(CommandDataRest, NewDest).
 
-process_command_data({ProcessedParts, [Word | WordsRest], Module}, MinLength, Dest) ->
+process_command_data({ProcessedParts, [Word | WordsRest], Name}, MinLength, Dest) ->
     NewProcessedPart = [{Word, MinLength}] ++ ProcessedParts,
-    process_command_data(NewProcessedPart, WordsRest, Module, Dest).
+    process_command_data(NewProcessedPart, WordsRest, Name, Dest).
 
-process_command_data(ProcessedParts, [], Module, Dest) ->
-    SearchEntry = {lists:reverse(ProcessedParts), Module},
+process_command_data(ProcessedParts, [], Name, Dest) ->
+    SearchEntry = {lists:reverse(ProcessedParts), Name},
     [SearchEntry] ++ Dest;
-process_command_data(ProcessedParts, [Word | WordsRest], Module, Dest) ->
+process_command_data(ProcessedParts, [Word | WordsRest], Name, Dest) ->
     NewProcessedPart = [{Word, 1}] ++ ProcessedParts,
-    process_command_data(NewProcessedPart, WordsRest, Module, Dest).
+    process_command_data(NewProcessedPart, WordsRest, Name, Dest).
 
-update_command_data({ProcessedParts, [Word | WordsRest], Module}, MinLength) ->
-    {[{Word, MinLength}] ++ ProcessedParts, WordsRest, Module}.
+update_command_data({ProcessedParts, [Word | WordsRest], Name}, MinLength) ->
+    {[{Word, MinLength}] ++ ProcessedParts, WordsRest, Name}.

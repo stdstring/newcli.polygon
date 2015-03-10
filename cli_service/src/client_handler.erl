@@ -102,7 +102,7 @@ handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_comman
     NameConfig = name_search_config:create(GlobalConfig#global_config.commands),
     SyntaxConfig = syntax_analyzer_config:create(NameConfig),
     CommandModule = State#client_handler_state.command_module,
-    case command_factory:process(CommandLine, LexConfig, SyntaxConfig, CommandModule) of
+    case command_factory:process(CommandLine, LexConfig, SyntaxConfig, GlobalConfig, CommandModule) of
         {true, CommandFun} ->
             Command = process_start_command(State, CommandFun),
             {reply, true, State#client_handler_state{current_command = Command}};

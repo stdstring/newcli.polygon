@@ -86,7 +86,7 @@
 -spec generate(EntryModuleName :: atom(), EntryFunName :: atom(), Command :: #command{}, ModuleDefs :: #module_defs{}) ->
     {'true', Binary :: binary()} | {'false', Reason :: term()}.
 generate(EntryModuleName, EntryFunName, Command, ModuleDefs) ->
-    CommandName = apply(Command#command.module, get_name, []),
+    CommandName = Command#command.name,
     ModuleForm = {attribute, 0, module, EntryModuleName},
     ExportForm = {attribute, 0, export, [{EntryFunName, 3}]},
     EntryFun = generate_entry_func(CommandName, ModuleDefs, EntryFunName),
