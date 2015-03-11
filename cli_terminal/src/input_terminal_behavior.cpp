@@ -67,6 +67,13 @@ void sigtstp_handler(int signo)
     install_signal_handlers();
 }
 
+void eof_handler()
+{
+    std::cout << "^D" << std::endl;
+    execution_state ex_state = process_mode_exit(cstate);
+    cstate.set_execution_state(ex_state);
+}
+
 int help_key_handler(int count, int ch)
 {
     std::string data(rl_line_buffer, rl_end);
@@ -90,8 +97,7 @@ void input_handler_impl(char *raw_data)
 {
     if (nullptr == raw_data)
     {
-        cstate.set_execution_state(EX_FINISH);
-        clear_input_handler();
+        eof_handler();
         return;
     }
     cterm_ptr<char> raw_data_ptr(raw_data);

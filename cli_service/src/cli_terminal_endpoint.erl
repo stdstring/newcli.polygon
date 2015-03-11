@@ -97,9 +97,10 @@ process_request(?COMMAND_START(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     client_handler:process_command(ClientHandler, CommandLine),
     ?NO_RESPONSE;
-process_request(?CURRENT_MODE_EXIT, _State) ->
-    %%ClientHandler = State#cli_terminal_state.client_handler,
-    %%client_handler:process_command(ClientHandler, CommandLine),
+process_request(?CURRENT_MODE_EXIT, State) ->
+    ClientHandler = State#cli_terminal_state.client_handler,
+    %% TODO (std_string) : need additional knowledge about command for exiting from current mode
+    client_handler:process_command(ClientHandler, "exit"),
     ?NO_RESPONSE;
 process_request(?COMMAND_INT, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,

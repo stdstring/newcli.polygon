@@ -30,6 +30,8 @@ std::string retrieve_help(int socketd, std::string const &line);
 
 std::vector<std::string> retrieve_suitable_commands(int socketd, std::string const &line);
 
+void current_mode_exit(int socketd);
+
 }
 
 #endif

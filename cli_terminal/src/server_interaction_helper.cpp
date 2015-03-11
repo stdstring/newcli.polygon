@@ -66,4 +66,9 @@ std::vector<std::string> retrieve_suitable_commands(int socketd, std::string con
     return response.commands;
 }
 
+void current_mode_exit(int socketd)
+{
+    write_message(socketd, mode_exit_request());
+}
+
 }

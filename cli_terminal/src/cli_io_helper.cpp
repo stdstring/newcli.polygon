@@ -59,6 +59,13 @@ execution_state process_request(std::string const &request, client_state &state)
     return EX_CONTINUE;
 }
 
+execution_state process_mode_exit(client_state &state)
+{
+    current_mode_exit(state.get_socketd());
+    set_behavior(state, std::shared_ptr<iterminal_behavior>(new command_terminal_behavior()));
+    return EX_CONTINUE;
+}
+
 execution_state process_responses(message_responses_t const &responses, client_state &state)
 {
     execution_state ex_state = EX_CONTINUE;

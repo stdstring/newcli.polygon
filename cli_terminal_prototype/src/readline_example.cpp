@@ -42,9 +42,10 @@ void readline_handler(char *raw_data)
 {
     if (raw_data == nullptr)
     {
-        std::cout << "exit handler" << std::endl;
+        /*std::cout << "exit handler" << std::endl;
         running = false;
-        clear_input_handler();
+        clear_input_handler();*/
+        std::cout << std::endl << "Ctrl+D handled" << std::endl;
         return;
     }
     std::string raw_str = std::string(raw_data);
