@@ -9,15 +9,15 @@
 integration_test_() ->
     [create_integration_test(
         "lifecycle: login and logout by user",
-        ["login", "guest", "idclip", "logout"],
+        ["login", "guest", "idclip", "logout", "bye"],
         ?GUEST_LOGIN ++ [?GREETING] ++ ?GUEST_LOGOUT),
      create_integration_test(
         "lifecycle: login and logout by admin",
-        ["login", "root", "iddqd", "logout"],
+        ["login", "root", "iddqd", "logout", "bye"],
         ?ADMIN_LOGIN ++ [?GREETING] ++ ?ADMIN_LOGOUT),
      create_integration_test(
         "lifecycle: big example for user",
-        ["login", "guest", "idclip", "ping", "ping 192.168.0.1", "configure terminal", "logout"],
+        ["login", "guest", "idclip", "ping", "ping 192.168.0.1", "configure terminal", "logout", "bye"],
         create_big_example_user_output()),
      create_integration_test(
         "lifecycle: big example for admin",
@@ -51,7 +51,8 @@ create_big_example_admin_input() ->
      "interface someinterface 0/1",
      "show vlan",
      "no switchport access vlan",
-     "logout"].
+     "logout",
+     "bye"].
 
 -spec create_big_example_admin_output() -> [string()].
 create_big_example_admin_output() ->

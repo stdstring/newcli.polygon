@@ -56,6 +56,7 @@ process([Head | _] = Input, ExpectedOutput, #integration_test_state{} = State) w
 process([Char | _] = Input, ExpectedOutput, #integration_test_state{terminal_cmd = TerminalCmd}) when is_integer(Char) ->
     ?assertEqual(ok, file:write_file(?INPUT_DATA, Input)),
     OutputData = os:cmd(TerminalCmd),
+    %%io:format(user, "OutputData = ~p~n", [OutputData]),
     OutputDataParts = string:tokens(OutputData, "\n"),
     ?assertEqual(length(ExpectedOutput), length(OutputDataParts)),
     ActualOutput = lists:sublist(OutputDataParts, length(ExpectedOutput)),

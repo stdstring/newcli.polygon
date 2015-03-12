@@ -44,7 +44,6 @@ test: all
 	$(shell cp -f -t $(SERVICE_EBIN) service_prerequisites/*)
 	# tests
 	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) $(SERVICE_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
-	#erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) $(SERVICE_EBIN) -eval "eunit:test([help_integration_tests], [verbose])" -s init stop;
 
 pre_build:
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
