@@ -92,23 +92,14 @@ clean:
 #	$(MAKE) -C cli_integration_tests_old clean
 	$(MAKE) -C cli_integration_tests clean
 	$(MAKE) -C cli_terminal_prototype clean
+	$(shell rm -rf $(DEPLOY))
 
 deploy: all
 	$(shell rm -rf $(DEPLOY))
-	#$(shell mkdir -p $(DEPLOY)/$(DEPLOY_BACKEND_EBIN))
-	#$(shell mkdir -p $(DEPLOY)/$(DEPLOY_BACKEND_DATA))
-	#$(shell mkdir -p $(DEPLOY)/$(DEPLOY_FRONTEND_EBIN))
-	#$(shell mkdir -p $(DEPLOY)/$(DEPLOY_FRONTEND_DATA))
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_SERVICE_EBIN))
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_SERVICE_DATA))
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_TERMINAL_BIN))
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_DOCS))
-	#$(shell cp -f -t $(DEPLOY)/$(DEPLOY_BACKEND_EBIN) $(BACKEND_EBIN)/*)
-	#$(shell cp -f -t $(DEPLOY)/$(DEPLOY_BACKEND_EBIN) $(DEPLOY_BACKEND_PREREQ)/*)
-	#$(shell cp -f -t $(DEPLOY)/$(DEPLOY_BACKEND_DATA) $(BACKEND_DATA)/*)
-	#$(shell cp -f -t $(DEPLOY)/$(DEPLOY_FRONTEND_EBIN) $(FRONTEND_EBIN)/*)
-	#$(shell cp -f -t $(DEPLOY)/$(DEPLOY_FRONTEND_EBIN) $(DEPLOY_FRONTEND_PREREQ)/*)
-	#$(shell cp -f -t $(DEPLOY)/$(DEPLOY_FRONTEND_DATA) $(FRONTEND_DATA)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(COMMON_EBIN)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(COMMAND_PARSER_EBIN)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(SERVICE_EBIN)/*)
@@ -120,10 +111,8 @@ deploy: all
 	for document in $(DOCS); do libreoffice --headless --convert-to pdf $$document --outdir $(DEPLOY)/$(DEPLOY_DOCS); done
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_DOCS) docs/*.pdf)
 	# create tar
-	#tar -c -f $(DEPLOY)/deploy.tar -C $(DEPLOY) $(DEPLOY_BACKEND_EBIN)/ \
-    #                                            $(DEPLOY_BACKEND_DATA)/ \
-    #                                            $(DEPLOY_FRONTEND_EBIN)/ \
-    #                                            $(DEPLOY_FRONTEND_DATA)/ \
-    #                                            $(DEPLOY_TERMINAL_BIN)/ \
-    #                                            $(DEPLOY_DOCS)/ \
-    #                                            ./install.sh
+	tar -c -f $(DEPLOY)/deploy.tar -C $(DEPLOY) $(DEPLOY_SERVICE_EBIN)/ \
+                                                $(DEPLOY_SERVICE_DATA)/ \
+                                                $(DEPLOY_TERMINAL_BIN)/ \
+                                                $(DEPLOY_DOCS)/ \
+                                                ./install.sh
