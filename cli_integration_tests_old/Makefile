@@ -46,7 +46,6 @@ $(BACKEND_COMMANDS_EBIN)/%.beam: %.erl
 	erlc -pa $(BACKEND_COMMANDS_EBIN) -Werror -b beam -o $(BACKEND_COMMANDS_EBIN) $(BACKEND_COMMANDS_INCLUDE_FLAGS) $<
 
 all: pre_build $(TARGETS) $(TEST_TARGETS) $(BACKEND_COMMANDS_TARGETS)
-	
 
 test: all
 	# prerequisites

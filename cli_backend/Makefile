@@ -52,7 +52,5 @@ pre_build: clean
 post_build:
 	$(shell cp -f -t $(EBIN) $(COPY))
 
-test: all
-
 clean:
 	$(shell rm -rf $(EBIN)/*)

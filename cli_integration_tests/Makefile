@@ -37,7 +37,6 @@ $(EBIN)/%.beam: %.erl
 	erlc -pa $(EBIN) -pa $(COMMON_EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
 all: pre_build $(TARGETS) $(TEST_TARGETS) $(COMMANDS_TARGETS)
-	
 
 test: all
 	# prerequisites
