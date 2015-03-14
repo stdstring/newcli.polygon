@@ -1,40 +1,22 @@
-#SOURCE_SUBDIRS = cli_common cli_backend cli_frontend cli_terminal cli_command_parser cli_service
-#TEST_SUBDIRS = cli_common_tests cli_backend_tests cli_frontend_tests cli_command_parser_tests cli_service_tests
-SOURCE_SUBDIRS = cli_common cli_command_parser cli_service cli_terminal
+SOURCE_SUBDIRS = cli_common cli_command_parser cli_service cli_service_test_commands cli_terminal
 TEST_SUBDIRS = cli_common_tests cli_command_parser_tests cli_service_tests
-
-#BACKEND_EBIN = cli_backend/ebin
-#BACKEND_DATA = cli_backend/data
-#FRONTEND_EBIN = cli_frontend/ebin
-#FRONTEND_DATA = cli_frontend/data
 
 COMMON_EBIN = cli_common/ebin
 COMMAND_PARSER_EBIN = cli_command_parser/ebin
 SERVICE_EBIN = cli_service/ebin
 SERVICE_DATA = cli_service/data
+SERVICE_TEST_COMMANDS_EBIN = cli_service_test_commands/ebin
 TERMINAL_BIN = cli_terminal/bin
 
 INTEGRATION_TESTS = cli_integration_tests
 INTEGRATION_TESTS_SERVICE_EBIN = $(INTEGRATION_TESTS)/service_ebin
 INTEGRATION_TESTS_TERMINAL_BIN = $(INTEGRATION_TESTS)/cli_terminal_bin
 
-#INTEGRATION_TESTS_OLD = cli_integration_tests_old
-#INTEGRATION_TESTS_OLD_BACKEND_EBIN = $(INTEGRATION_TESTS_OLD)/backend_ebin
-#INTEGRATION_TESTS_OLD_COMMON_EBIN = $(INTEGRATION_TESTS_OLD)/common_ebin
-#INTEGRATION_TESTS_OLD_FRONTEND_EBIN = $(INTEGRATION_TESTS_OLD)/frontend_ebin
-#INTEGRATION_TESTS_OLD_TERMINAL_BIN = $(INTEGRATION_TESTS_OLD)/cli_terminal_bin
-
 DEPLOY = deploy
-#DEPLOY_BACKEND_EBIN = cli_backend_ebin
-#DEPLOY_BACKEND_DATA = cli_backend_data
-#DEPLOY_FRONTEND_EBIN = cli_frontend_ebin
-#DEPLOY_FRONTEND_DATA = cli_frontend_data
 DEPLOY_SERVICE_EBIN = cli_service_ebin
 DEPLOY_SERVICE_DATA = cli_service_data
 DEPLOY_TERMINAL_BIN = cli_terminal_bin
 DEPLOY_PREREQ = deploy_prerequisites
-#DEPLOY_BACKEND_PREREQ = $(DEPLOY_PREREQ)/cli_backend
-#DEPLOY_FRONTEND_PREREQ = $(DEPLOY_PREREQ)/cli_frontend
 DEPLOY_SERVICE_PREREQ = $(DEPLOY_PREREQ)/cli_service
 DEPLOY_DOCS = docs
 
@@ -48,33 +30,13 @@ DOCS=docs/CLI_Architecture.docx\
      docs/CLI_terminal_comm_protocol.docx\
      docs/CLI_terminal_description
 
-#all: build post_build
 all: build
 
 build:
 	for directory in $(SOURCE_SUBDIRS); do $(MAKE) -C $$directory; done
 
-#post_build:
-#	$(shell cp -f -t $(BACKEND_EBIN) $(COMMON_EBIN)/*)
-#	$(shell cp -f -t $(FRONTEND_EBIN) $(COMMON_EBIN)/*)
-
 test: all
 	for directory in $(TEST_SUBDIRS); do $(MAKE) -C $$directory test; done
-
-#integration_test_old: all
-#	$(shell rm -rf $(INTEGRATION_TESTS_OLD_BACKEND_EBIN))
-#	$(shell mkdir $(INTEGRATION_TESTS_OLD_BACKEND_EBIN))
-#	$(shell rm -rf $(INTEGRATION_TESTS_OLD_COMMON_EBIN))
-#	$(shell mkdir $(INTEGRATION_TESTS_OLD_COMMON_EBIN))
-#	$(shell rm -rf $(INTEGRATION_TESTS_OLD_FRONTEND_EBIN))
-#	$(shell mkdir $(INTEGRATION_TESTS_OLD_FRONTEND_EBIN))
-#	$(shell rm -rf $(INTEGRATION_TESTS_OLD_TERMINAL_BIN))
-#	$(shell mkdir $(INTEGRATION_TESTS_OLD_TERMINAL_BIN))
-#	$(shell cp -f -t $(INTEGRATION_TESTS_OLD_BACKEND_EBIN) $(BACKEND_EBIN)/*)
-#	$(shell cp -f -t $(INTEGRATION_TESTS_OLD_COMMON_EBIN) $(COMMON_EBIN)/*)
-#	$(shell cp -f -t $(INTEGRATION_TESTS_OLD_FRONTEND_EBIN) $(FRONTEND_EBIN)/*)
-#	$(shell cp -f -t $(INTEGRATION_TESTS_OLD_TERMINAL_BIN) $(TERMINAL_BIN)/*)
-#	$(MAKE) -C $(INTEGRATION_TESTS_OLD) test
 
 integration_test: all
 	$(shell rm -rf $(INTEGRATION_TESTS_SERVICE_EBIN))
@@ -89,7 +51,6 @@ clean:
 	for directory in $(SOURCE_SUBDIRS); do $(MAKE) -C $$directory clean; done
 	for directory in $(TEST_SUBDIRS); do $(MAKE) -C $$directory clean; done
 	$(MAKE) -C cli_command_parser_prototype clean
-#	$(MAKE) -C cli_integration_tests_old clean
 	$(MAKE) -C cli_integration_tests clean
 	$(MAKE) -C cli_terminal_prototype clean
 	$(shell rm -rf $(DEPLOY))
@@ -103,6 +64,7 @@ deploy: all
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(COMMON_EBIN)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(COMMAND_PARSER_EBIN)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(SERVICE_EBIN)/*)
+	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(SERVICE_TEST_COMMANDS_EBIN)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(DEPLOY_SERVICE_PREREQ)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_DATA) $(SERVICE_DATA)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_TERMINAL_BIN) $(TERMINAL_BIN)/*)

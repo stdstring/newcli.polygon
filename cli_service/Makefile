@@ -50,7 +50,6 @@ $(EBIN)/%.beam: %.erl
 	erlc -pa $(EBIN) -pa $(COMMON_EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
 all: pre_build $(TARGETS) post_build
-	
 
 pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)

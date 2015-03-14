@@ -18,13 +18,11 @@ $(EBIN)/%.beam: %.erl
 	erlc -pa $(EBIN) -Werror -b beam -o $(EBIN) $(INCLUDE_FLAGS) $<
 
 all: pre_build $(TARGETS)
-	
 
 pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
 
 test: all
-	
 
 clean:
 	$(shell rm -rf $(EBIN)/*)
