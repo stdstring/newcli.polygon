@@ -22,13 +22,13 @@ public:
 
     template<class Ret> Ret execute(std::function<Ret()> func)
     {
-        signal_mask_holder signal_holder(_mask);
+        volatile signal_mask_holder signal_holder(_mask);
         return func();
     }
 
     void execute(std::function<void()> func)
     {
-        signal_mask_holder signal_holder(_mask);
+        volatile signal_mask_holder signal_holder(_mask);
         func();
     }
 

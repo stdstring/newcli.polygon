@@ -70,7 +70,7 @@ void initialize()
 int main_impl()
 {
     initialize();
-    resource_holder<int> socket_holder(create_socket(), [](int socketd){ close(socketd); });
+    resource_holder<int> volatile socket_holder(create_socket(), [](int socketd){ close(socketd); });
     int socketd = socket_holder.get();
     connect(socketd, PORT);
     std::string init_prompt = retrieve_current_state(socketd);

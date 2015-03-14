@@ -18,7 +18,8 @@ public:
     resource_holder(R resource, std::function<void(R)> resource_cleaner) : _resource(resource), _resource_cleaner(resource_cleaner) {}
     ~resource_holder() { _resource_cleaner(_resource); }
 
-    R get() const { return _resource; }
+    // TODO (std_string) : think about change const to volatile
+    R get() /*const*/ volatile { return _resource; }
 private:
     R _resource;
     std::function<void(R)> _resource_cleaner;
