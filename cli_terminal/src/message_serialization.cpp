@@ -1,4 +1,5 @@
 #include <cstring>
+#include <functional>
 #include <memory>
 #include <erl_interface.h>
 
@@ -81,6 +82,52 @@ byte_array_ptr serialize(mode_exit_request const &request)
     return serialize(CURRENT_MODE_EXIT);
 }
 
+std::string extract_atom(eterm_ptr &term)
+{
+    if (!term)
+        throw bad_message();
+    return std::string(ERL_ATOM_PTR(term.get()));
+}
+
+std::string extract_string(eterm_ptr &term)
+{
+    if (!term)
+        throw bad_message();
+    cterm_ptr<char> data_ptr(erl_iolist_to_string(term.get()));
+    return std::string(data_ptr.get());
+}
+
+std::string extract_string(ETERM *term)
+{
+    eterm_ptr eterm(term);
+    return extract_string(eterm);
+}
+
+template <typename T> std::vector<T> extract_list(eterm_ptr &term, std::function<T(ETERM*)> factory)
+{
+    if (!term)
+        throw bad_message();
+    int list_size = erl_length(term.get());
+    if (list_size == -1)
+        throw bad_message();
+    std::vector<T> dest;
+    ETERM *list = term.get();
+    while (ERL_IS_CONS(list))
+    {
+        ETERM *head = ERL_CONS_HEAD(list);
+        dest.push_back(factory(head));
+        list = ERL_CONS_TAIL(list);
+    }
+    return dest;
+}
+
+void check_type(eterm_ptr &eterm, std::string const &expexted_type)
+{
+    std::string type = extract_atom(eterm);
+    if (type.compare(expexted_type) != 0)
+        throw bad_message();
+}
+
 template<> message_response deserialize(byte_array_ptr const &source_data)
 {
     const int type_index = 1;
@@ -89,14 +136,9 @@ template<> message_response deserialize(byte_array_ptr const &source_data)
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
     eterm_ptr type_term(erl_element(type_index, eterm.get()));
-    if (!type_term)
-        throw bad_message();
+    std::string type = extract_atom(type_term);
     eterm_ptr data_term(erl_element(data_index, eterm.get()));
-    if (!data_term)
-        throw bad_message();
-    std::string type(ERL_ATOM_PTR(type_term.get()));
-    cterm_ptr<char> data_ptr(erl_iolist_to_string(data_term.get()));
-    std::string data(data_ptr.get());
+    std::string data = extract_string(data_term);
     return message_response(type, data);
 }
 
@@ -108,16 +150,9 @@ template<> current_state_response deserialize(byte_array_ptr const &source_data)
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
     eterm_ptr type_term(erl_element(type_index, eterm.get()));
-    if (!type_term)
-        throw bad_message();
-    std::string type(ERL_ATOM_PTR(type_term.get()));
-    if (type.compare(CURRENT_STATE_RESPONSE) != 0)
-        throw bad_message();
+    check_type(type_term, CURRENT_STATE_RESPONSE);
     eterm_ptr prompt_term(erl_element(prompt_index, eterm.get()));
-    if (!prompt_term)
-        throw bad_message();
-    cterm_ptr<char> prompt_ptr(erl_iolist_to_string(prompt_term.get()));
-    std::string prompt(prompt_ptr.get());
+    std::string prompt = extract_string(prompt_term);
     return current_state_response(prompt);
 }
 
@@ -130,29 +165,11 @@ template<> extension_response deserialize(byte_array_ptr  const &source_data)
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
     eterm_ptr type_term(erl_element(type_index, eterm.get()));
-    if (!type_term)
-        throw bad_message();
-    std::string type(ERL_ATOM_PTR(type_term.get()));
-    if (type.compare(EXTENSION_RESPONSE) != 0)
-        throw bad_message();
+    check_type(type_term, EXTENSION_RESPONSE);
     eterm_ptr prefix_term(erl_element(prefix_index, eterm.get()));
-    if (!prefix_term)
-        throw bad_message();
-    cterm_ptr<char> prefix_ptr(erl_iolist_to_string(prefix_term.get()));
-    std::string common_prefix(prefix_ptr.get());
+    std::string common_prefix = extract_string(prefix_term);
     eterm_ptr data_term(erl_element(extensions_index, eterm.get()));
-    int list_size = erl_length(data_term.get());
-    if (list_size == -1)
-        throw bad_message();
-    std::vector<std::string> extension_list;
-    ETERM *list = data_term.get();
-    while (ERL_IS_CONS(list))
-    {
-        ETERM *head = ERL_CONS_HEAD(list);
-        cterm_ptr<char> extension_data_ptr(erl_iolist_to_string(head));
-        extension_list.push_back(std::string(extension_data_ptr.get()));
-        list = ERL_CONS_TAIL(list);
-    }
+    std::vector<std::string> extension_list = extract_list<std::string>(data_term, [](ETERM *term){ return extract_string(term); });
     return extension_response(common_prefix, extension_list);
 }
 
@@ -164,16 +181,9 @@ template<> help_response deserialize(byte_array_ptr const & source_data)
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
     eterm_ptr type_term(erl_element(type_index, eterm.get()));
-    if (!type_term)
-        throw bad_message();
-    std::string type(ERL_ATOM_PTR(type_term.get()));
-    if (type.compare(HELP_RESPONSE) != 0)
-        throw bad_message();
+    check_type(type_term, HELP_RESPONSE);
     eterm_ptr data_term(erl_element(help_index, eterm.get()));
-    if (!data_term)
-        throw bad_message();
-    cterm_ptr<char> data_ptr(erl_iolist_to_string(data_term.get()));
-    std::string help(data_ptr.get());
+    std::string help = extract_string(data_term);
     return help_response(help);
 }
 
@@ -185,26 +195,9 @@ template<> suitable_commands_response deserialize(byte_array_ptr const & source_
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
     eterm_ptr type_term(erl_element(type_index, eterm.get()));
-    if (!type_term)
-        throw bad_message();
-    std::string type(ERL_ATOM_PTR(type_term.get()));
-    if (type.compare(SUITABLE_COMMANDS_RESPONSE) != 0)
-        throw bad_message();
+    check_type(type_term, SUITABLE_COMMANDS_RESPONSE);
     eterm_ptr data_term(erl_element(commands_index, eterm.get()));
-    if (!data_term)
-        throw bad_message();
-    int list_size = erl_length(data_term.get());
-    if (list_size == -1)
-        throw bad_message();
-    std::vector<std::string> commands_list;
-    ETERM *list = data_term.get();
-    while (ERL_IS_CONS(list))
-    {
-        ETERM *head = ERL_CONS_HEAD(list);
-        cterm_ptr<char> command_data_ptr(erl_iolist_to_string(head));
-        commands_list.push_back(std::string(command_data_ptr.get()));
-        list = ERL_CONS_TAIL(list);
-    }
+    std::vector<std::string> commands_list = extract_list<std::string>(data_term, [](ETERM *term){ return extract_string(term); });
     return suitable_commands_response(commands_list);
 }
 
