@@ -9,12 +9,17 @@
 #include "string_utils.h"
 
 #define KEY_VALUE_DELIMITER '='
+#define COMMENT '#'
 
 namespace cli_terminal
 {
 
 typedef std::function<bool(std::string const&)> filter_fun_t;
-std::vector<filter_fun_t> filters = {};
+std::vector<filter_fun_t> filters =
+{
+    [](std::string const &source){ return !source.empty(); },
+    [](std::string const &source){ return (!source.empty()) && (source.front() != COMMENT); }
+};
 
 bool filter(std::string const &source)
 {
