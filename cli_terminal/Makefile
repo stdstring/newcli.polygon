@@ -9,6 +9,7 @@ HEADER=include/array_ptr.h \
        include/cli_io_helper.h \
        include/client_state.h \
        include/command_terminal_behavior.h \
+       include/config_reader.h \
        include/cterm_ptr.h \
        include/eterm_ptr.h \
        include/exception_def.h \
@@ -33,6 +34,7 @@ SOURCE=src/base64.cpp \
        src/cli_terminal.cpp \
        src/client_state.cpp \
        src/command_terminal_behavior.cpp \
+       src/config_reader.cpp \
        src/fd_helper.cpp \
        src/help_processor.cpp \
        src/input_terminal_behavior.cpp \
