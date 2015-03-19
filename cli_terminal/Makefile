@@ -49,8 +49,8 @@ SOURCE=src/base64.cpp \
 EXTERNAL_INCLUDE=-I/usr/include/readline/\
                  -Iinclude/
 
-EXTERNAL_LIB=-L/usr/lib/x86_64-linux-gnu -lreadline -lhistory\
-             -L/usr/lib/erlang/lib/erl_interface-3.7.13/lib -lerl_interface -lei\
+EXTERNAL_LIB=-L/usr/lib/x86_64-linux-gnu -lreadline -lhistory \
+             -L/usr/lib/erlang/lib/erl_interface-3.7.13/lib -lerl_interface -lei \
              -lpthread
 
 all: pre_build

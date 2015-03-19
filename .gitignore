@@ -16,6 +16,7 @@ cli_integration_tests_old/frontend_ebin/
 cli_integration_tests_old/cli_terminal_bin/
 cli_terminal/bin/
 cli_terminal_prototype/bin/
+cli_terminal_tests/bin/
 cli_command_parser_prototype/ebin/
 cli_command_parser/ebin/
 cli_command_parser_tests/ebin/
