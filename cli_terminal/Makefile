@@ -46,7 +46,7 @@ SOURCE=src/base64.cpp \
        src/socket_utils.cpp \
        src/string_utils.cpp
 
-EXTERNAL_INCLUDE=-I/usr/include/readline/\
+EXTERNAL_INCLUDE=-I/usr/include/readline/ \
                  -Iinclude/
 
 EXTERNAL_LIB=-L/usr/lib/x86_64-linux-gnu -lreadline -lhistory \

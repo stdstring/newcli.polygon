@@ -1,5 +1,5 @@
 SOURCE_SUBDIRS = cli_common cli_command_parser cli_service cli_service_test_commands cli_terminal
-TEST_SUBDIRS = cli_common_tests cli_command_parser_tests cli_service_tests
+TEST_SUBDIRS = cli_common_tests cli_command_parser_tests cli_service_tests cli_terminal_tests
 
 COMMON_EBIN = cli_common/ebin
 COMMAND_PARSER_EBIN = cli_command_parser/ebin
