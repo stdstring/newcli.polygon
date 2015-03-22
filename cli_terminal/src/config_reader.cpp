@@ -44,7 +44,7 @@ parse_result_t parse(std::string const &source)
     return parse_result_t(true, entry);
 }
 
-std::vector<config_entry> read_config(std::istream source)
+std::vector<config_entry> read_config(std::istream &source)
 {
     std::vector<config_entry> storage;
     while(!source.eof())

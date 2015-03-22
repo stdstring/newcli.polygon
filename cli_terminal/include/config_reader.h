@@ -18,7 +18,7 @@ public:
     std::string value;
 };
 
-std::vector<config_entry> read_config(std::istream source);
+std::vector<config_entry> read_config(std::istream &source);
 
 }
 
