@@ -25,6 +25,9 @@ class signal_error
 class socket_error
 {};
 
+class missing_config
+{};
+
 }
 
 #endif

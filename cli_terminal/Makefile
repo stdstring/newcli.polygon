@@ -7,6 +7,7 @@ BIN=bin
 HEADER=include/array_ptr.h \
        include/base64.h \
        include/cli_io_helper.h \
+       include/cli_terminal_config.h \
        include/client_state.h \
        include/command_terminal_behavior.h \
        include/config_reader.h \
@@ -32,6 +33,7 @@ HEADER=include/array_ptr.h \
 SOURCE=src/base64.cpp \
        src/cli_io_helper.cpp \
        src/cli_terminal.cpp \
+       src/cli_terminal_config.cpp \
        src/client_state.cpp \
        src/command_terminal_behavior.cpp \
        src/config_reader.cpp \
