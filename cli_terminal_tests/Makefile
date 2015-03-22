@@ -6,10 +6,12 @@ BIN=bin
 
 HEADER=
 
-SOURCE=../cli_terminal/src/string_utils.cpp \
-       src/string_utils_tests.cpp \
+SOURCE=../cli_terminal/src/base64.cpp \
+       src/base64_tests.cpp \
        ../cli_terminal/src/config_reader.cpp \
-       src/config_reader_tests.cpp
+       src/config_reader_tests.cpp \
+       ../cli_terminal/src/string_utils.cpp \
+       src/string_utils_tests.cpp
 
 EXTERNAL_INCLUDE=-I../external/gtest/include/ \
                  -I../external/gmock/include/ \
