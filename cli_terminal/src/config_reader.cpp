@@ -8,17 +8,18 @@
 #include "config_reader.h"
 #include "string_utils.h"
 
-#define KEY_VALUE_DELIMITER '='
-#define COMMENT '#'
-
 namespace cli_terminal
 {
 
+const char key_value_delimiter = '=';
+const char comment_header = '#';
+
 typedef std::function<bool(std::string const&)> filter_fun_t;
+
 std::vector<filter_fun_t> filters =
 {
     [](std::string const &source){ return !source.empty(); },
-    [](std::string const &source){ return (!source.empty()) && (source.front() != COMMENT); }
+    [](std::string const &source){ return (!source.empty()) && (source.front() != comment_header); }
 };
 
 bool filter(std::string const &source)
@@ -32,10 +33,11 @@ bool filter(std::string const &source)
 }
 
 typedef std::pair<bool, config_entry> parse_result_t;
+
 parse_result_t parse(std::string const &source)
 {
     typedef std::string::const_iterator string_iterator_t;
-    string_iterator_t delimiter = std::find(source.begin(), source.end(), KEY_VALUE_DELIMITER);
+    string_iterator_t delimiter = std::find(source.begin(), source.end(), key_value_delimiter);
     if (source.end() == delimiter)
         return parse_result_t(false, config_entry());
     std::string key(source.begin(), delimiter);

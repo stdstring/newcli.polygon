@@ -24,8 +24,7 @@ void connect(int socketd, int port_number)
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port_number);
     int ip_binary;
-    inet_pton(AF_INET, IP_ADDRESS, &ip_binary);
-    int convert_result = inet_pton(AF_INET, IP_ADDRESS, &ip_binary);
+    int convert_result = inet_pton(AF_INET, ip_address.c_str(), &ip_binary);
     if (convert_result != 1)
         throw socket_error();
     server_addr.sin_addr.s_addr = ip_binary;

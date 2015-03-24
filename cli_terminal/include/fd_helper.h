@@ -7,13 +7,13 @@
 namespace cli_terminal
 {
 
-#define FD_COUNT 2
-#define STDIN_INDEX 0
-#define SOCKETD_INDEX 1
+const int fd_count = 2;
+const int stdin_index = 0;
+const int socketd_index = 1;
 
-std::array<struct pollfd, FD_COUNT> create_fdarray(int socketd);
+std::array<struct pollfd, fd_count> create_fdarray(int socketd);
 
-void clear_fdarray(std::array<struct pollfd, FD_COUNT> &fdarray);
+void clear_fdarray(std::array<struct pollfd, fd_count> &fdarray);
 
 }
 

@@ -41,10 +41,10 @@ std::unordered_map<std::string, response_handler_t> get_response_handlers()
             return EX_CONTINUE;
         };
     return {
-        {COMMAND_OUT, [](message_response response, client_state &state){ std::cout << response.data; return EX_CONTINUE; }},
-        {COMMAND_ERR, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
-        {COMMAND_END, end_handler},
-        {ERROR, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }}
+        {command_out_tag, [](message_response response, client_state &state){ std::cout << response.data; return EX_CONTINUE; }},
+        {command_err_tag, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
+        {command_end_tag, end_handler},
+        {error_tag, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }}
     };
 }
 

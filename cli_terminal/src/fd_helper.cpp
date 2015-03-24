@@ -8,20 +8,20 @@
 namespace cli_terminal
 {
 
-std::array<struct pollfd, FD_COUNT> create_fdarray(int socketd)
+std::array<struct pollfd, fd_count> create_fdarray(int socketd)
 {
-    std::array<struct pollfd, FD_COUNT> fdarray;
-    fdarray[STDIN_INDEX].fd = STDIN_FILENO;
-    fdarray[STDIN_INDEX].events = POLLIN;
-    fdarray[SOCKETD_INDEX].fd = socketd;
-    fdarray[SOCKETD_INDEX].events = POLLIN;
+    std::array<struct pollfd, fd_count> fdarray;
+    fdarray[stdin_index].fd = STDIN_FILENO;
+    fdarray[stdin_index].events = POLLIN;
+    fdarray[socketd_index].fd = socketd;
+    fdarray[socketd_index].events = POLLIN;
     return fdarray;
 }
 
-void clear_fdarray(std::array<struct pollfd, FD_COUNT> &fdarray)
+void clear_fdarray(std::array<struct pollfd, fd_count> &fdarray)
 {
-    fdarray[STDIN_INDEX].revents = 0;
-    fdarray[SOCKETD_INDEX].revents = 0;
+    fdarray[stdin_index].revents = 0;
+    fdarray[socketd_index].revents = 0;
 }
 
 }

@@ -1,4 +1,4 @@
-#include <cstring>
+//#include <cstring>
 #include <functional>
 #include <memory>
 #include <erl_interface.h>
@@ -23,20 +23,20 @@ byte_array_ptr serialize(eterm_ptr const &eterm)
     return buffer;
 }
 
-byte_array_ptr serialize(const char *type)
+byte_array_ptr serialize(std::string const &type)
 {
     const int tuple_size = 1;
-    eterm_ptr type_term(erl_mk_atom(type));
+    eterm_ptr type_term(erl_mk_atom(type.c_str()));
     ETERM* message_data[] = {type_term.get()};
     eterm_ptr message(erl_mk_tuple(message_data, tuple_size));
     return serialize(message);
 }
 
-byte_array_ptr serialize(const char *type, const char *body)
+byte_array_ptr serialize(std::string const &type, std::string const &body)
 {
     const int tuple_size = 2;
-    eterm_ptr type_term(erl_mk_atom(type));
-    eterm_ptr body_term(erl_mk_string(body));
+    eterm_ptr type_term(erl_mk_atom(type.c_str()));
+    eterm_ptr body_term(erl_mk_string(body.c_str()));
     ETERM* message_data[] = {type_term.get(), body_term.get()};
     eterm_ptr message(erl_mk_tuple(message_data, tuple_size));
     return serialize(message);
@@ -44,42 +44,42 @@ byte_array_ptr serialize(const char *type, const char *body)
 
 byte_array_ptr serialize(command_request const &request)
 {
-    return serialize(COMMAND_START, request.command_line.c_str());
+    return serialize(command_start_tag, request.command_line);
 }
 
 byte_array_ptr serialize(interrupt_request const &request)
 {
-    return serialize(COMMAND_STOP);
+    return serialize(command_stop_tag);
 }
 
 byte_array_ptr serialize(current_state_request const &request)
 {
-    return serialize(CURRENT_STATE_REQUEST);
+    return serialize(current_state_request_tag);
 }
 
 byte_array_ptr serialize(extension_request const &request)
 {
-    return serialize(EXTENSION_REQUEST, request.command_line.c_str());
+    return serialize(extension_request_tag, request.command_line);
 }
 
 byte_array_ptr serialize(exit_request const &request)
 {
-    return serialize(EXIT);
+    return serialize(exit_tag);
 }
 
 byte_array_ptr serialize(help_request const &request)
 {
-    return serialize(HELP_REQUEST, request.command_line.c_str());
+    return serialize(help_request_tag, request.command_line);
 }
 
 byte_array_ptr serialize(suitable_commands_request const &request)
 {
-    return serialize(SUITABLE_COMMANDS_REQUEST, request.command_line.c_str());
+    return serialize(suitable_commands_request_tag, request.command_line);
 }
 
 byte_array_ptr serialize(mode_exit_request const &request)
 {
-    return serialize(CURRENT_MODE_EXIT);
+    return serialize(current_mode_exit_tag);
 }
 
 std::string extract_atom(eterm_ptr &term)
@@ -150,7 +150,7 @@ template<> current_state_response deserialize(byte_array_ptr const &source_data)
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
     eterm_ptr type_term(erl_element(type_index, eterm.get()));
-    check_type(type_term, CURRENT_STATE_RESPONSE);
+    check_type(type_term, current_state_response_tag);
     eterm_ptr prompt_term(erl_element(prompt_index, eterm.get()));
     std::string prompt = extract_string(prompt_term);
     return current_state_response(prompt);
@@ -165,7 +165,7 @@ template<> extension_response deserialize(byte_array_ptr  const &source_data)
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
     eterm_ptr type_term(erl_element(type_index, eterm.get()));
-    check_type(type_term, EXTENSION_RESPONSE);
+    check_type(type_term, extension_response_tag);
     eterm_ptr prefix_term(erl_element(prefix_index, eterm.get()));
     std::string common_prefix = extract_string(prefix_term);
     eterm_ptr data_term(erl_element(extensions_index, eterm.get()));
@@ -181,7 +181,7 @@ template<> help_response deserialize(byte_array_ptr const & source_data)
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
     eterm_ptr type_term(erl_element(type_index, eterm.get()));
-    check_type(type_term, HELP_RESPONSE);
+    check_type(type_term, help_response_tag);
     eterm_ptr data_term(erl_element(help_index, eterm.get()));
     std::string help = extract_string(data_term);
     return help_response(help);
@@ -195,7 +195,7 @@ template<> suitable_commands_response deserialize(byte_array_ptr const & source_
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
     eterm_ptr type_term(erl_element(type_index, eterm.get()));
-    check_type(type_term, SUITABLE_COMMANDS_RESPONSE);
+    check_type(type_term, suitable_commands_response_tag);
     eterm_ptr data_term(erl_element(commands_index, eterm.get()));
     std::vector<std::string> commands_list = extract_list<std::string>(data_term, [](ETERM *term){ return extract_string(term); });
     return suitable_commands_response(commands_list);

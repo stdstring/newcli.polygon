@@ -24,7 +24,7 @@ namespace cli_terminal
 {
 
 // TODO (std_string) : think about config port number
-#define PORT 6666
+const int port_number = 6666;
 
 // global variables
 client_state cstate;
@@ -72,34 +72,34 @@ int main_impl()
     initialize();
     resource_holder<int> volatile socket_holder(create_socket(), [](int socketd){ close(socketd); });
     int socketd = socket_holder.get();
-    connect(socketd, PORT);
+    connect(socketd, port_number);
     std::string init_prompt = retrieve_current_state(socketd);
     cstate.set_prompt(init_prompt);
     cstate.set_socketd(socketd);
     cstate.set_execution_state(EX_CONTINUE);
     set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
-    std::array<struct pollfd, FD_COUNT> fdarray = create_fdarray(socketd);
+    std::array<struct pollfd, fd_count> fdarray = create_fdarray(socketd);
     while(EX_CONTINUE == cstate.get_execution_state())
     {
         clear_fdarray(fdarray);
-        int poll_result = poll(fdarray.data(), FD_COUNT, -1);
+        int poll_result = poll(fdarray.data(), fd_count, -1);
         if (-1 == poll_result)
         {
             if (EINTR != errno)
                 throw poll_error();
             continue;
         }
-        if (POLLIN == (fdarray[STDIN_INDEX].revents & POLLIN))
+        if (POLLIN == (fdarray[stdin_index].revents & POLLIN))
             cstate.get_behavior()->process_char();
-        if (POLLERR == (fdarray[STDIN_INDEX].revents & POLLERR))
+        if (POLLERR == (fdarray[stdin_index].revents & POLLERR))
             throw poll_error();
-        if (POLLIN == (fdarray[SOCKETD_INDEX].revents & POLLIN))
+        if (POLLIN == (fdarray[socketd_index].revents & POLLIN))
         {
             message_responses_t responses = receive_message_responses(socketd, create_signal_mask());
             execution_state result = process_responses(responses, cstate);
             cstate.set_execution_state(result);
         }
-        if (POLLERR == (fdarray[SOCKETD_INDEX].revents & POLLERR))
+        if (POLLERR == (fdarray[socketd_index].revents & POLLERR))
             throw poll_error();
     }
     cleanup();

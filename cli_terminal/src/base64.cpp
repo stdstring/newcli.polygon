@@ -3,20 +3,20 @@
 #include "base64.h"
 #include "exception_def.h"
 
-#define FOOTER '='
-
 namespace cli_terminal
 {
 
-std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const char footer = '=';
+
+const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 void process_to_base64(std::string& dest, char char1)
 {
     // char2 = 0, char3 = 0
     dest.push_back(base64_chars[char1 >> 2]);
     dest.push_back(base64_chars[(char1 & 0x3) << 4]);
-    dest.push_back(FOOTER);
-    dest.push_back(FOOTER);
+    dest.push_back(footer);
+    dest.push_back(footer);
 }
 
 void process_to_base64(std::string& dest, char char1, char char2)
@@ -25,7 +25,7 @@ void process_to_base64(std::string& dest, char char1, char char2)
     dest.push_back(base64_chars[char1 >> 2]);
     dest.push_back(base64_chars[((char1 & 0x3) << 4) + (char2 >> 4)]);
     dest.push_back(base64_chars[(char2 & 0xf) << 2]);
-    dest.push_back(FOOTER);
+    dest.push_back(footer);
 }
 
 void process_to_base64(std::string& dest, char char1, char char2, char char3)
@@ -113,9 +113,9 @@ std::string from_base64(std::string const& source)
         char char2 = source.at(index + 1);
         char char3 = source.at(index + 2);
         char char4 = source.at(index + 3);
-        if ((FOOTER == char3) && (FOOTER == char4))
+        if ((footer == char3) && (footer == char4))
             process_from_base64(dest, char1, char2);
-        else if ((FOOTER != char3) && (FOOTER == char4))
+        else if ((footer != char3) && (footer == char4))
             process_from_base64(dest, char1, char2, char3);
         else
             process_from_base64(dest, char1, char2, char3, char4);

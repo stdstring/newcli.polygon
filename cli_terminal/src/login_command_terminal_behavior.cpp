@@ -27,6 +27,11 @@ namespace cli_terminal
 
 extern client_state cstate;
 
+const std::string login_key = "login";
+const std::string login_prompt = "login:";
+const std::string password_prompt = "password:";
+const std::string login_command_prefix = "login";
+
 namespace login_command_terminal_behavior_impl
 {
 
@@ -44,7 +49,7 @@ void sigint_handler(int signo)
     clear_input_handler();
     // remove login parameter
     state_params_t &state_params = cstate.get_params();
-    state_params.erase(LOGIN_KEY);
+    state_params.erase(login_key);
     // input terminal behavior
     set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
 }
@@ -89,7 +94,7 @@ void password_redisplay(void)
 
 std::string create_command(std::string const &login, std::string const &password)
 {
-    std::string command(LOGIN_COMMAND_PREFIX);
+    std::string command(login_command_prefix);
     command.push_back(' ');
     command.append(login);
     command.append(" \"");
@@ -111,7 +116,7 @@ void login_input_handler_impl(char *raw_data)
     std::string login = trim_full(raw_data_ptr.get());
     // add login into client_state parameters
     state_params_t &state_params = cstate.get_params();
-    state_params.emplace(LOGIN_KEY, login);
+    state_params.emplace(login_key, login);
     // install password_input_handler
     clear_input_handler();
     install_password_input_handler();
@@ -129,8 +134,8 @@ void password_input_handler_impl(char *raw_data)
     std::string password(raw_data_ptr.get());
     // extract and remove login from client_state parameters
     state_params_t &state_params = cstate.get_params();
-    std::string login = state_params.at(LOGIN_KEY);
-    state_params.erase(LOGIN_KEY);
+    std::string login = state_params.at(login_key);
+    state_params.erase(login_key);
     // form login command
     std::string login_command = create_command(login, password);
     // execute login command
@@ -161,12 +166,12 @@ void clear_input_handler()
 
 void install_login_input_handler()
 {
-    rl_callback_handler_install(LOGIN_PROMPT, login_input_handler);
+    rl_callback_handler_install(login_prompt.c_str(), login_input_handler);
 }
 
 void install_password_input_handler()
 {
-    rl_callback_handler_install(PASSWORD_PROMPT, password_input_handler);
+    rl_callback_handler_install(password_prompt.c_str(), password_input_handler);
     // set redisplay function for password
     rl_redisplay_function = password_redisplay;
 }
@@ -174,7 +179,7 @@ void install_password_input_handler()
 void install_input_handler()
 {
     state_params_t &state_params = cstate.get_params();
-    (state_params.find(LOGIN_KEY) == state_params.end()) ?
+    (state_params.find(login_key) == state_params.end()) ?
         install_login_input_handler() :
         install_password_input_handler();
 }

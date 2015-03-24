@@ -4,25 +4,25 @@
 #include <string>
 #include <vector>
 
-#define COMMAND_START "command"
-#define COMMAND_OUT "command_out"
-#define COMMAND_ERR "command_err"
-#define COMMAND_END "end"
-#define ERROR "error"
-#define COMMAND_STOP "interrupt"
-#define CURRENT_STATE_REQUEST "current_state_request"
-#define CURRENT_STATE_RESPONSE "current_state_response"
-#define EXTENSION_REQUEST "extension_request"
-#define EXTENSION_RESPONSE "extension_response"
-#define EXIT "exit"
-#define HELP_REQUEST "help_request"
-#define HELP_RESPONSE "help_response"
-#define SUITABLE_COMMANDS_REQUEST "suitable_commands_request"
-#define SUITABLE_COMMANDS_RESPONSE "suitable_commands_response"
-#define CURRENT_MODE_EXIT "current_mode_exit"
-
 namespace cli_terminal
 {
+
+const std::string command_start_tag = "command";
+const std::string command_out_tag = "command_out";
+const std::string command_err_tag = "command_err";
+const std::string command_end_tag = "end";
+const std::string error_tag = "error";
+const std::string command_stop_tag = "interrupt";
+const std::string current_state_request_tag = "current_state_request";
+const std::string current_state_response_tag = "current_state_response";
+const std::string extension_request_tag = "extension_request";
+const std::string extension_response_tag = "extension_response";
+const std::string exit_tag = "exit";
+const std::string help_request_tag = "help_request";
+const std::string help_response_tag = "help_response";
+const std::string suitable_commands_request_tag = "suitable_commands_request";
+const std::string suitable_commands_response_tag = "suitable_commands_response";
+const std::string current_mode_exit_tag = "current_mode_exit";
 
 // requests
 
