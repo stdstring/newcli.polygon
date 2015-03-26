@@ -10,6 +10,7 @@ HEADER=include/array_ptr.h \
        include/cli_terminal_config.h \
        include/client_state.h \
        include/command_terminal_behavior.h \
+       include/config_def.h \
        include/config_reader.h \
        include/cterm_ptr.h \
        include/eterm_ptr.h \

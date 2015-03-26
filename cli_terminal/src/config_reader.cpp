@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "config_reader.h"
+#include "exception_def.h"
 #include "string_utils.h"
 
 namespace cli_terminal
@@ -48,11 +49,21 @@ parse_result_t parse(std::string const &source)
 
 std::vector<config_entry> read_config(std::istream &source)
 {
-    std::vector<config_entry> storage;
+    std::vector<std::string> storage;
     while(!source.eof())
     {
         std::string raw_line;
         std::getline(source, raw_line);
+        storage.push_back(raw_line);
+    }
+    return read_config(storage);
+}
+
+std::vector<config_entry> read_config(std::vector<std::string> const &source)
+{
+    std::vector<config_entry> storage;
+    for(std::string raw_line : source)
+    {
         std::string line = trim_full(raw_line);
         if (!filter(line))
             continue;
@@ -60,9 +71,29 @@ std::vector<config_entry> read_config(std::istream &source)
         if (!parse_result.first)
             // TODO (std_string) : probably throw some exception
             continue;
-        storage.push_back(parse_result.second); 
+        storage.push_back(parse_result.second);
     }
     return storage;
+}
+
+std::string find_value(std::vector<config_entry> const &config, std::string const &key)
+{
+    typedef std::vector<config_entry>::const_iterator config_iterator_t;
+    config_iterator_t result = std::find_if(config.begin(),
+                                            config.end(),
+                                            [&key](config_entry const &entry){ return entry.key == key; });
+    if (config.end() == result)
+        throw missing_config();
+    return result->value;
+}
+
+std::string find_value(std::vector<config_entry> const &config, std::string const &key, std::string const &default_value)
+{
+    typedef std::vector<config_entry>::const_iterator config_iterator_t;
+    config_iterator_t result = std::find_if(config.begin(),
+                                            config.end(),
+                                            [&key](config_entry const &entry){ return entry.key == key; });
+    return (config.end() == result) ? default_value : result->value;
 }
 
 }

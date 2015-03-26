@@ -21,8 +21,6 @@ private:
     int _port_number;
 };
 
-const std::string port_number_key = "PORT_NUMBER";
-
 }
 
 #endif

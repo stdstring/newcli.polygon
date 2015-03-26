@@ -19,6 +19,10 @@ public:
 };
 
 std::vector<config_entry> read_config(std::istream &source);
+std::vector<config_entry> read_config(std::vector<std::string> const &source);
+
+std::string find_value(std::vector<config_entry> const &config, std::string const &key);
+std::string find_value(std::vector<config_entry> const &config, std::string const &key, std::string const &default_value);
 
 }
 
