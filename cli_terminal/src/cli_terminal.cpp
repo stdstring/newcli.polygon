@@ -88,11 +88,11 @@ cli_terminal_config read_config(int argc, char *argv[])
     std::copy(&argv[1], &argv[argc], std::back_inserter(args_source));
     std::vector<config_entry> args_entries = read_config(args_source);
     std::string config_file_location = find_value(args_entries, config_file_location_key, default_config_file_location);
-    /*// remove config file location from args entries
-    config_iterator_t config_file_pos = std::find_if(args_entries.begin(),
-                                                     args_entries.end(),
-                                                     [](config_entry const& entry){ return entry.key == config_file_location_key; });
-    args_entries.erase(config_file_pos);*/
+    // remove config file location from args entries
+    std::vector<config_entry>::iterator config_file_pos = std::find_if(args_entries.begin(),
+                                                                       args_entries.end(),
+                                                                       [](config_entry const& entry){ return entry.key == config_file_location_key; });
+    args_entries.erase(config_file_pos);
     std::fstream config_stream;
     config_stream.open(config_file_location, std::fstream::in);
     if (!config_stream.is_open())
