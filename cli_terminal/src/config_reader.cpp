@@ -78,7 +78,6 @@ std::vector<config_entry> read_config(std::vector<std::string> const &source)
 
 std::string find_value(std::vector<config_entry> const &config, std::string const &key)
 {
-    typedef std::vector<config_entry>::const_iterator config_iterator_t;
     config_iterator_t result = std::find_if(config.begin(),
                                             config.end(),
                                             [&key](config_entry const &entry){ return entry.key == key; });
@@ -89,7 +88,6 @@ std::string find_value(std::vector<config_entry> const &config, std::string cons
 
 std::string find_value(std::vector<config_entry> const &config, std::string const &key, std::string const &default_value)
 {
-    typedef std::vector<config_entry>::const_iterator config_iterator_t;
     config_iterator_t result = std::find_if(config.begin(),
                                             config.end(),
                                             [&key](config_entry const &entry){ return entry.key == key; });
