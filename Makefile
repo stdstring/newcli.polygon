@@ -7,6 +7,7 @@ SERVICE_EBIN = cli_service/ebin
 SERVICE_DATA = cli_service/data
 SERVICE_TEST_COMMANDS_EBIN = cli_service_test_commands/ebin
 TERMINAL_BIN = cli_terminal/bin
+TERMINAL_DATA = cli_terminal/data
 
 INTEGRATION_TESTS = cli_integration_tests
 INTEGRATION_TESTS_SERVICE_EBIN = $(INTEGRATION_TESTS)/service_ebin
@@ -16,18 +17,19 @@ DEPLOY = deploy
 DEPLOY_SERVICE_EBIN = cli_service_ebin
 DEPLOY_SERVICE_DATA = cli_service_data
 DEPLOY_TERMINAL_BIN = cli_terminal_bin
+DEPLOY_TERMINAL_DATA = cli_terminal_data
 DEPLOY_PREREQ = deploy_prerequisites
 DEPLOY_SERVICE_PREREQ = $(DEPLOY_PREREQ)/cli_service
 DEPLOY_DOCS = docs
 
 # documentation for deploy
-DOCS=docs/CLI_Architecture.docx\
-     docs/CLI_Autocomplete.docx\
-     docs/CLI_Dependencies.docx\
-     docs/CLI_Future.docx\
-     docs/CLI_service_command_parser.docx\
-     docs/CLI_service_description.docx\
-     docs/CLI_terminal_comm_protocol.docx\
+DOCS=docs/CLI_Architecture.docx \
+     docs/CLI_Autocomplete.docx \
+     docs/CLI_Dependencies.docx \
+     docs/CLI_Future.docx \
+     docs/CLI_service_command_parser.docx \
+     docs/CLI_service_description.docx \
+     docs/CLI_terminal_comm_protocol.docx \
      docs/CLI_terminal_description
 
 all: build
@@ -60,6 +62,7 @@ deploy: all
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_SERVICE_EBIN))
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_SERVICE_DATA))
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_TERMINAL_BIN))
+	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_TERMINAL_DATA))
 	$(shell mkdir -p $(DEPLOY)/$(DEPLOY_DOCS))
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(COMMON_EBIN)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(COMMAND_PARSER_EBIN)/*)
@@ -68,6 +71,7 @@ deploy: all
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_EBIN) $(DEPLOY_SERVICE_PREREQ)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_SERVICE_DATA) $(SERVICE_DATA)/*)
 	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_TERMINAL_BIN) $(TERMINAL_BIN)/*)
+	$(shell cp -f -t $(DEPLOY)/$(DEPLOY_TERMINAL_DATA) $(TERMINAL_DATA)/*)
 	$(shell cp -f -t $(DEPLOY)/ $(DEPLOY_PREREQ)/install.sh)
 	# documentation
 	for document in $(DOCS); do libreoffice --headless --convert-to pdf $$document --outdir $(DEPLOY)/$(DEPLOY_DOCS); done
@@ -76,5 +80,6 @@ deploy: all
 	tar -c -f $(DEPLOY)/deploy.tar -C $(DEPLOY) $(DEPLOY_SERVICE_EBIN)/ \
                                                 $(DEPLOY_SERVICE_DATA)/ \
                                                 $(DEPLOY_TERMINAL_BIN)/ \
+                                                $(DEPLOY_TERMINAL_DATA)/ \
                                                 $(DEPLOY_DOCS)/ \
                                                 ./install.sh

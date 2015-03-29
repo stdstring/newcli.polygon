@@ -4,6 +4,11 @@ rm -rf /etc/cli_service
 mkdir /etc/cli_service
 cp -t /etc/cli_service cli_service_data/*
 chmod 0444 /etc/cli_service/*
+# /etc/cli_terminal
+rm -rf /etc/cli_terminal
+mkdir /etc/cli_terminal
+cp -t /etc/cli_terminal cli_terminal_data/*
+chmod 0444 /etc/cli_terminal/*
 # cli_service libs
 rm -rf /usr/local/lib/cli_service
 mkdir /usr/local/lib/cli_service
