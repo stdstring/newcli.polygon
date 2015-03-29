@@ -21,6 +21,8 @@ private:
     int _port_number;
 };
 
+cli_terminal_config create_config(int argc, char *argv[]);
+
 }
 
 #endif

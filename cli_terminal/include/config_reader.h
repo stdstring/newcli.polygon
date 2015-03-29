@@ -18,8 +18,6 @@ public:
     std::string value;
 };
 
-typedef std::vector<config_entry>::const_iterator config_iterator_t;
-
 std::vector<config_entry> read_config(std::istream &source);
 std::vector<config_entry> read_config(std::vector<std::string> const &source);
 

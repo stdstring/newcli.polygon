@@ -76,6 +76,8 @@ std::vector<config_entry> read_config(std::vector<std::string> const &source)
     return storage;
 }
 
+typedef std::vector<config_entry>::const_iterator config_iterator_t;
+
 std::string find_value(std::vector<config_entry> const &config, std::string const &key)
 {
     config_iterator_t result = std::find_if(config.begin(),
