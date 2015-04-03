@@ -13,13 +13,13 @@ SOURCE=../cli_terminal/src/base64.cpp \
        ../cli_terminal/src/string_utils.cpp \
        src/string_utils_tests.cpp
 
-EXTERNAL_INCLUDE=-I../external/gtest/include/ \
-                 -I../external/gmock/include/ \
+EXTERNAL_INCLUDE=-I/usr/include/gtest/ \
+                 -I/usr/include/gmock/ \
                  -I../cli_terminal/include/ \
                  -Iinclude/
 
-EXTERNAL_LIB=-L../external/gtest/lib -lgtest -lgtest_main \
-             -L../external/gmock/lib -lgmock -lgmock_main \
+EXTERNAL_LIB=-L/usr/local/lib/gtest -lgtest -lgtest_main \
+             -L/usr/local/lib/gmock -lgmock -lgmock_main \
              -lpthread
 
 all: pre_build
