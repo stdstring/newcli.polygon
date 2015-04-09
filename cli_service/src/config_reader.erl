@@ -26,16 +26,17 @@ read(MainConfigFile) ->
 
 -spec process(Entry :: {Key :: atom(), Value :: term()}, Config :: #global_config{}, MainConfigDir :: string()) -> #global_config{}.
 process({?COMMANDS_CONFIG_KEY, CommandsData}, Config, MainConfigDir) ->
-    CommandsSource = list_utils:get_value_by_key(CommandsData, ?COMMANDS_DATA_SOURCE, 1, missing_commands_def),
+    CommandsSource = list_utils:get_value_by_key(CommandsData, ?COMMANDS_DATA_SOURCE, 1, {?MODULE, missing_commands_def}),
     Commands = erlang_term_utils:read_from_file(filename:absname(CommandsSource, MainConfigDir)),
     Config#global_config{commands = Commands};
 process({?CLI_FSM_CONFIG_KEY, CliFsmData}, Config, MainConfigDir) ->
-    CliFsmSource = list_utils:get_value_by_key(CliFsmData, ?CLI_FSM_DATA_SOURCE, 1, missing_cli_fsm_def),
+    CliFsmSource = list_utils:get_value_by_key(CliFsmData, ?CLI_FSM_DATA_SOURCE, 1, {?MODULE, missing_fsm_def}),
     CliFsm = erlang_term_utils:read_from_file(filename:absname(CliFsmSource, MainConfigDir)),
     Config#global_config{cli_fsm = CliFsm};
 process({?TERMINAL_CONFIG_KEY, TerminalData}, Config, _MainConfigDir) ->
-    PortNumber = list_utils:get_value_by_key_with_default(TerminalData, ?TERMINAL_PORT_NUMBER, 1, ?DEFAULT_PORT_NUMBER),
-    TerminalConfig = #cli_terminal_config{port_number = PortNumber},
+    PortNumber = list_utils:get_value_by_key(TerminalData, ?TERMINAL_PORT_NUMBER, 1, {?MODULE, missing_terminal_port}),
+    Downtime = list_utils:get_value_by_key_with_default(TerminalData, ?TERMINAL_DOWNTIME, 1, ?TERMINAL_DOWNTIME_DEFAULT),
+    TerminalConfig = #cli_terminal_config{port_number = PortNumber, downtime = Downtime},
     Config#global_config{cli_terminal = TerminalConfig};
 process(Other, Config, _MainConfigDir) ->
     ConfigOther = Config#global_config.other,

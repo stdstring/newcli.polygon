@@ -86,17 +86,19 @@ init([GlobalConfig, Endpoint, SocketOtherSide]) ->
     CommandModule = module_name_generator:generate(?ENTRY_MODULE_PREFIX, SocketOtherSide),
     case cli_fsm:start(GlobalConfig#global_config.cli_fsm) of
         {ok, CliFsm} ->
-            State = #client_handler_state{config = GlobalConfig,
-                                          endpoint = Endpoint,
-                                          command_module = CommandModule,
-                                          cli_fsm =CliFsm},
+            InitState = #client_handler_state{config = GlobalConfig,
+                                              endpoint = Endpoint,
+                                              command_module = CommandModule,
+                                              cli_fsm =CliFsm},
+            State = client_downtime_timer:start(InitState),
             {ok, State};
         {error, Reason} ->
             {stop, Reason}
     end.
 
 handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_command = undefined} = State) ->
-    GlobalConfig = State#client_handler_state.config,
+    IntermediateState = client_downtime_timer:stop(State),
+    GlobalConfig = IntermediateState#client_handler_state.config,
     %% TODO (std_string) : think about caching
     LexConfig = lex_analyzer_config:create(true),
     NameConfig = name_search_config:create(GlobalConfig#global_config.commands),
@@ -104,27 +106,33 @@ handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_comman
     CommandModule = State#client_handler_state.command_module,
     case command_factory:process(CommandLine, LexConfig, SyntaxConfig, GlobalConfig, CommandModule) of
         {true, CommandFun} ->
-            Command = process_start_command(State, CommandFun),
-            {reply, true, State#client_handler_state{current_command = Command}};
+            %%Command = process_start_command(State, CommandFun),
+            %%{reply, true, State#client_handler_state{current_command = Command}};
+            FinishState = process_start_command(IntermediateState, CommandFun),
+            {reply, true, FinishState};
         {false, Reason} ->
-            process_command_creation_error(State, Reason),
-            {reply, false, State}
+            FinishState = process_command_creation_error(State, Reason),
+            {reply, false, FinishState}
     end;
 handle_call({?PROCESS, _CommandLine}, _From, State) ->
     command_helper:send_error(State, ?COMMAND_ALREADY_RUN),
     {reply, false, State};
 handle_call(?CURRENT_STATE, _From, State) ->
     Prompt = prompt_factory:generate_prompt(State),
-    {reply, Prompt, State};
+    NewState = client_downtime_timer:restart(State),
+    {reply, Prompt, NewState};
 handle_call({?EXTENSIONS, CommandLine}, _From, State) ->
     {Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
-    {reply, {Prefix, Commands}, State};
+    NewState = client_downtime_timer:restart(State),
+    {reply, {Prefix, Commands}, NewState};
 handle_call({?HELP, CommandLine}, _From, State) ->
     Help = client_handler_helper:get_help(CommandLine, State),
-    {reply, Help, State};
+    NewState = client_downtime_timer:restart(State),
+    {reply, Help, NewState};
 handle_call({?SUITABLE_COMMANDS, CommandLine}, _From, State) ->
     {_Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
-    {reply, Commands, State}.
+    NewState = client_downtime_timer:restart(State),
+    {reply, Commands, NewState}.
 
 handle_cast(Request, State) ->
     NewState = command_executor:process(Request, State),
@@ -136,6 +144,12 @@ handle_info({'EXIT', _From, normal}, State) -> {noreply, State};
 handle_info({'EXIT', _From, interrupt}, State) -> {noreply, State};
 %% command's abnormal exit
 handle_info({'EXIT', _From, _Other}, State) -> {stop, command_exit, State};
+%% timer
+handle_info({timeout, TimerRef, downtime}, State) ->
+    case State#client_handler_state.timer_ref of
+        TimerRef -> {stop, {shutdown, downtime}, State};
+        _Other -> {noreply, State}
+    end;
 %% other info
 handle_info(_Info, State) -> {stop, enotsup, State}.
 
@@ -149,19 +163,21 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 -spec process_start_command(State :: #client_handler_state{},
                             CommandFun :: fun((CliFsm :: pid(), ClientHandler :: pid(), Context :: [{atom(), term()}]) -> 'ok')) ->
-    pid().
+    #client_handler_state{}.
 process_start_command(State, CommandFun) ->
     ExecutionContext = create_exec_context(State),
     CliFsm = State#client_handler_state.cli_fsm,
     ClientHandler = self(),
-    spawn_link(fun() -> CommandFun(CliFsm, ClientHandler, ExecutionContext) end).
+    Command = spawn_link(fun() -> CommandFun(CliFsm, ClientHandler, ExecutionContext) end),
+    State#client_handler_state{current_command = Command}.
 
--spec process_command_creation_error(State ::  #client_handler_state{}, Reason :: term()) -> 'ok'.
+-spec process_command_creation_error(State ::  #client_handler_state{}, Reason :: term()) ->
+    #client_handler_state{}.
 process_command_creation_error(State, Reason) ->
     Error = string_utils:format(?COMMAND_CREATION_ERROR, [Reason]),
     command_helper:send_error(State, Error),
     command_helper:send_end(State),
-    ok.
+    client_downtime_timer:start(State).
 
 -spec create_exec_context(State :: #client_handler_state{}) -> [{Key :: atom(), Balue :: term()}].
 create_exec_context(#client_handler_state{user = undefined}) ->

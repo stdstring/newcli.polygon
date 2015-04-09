@@ -6,3 +6,7 @@
 -define(CLI_FSM_DATA_SOURCE, data_source).
 -define(TERMINAL_CONFIG_KEY, cli_terminal).
 -define(TERMINAL_PORT_NUMBER, port_number).
+-define(TERMINAL_DOWNTIME, downtime).
+
+%% default values
+-define(TERMINAL_DOWNTIME_DEFAULT, 1).

@@ -34,6 +34,7 @@ SOURCE=src/command/code_generator.erl \
        src/cli_terminal_listen_endpoint.erl \
        src/cli_terminal_listen_supervisor.erl \
        src/cli_terminal_supervisor.erl \
+       src/client_downtime_timer.erl \
        src/client_handler.erl \
        src/client_handler_helper.erl \
        src/command_executor.erl \
