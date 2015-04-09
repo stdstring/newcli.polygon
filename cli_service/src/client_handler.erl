@@ -134,6 +134,10 @@ handle_call({?SUITABLE_COMMANDS, CommandLine}, _From, State) ->
     NewState = client_downtime_timer:restart(State),
     {reply, Commands, NewState}.
 
+handle_cast(?EXIT, State) ->
+    NewState = client_downtime_timer:stop(State),
+    %%{stop, shutdown, NewState};
+    {noreply, NewState};
 handle_cast(Request, State) ->
     NewState = command_executor:process(Request, State),
     {noreply, NewState}.

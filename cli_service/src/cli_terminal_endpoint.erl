@@ -114,8 +114,9 @@ process_request(?EXTENSION_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     {CommonPrefix, ExtensionList} = client_handler:get_extensions(ClientHandler, CommandLine),
     ?EXTENSION_RESPONSE(CommonPrefix, ExtensionList);
-process_request(?EXIT, _State) ->
-    %% some action
+process_request(?EXIT, State) ->
+    ClientHandler = State#cli_terminal_state.client_handler,
+    client_handler:exit(ClientHandler),
     ?NO_RESPONSE;
 process_request(?HELP_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
