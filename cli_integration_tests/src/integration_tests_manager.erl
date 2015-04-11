@@ -19,7 +19,7 @@ setup() ->
     %% create cli_service
     Service = integration_tests_common:start_cli_service(),
     {ok, CurrentDir} = file:get_cwd(),
-    TerminalCmd = filename:join([CurrentDir, "cli_terminal_bin", "cli_terminal"]) ++ ?CLI_TERMINAL_ARGS,
+    TerminalCmd = filename:join([CurrentDir, ?CLI_TERMINAL_BIN, ?CLI_TERMINAL_EXEC]) ++ ?CLI_TERMINAL_ARGS,
     #integration_test_state{service = Service, terminal_cmd = TerminalCmd}.
 
 -spec cleanup(State :: #integration_test_state{}) -> 'ok'.

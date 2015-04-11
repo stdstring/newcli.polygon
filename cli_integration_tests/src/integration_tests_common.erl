@@ -14,9 +14,7 @@
 
 -include("integration_tests_defs.hrl").
 
--define(SERVICE_BIN, "service_ebin").
 -define(MAX_LINE_LENGTH, 1000).
--define(CRASH_DUMP_FILE, "erl_crash.dump").
 -define(CRASH_DUMP_FILES, ["./" ++ ?CRASH_DUMP_FILE, "./" ++ ?SERVICE_BIN ++ "/" ++ ?CRASH_DUMP_FILE]).
 
 %% ====================================================================
@@ -47,8 +45,7 @@ start_cli_service() ->
 -spec stop_cli_service(Service :: port()) -> 'ok'.
 stop_cli_service(Service) ->
     port_close(Service),
-    %%rpc:call(?SERVICE_NODE, init, stop, []),
-    rpc:call(?SERVICE_NODE, erlang, halt, []),
+    rpc:call(?SERVICE_NODE, init, stop, []),
     wait_node_exit(?SERVICE_NODE, 10, 500),
     ok.
 
@@ -72,7 +69,6 @@ process([Head | _] = Input, ExpectedOutput, #integration_test_state{} = State) w
 process([Char | _] = Input, ExpectedOutput, #integration_test_state{terminal_cmd = TerminalCmd}) when is_integer(Char) ->
     ?assertEqual(ok, file:write_file(?INPUT_DATA, Input)),
     OutputData = os:cmd(TerminalCmd),
-    %%io:format(user, "OutputData = ~p~n", [OutputData]),
     OutputDataParts = string:tokens(OutputData, "\n"),
     ?assertEqual(length(ExpectedOutput), length(OutputDataParts)),
     ActualOutput = lists:sublist(OutputDataParts, length(ExpectedOutput)),

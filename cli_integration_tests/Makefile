@@ -25,7 +25,7 @@ TEST_SOURCE=src/cli_service_integration_tests.erl \
             src/lifecycle_integration_tests.erl \
             src/login_integration_tests.erl \
             src/transition_integration_tests.erl \
-            #src/demo_integration_tests.erl
+            src/hosting_demo_tests.erl
 
 INCLUDE_FLAGS=-I include
 
@@ -44,7 +44,7 @@ test: all
 	# prerequisites
 	$(shell cp -f -t $(SERVICE_EBIN) service_prerequisites/*)
 	# tests
-	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) $(SERVICE_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
+	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) $(COMMAND_PARSER_EBIN) $(SERVICE_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 	#erl -noshell -pa $(EBIN) $(COMMON_EBIN) $(COMMAND_PARSER_EBIN) $(SERVICE_EBIN) -eval "eunit:test([demo_integration_tests], [verbose])" -s init stop;
 
 pre_build:

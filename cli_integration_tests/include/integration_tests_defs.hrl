@@ -4,11 +4,15 @@
 
 -define(SERVICE_NODE, 'cli_service_node@polygon-vm').
 -define(SERVICE_PROCESS, cli_terminal_listen_endpoint).
+-define(SERVICE_BIN, "service_ebin").
 -define(SERVICE_ARGS, " -noshell -pa ../ebin -pa ../../cli_common/ebin -pa ../../cli_command_parser/ebin -sname ~s -eval \"application:start(cli_service_application)\" >> /tmp/out").
 -define(SERVICE_ENDPOINT_ADDRESS, {127, 0, 0, 1}).
 -define(SERVICE_ENDPOINT_PORT, 6666).
 -define(INPUT_DATA, "/tmp/input").
+-define(CLI_TERMINAL_BIN, "cli_terminal_bin").
+-define(CLI_TERMINAL_EXEC, "cli_terminal").
 -define(CLI_TERMINAL_ARGS, " --config=cli_terminal_data/cli_terminal.conf < " ++ ?INPUT_DATA).
+-define(CRASH_DUMP_FILE, "erl_crash.dump").
 
 %% common output
 -define(BYE_OUTPUT, ["@CliDemo>bye", "@CliDemo>"]).
