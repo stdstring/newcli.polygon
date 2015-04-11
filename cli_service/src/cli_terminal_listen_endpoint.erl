@@ -23,7 +23,7 @@ start(Config) ->
 
 init(#cli_terminal_config{port_number = PortNumber}) ->
     io:format("cli_terminal_listen_endpoint:init port=~p~n", [PortNumber]),
-    case gen_tcp:listen(PortNumber, [binary, {packet, 4}, {active, once}]) of
+    case gen_tcp:listen(PortNumber, [binary, {packet, 4}, {active, once}, {reuseaddr, true}]) of
         {ok, ListenSocket} ->
             io:format("cli_terminal_listen_endpoint:init ok~n", []),
             register(?LISTEN_ENDPOINT_NAME, self()),
@@ -43,8 +43,9 @@ process_listen(State) ->
     case gen_tcp:accept(State#listen_state.listen_socket) of
         {ok, Socket} ->
             create_endpoint(Socket);
-        {error, _Reason} ->
+        {error, Reason} ->
             %% some logging
+            io:format("cli_terminal_listen_endpoint:process_listen error=~p~n", [Reason]),
             ok
     end,
     process_listen(State).

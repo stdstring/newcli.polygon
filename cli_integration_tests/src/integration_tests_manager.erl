@@ -8,17 +8,18 @@
 
 -include("integration_tests_defs.hrl").
 
--define(INPUT_DATA, "/tmp/input").
-
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
 -spec setup() -> #integration_test_state{}.
 setup() ->
-    {ok, CurrentDir} = file:get_cwd(),
+    %% copy files from cservide_data
+    integration_tests_common:prepare_cli_service_data(),
+    %% create cli_service
     Service = integration_tests_common:start_cli_service(),
-    TerminalCmd = filename:join([CurrentDir, "cli_terminal_bin", "cli_terminal"]) ++ " --config=cli_terminal_data/cli_terminal.conf < " ++ ?INPUT_DATA,
+    {ok, CurrentDir} = file:get_cwd(),
+    TerminalCmd = filename:join([CurrentDir, "cli_terminal_bin", "cli_terminal"]) ++ ?CLI_TERMINAL_ARGS,
     #integration_test_state{service = Service, terminal_cmd = TerminalCmd}.
 
 -spec cleanup(State :: #integration_test_state{}) -> 'ok'.

@@ -7,6 +7,8 @@
 -define(SERVICE_ARGS, " -noshell -pa ../ebin -pa ../../cli_common/ebin -pa ../../cli_command_parser/ebin -sname ~s -eval \"application:start(cli_service_application)\" >> /tmp/out").
 -define(SERVICE_ENDPOINT_ADDRESS, {127, 0, 0, 1}).
 -define(SERVICE_ENDPOINT_PORT, 6666).
+-define(INPUT_DATA, "/tmp/input").
+-define(CLI_TERMINAL_ARGS, " --config=cli_terminal_data/cli_terminal.conf < " ++ ?INPUT_DATA).
 
 %% common output
 -define(BYE_OUTPUT, ["@CliDemo>bye", "@CliDemo>"]).

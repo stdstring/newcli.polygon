@@ -21,7 +21,8 @@
 -define(CURRENT_STATE_RESPONSE(Prompt), {current_state_response, Prompt}).
 -define(EXTENSION_REQUEST(CommandLine), {extension_request, CommandLine}).
 -define(EXTENSION_RESPONSE(CommonPrefix, ExtensionList), {extension_response, CommonPrefix, ExtensionList}).
--define(EXIT, {exit}).
+-define(EXIT_REQUEST, {exit}).
+-define(EXIT_RESPONSE, {exit}).
 -define(ERROR, {error}).
 -define(HELP_REQUEST(CommandLine), {help_request, CommandLine}).
 -define(HELP_RESPONSE(Help), {help_response, Help}).
@@ -75,6 +76,8 @@ handle_info({tcp, Socket, Data}, State) ->
         ok ->
             inet:setopts(Socket, [{active, once}]),
             {noreply, State};
+        exit ->
+            {stop, shutdown, State};
         {error, Reason} ->
             {stop, {socket_error, Reason}, State}
     end;
@@ -114,10 +117,12 @@ process_request(?EXTENSION_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     {CommonPrefix, ExtensionList} = client_handler:get_extensions(ClientHandler, CommandLine),
     ?EXTENSION_RESPONSE(CommonPrefix, ExtensionList);
-process_request(?EXIT, State) ->
+process_request(?EXIT_REQUEST, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     client_handler:exit(ClientHandler),
-    ?NO_RESPONSE;
+    Socket = State#cli_terminal_state.socket,
+    gen_tcp:close(Socket),
+    ?EXIT_RESPONSE;
 process_request(?HELP_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     Help = client_handler:get_help(ClientHandler, CommandLine),
@@ -127,8 +132,9 @@ process_request(?SUITABLE_REQUEST(CommandLine), State) ->
     CommandsList = client_handler:get_suitable_commands(ClientHandler, CommandLine),
     ?SUITABLE_RESPONSE(CommandsList).
 
--spec process_response(Response :: term(), State :: #cli_terminal_state{}) -> 'ok' | {'error', Reason :: atom()}.
+-spec process_response(Response :: term(), State :: #cli_terminal_state{}) -> 'ok' | 'exit' | {'error', Reason :: atom()}.
 process_response(?NO_RESPONSE, _State) -> ok;
+process_response(?EXIT_RESPONSE, _State) -> exit;
 process_response(?COMMAND_OUTPUT(_Out) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?COMMAND_ERROR(_Err) = Response, State) ->

@@ -4,19 +4,34 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--export([start_cli_service/0, stop_cli_service/1, create_tests_entry/1, clear_abnormal_execution/0, process/3, check_normal_execution/0]).
+-export([prepare_cli_service_data/0,
+         start_cli_service/0,
+         stop_cli_service/1,
+         create_tests_entry/1,
+         clear_abnormal_execution/0,
+         process/3,
+         check_normal_execution/0]).
 
 -include("integration_tests_defs.hrl").
 
 -define(SERVICE_BIN, "service_ebin").
 -define(MAX_LINE_LENGTH, 1000).
--define(INPUT_DATA, "/tmp/input").
 -define(CRASH_DUMP_FILE, "erl_crash.dump").
 -define(CRASH_DUMP_FILES, ["./" ++ ?CRASH_DUMP_FILE, "./" ++ ?SERVICE_BIN ++ "/" ++ ?CRASH_DUMP_FILE]).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
+
+-spec prepare_cli_service_data() -> 'ok'.
+prepare_cli_service_data() ->
+    %% TODO (std_string) : think about using wildcards; see filelib:wildcard
+    {ok, _} = file:copy("service_data/authentication_data", "/tmp/authentication_data"),
+    {ok, _} = file:copy("service_data/authorization_data", "/tmp/authorization_data"),
+    {ok, _} = file:copy("service_data/cli_fsm_data", "/tmp/cli_fsm_data"),
+    {ok, _} = file:copy("service_data/command_data", "/tmp/command_data"),
+    {ok, _} = file:copy("service_data/cli_service.conf", "/tmp/cli_service.conf"),
+    ok.
 
 -spec start_cli_service() -> port().
 start_cli_service() ->
@@ -32,7 +47,8 @@ start_cli_service() ->
 -spec stop_cli_service(Service :: port()) -> 'ok'.
 stop_cli_service(Service) ->
     port_close(Service),
-    rpc:call(?SERVICE_NODE, init, stop, []),
+    %%rpc:call(?SERVICE_NODE, init, stop, []),
+    rpc:call(?SERVICE_NODE, erlang, halt, []),
     wait_node_exit(?SERVICE_NODE, 10, 500),
     ok.
 

@@ -14,10 +14,12 @@
 %% ====================================================================
 
 sample_test() ->
+    integration_tests_common:prepare_cli_service_data(),
     Service = integration_tests_common:start_cli_service(),
     integration_tests_common:stop_cli_service(Service).
 
 integration_test_() ->
+    integration_tests_common:prepare_cli_service_data(),
     Tests = [{"interaction with service", fun check_service/0}],
     {foreach, fun integration_tests_common:start_cli_service/0, fun integration_tests_common:stop_cli_service/1, Tests}.
 
