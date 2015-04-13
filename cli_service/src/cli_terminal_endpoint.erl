@@ -7,7 +7,7 @@
 -include("authentication_defs.hrl").
 -include("common_defs.hrl").
 
--export([start/2, handle_output/2, handle_error/2, handle_end/2]).
+-export([start/2, handle_output/2, handle_error/2, handle_end/2, stop/2]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -50,6 +50,10 @@ handle_error(Endpoint, Error) ->
 handle_end(Endpoint, Prompt) ->
     gen_server:cast(Endpoint, ?COMMAND_END(Prompt)).
 
+-spec stop(Endpoint :: pid(), Reason :: atom()) -> 'ok'.
+stop(Endpoint, Reason) ->
+    gen_server:call(Endpoint, {stop, Reason}).
+
 init([GlobalConfig, Socket]) ->
     %% TODO (std_string) : process error case
     {ok, SocketOtherSide} = inet:peername(Socket),
@@ -60,7 +64,12 @@ init([GlobalConfig, Socket]) ->
             {stop, {client_handler_init, Reason}}
     end.    
 
-handle_call(_Request, _From, State) -> {stop, enotsup, State}.
+handle_call({stop, Reason}, _From, State) ->
+    io:format("close socket and shutdown cli_termianl_enpoint~n", []),
+    Socket = State#cli_terminal_state.socket,
+    gen_tcp:close(Socket),
+    {stop, {shutdown, Reason}, ok, State};
+handle_call(_Request, _From, State) -> {stop, enotsup, ok, State}.
 
 handle_cast(Request, State) ->
     process_response(Request, State),

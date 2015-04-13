@@ -150,9 +150,18 @@ handle_info({'EXIT', _From, interrupt}, State) -> {noreply, State};
 handle_info({'EXIT', _From, _Other}, State) -> {stop, command_exit, State};
 %% timer
 handle_info({timeout, TimerRef, downtime}, State) ->
+    io:format("downtime timer~n", []),
     case State#client_handler_state.timer_ref of
-        TimerRef -> {stop, {shutdown, downtime}, State};
-        _Other -> {noreply, State}
+        TimerRef ->
+            io:format("known downtime timer~n", []),
+            NewState = client_downtime_timer:stop(State),
+            Endpoint = NewState#client_handler_state.endpoint,
+            cli_terminal_endpoint:stop(Endpoint, downtime),
+            {noreply, NewState};
+            %%{stop, {shutdown, downtime}, State};
+        _Other ->
+            io:format("unknown downtime timer~n", []),
+            {noreply, State}
     end;
 %% other info
 handle_info(_Info, State) -> {stop, enotsup, State}.
