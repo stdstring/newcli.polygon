@@ -29,6 +29,10 @@
 -define(SUITABLE_REQUEST(CommandLine), {suitable_commands_request, CommandLine}).
 -define(SUITABLE_RESPONSE(CommandsList), {suitable_commands_response, CommandsList}).
 -define(NO_RESPONSE, no_response).
+%% notifications
+-define(EXIT_NOTIFICATION(Message), {exit, Message}).
+%% messages
+-define(DOWNTIME, "Exit due to downtime\n").
 
 %% ====================================================================
 %% API functions
@@ -66,8 +70,8 @@ init([GlobalConfig, Socket]) ->
 
 handle_call({stop, Reason}, _From, State) ->
     io:format("close socket and shutdown cli_termianl_enpoint~n", []),
-    Socket = State#cli_terminal_state.socket,
-    gen_tcp:close(Socket),
+    process_notification(?EXIT_NOTIFICATION(?DOWNTIME), State),
+    gen_tcp:close(State#cli_terminal_state.socket),
     {stop, {shutdown, Reason}, ok, State};
 handle_call(_Request, _From, State) -> {stop, enotsup, ok, State}.
 
@@ -141,7 +145,8 @@ process_request(?SUITABLE_REQUEST(CommandLine), State) ->
     CommandsList = client_handler:get_suitable_commands(ClientHandler, CommandLine),
     ?SUITABLE_RESPONSE(CommandsList).
 
--spec process_response(Response :: term(), State :: #cli_terminal_state{}) -> 'ok' | 'exit' | {'error', Reason :: atom()}.
+-spec process_response(Response :: term(), State :: #cli_terminal_state{}) ->
+    'ok' | 'exit' | {'error', Reason :: atom()}.
 process_response(?NO_RESPONSE, _State) -> ok;
 process_response(?EXIT_RESPONSE, _State) -> exit;
 process_response(?COMMAND_OUTPUT(_Out) = Response, State) ->
@@ -160,3 +165,8 @@ process_response(?HELP_RESPONSE(_Help) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?SUITABLE_RESPONSE(_Data) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)).
+
+-spec process_notification(Notification :: term(), State :: #cli_terminal_state{}) ->
+     'ok' | {'error', Reason :: atom()}.
+process_notification(?EXIT_NOTIFICATION(_Message) = Notification, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Notification)).

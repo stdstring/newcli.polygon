@@ -44,7 +44,9 @@ std::unordered_map<std::string, response_handler_t> get_response_handlers()
         {command_out_tag, [](message_response response, client_state &state){ std::cout << response.data; return EX_CONTINUE; }},
         {command_err_tag, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
         {command_end_tag, end_handler},
-        {error_tag, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }}
+        {error_tag, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
+        // TODO (std_string) : probably add additional eols
+        {exit_tag, [](message_response response, client_state &state){ std::cout << response.data; return EX_FINISH; }}
     };
 }
 

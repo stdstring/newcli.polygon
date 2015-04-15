@@ -18,7 +18,12 @@
 
 cli_service_with_big_downtime_test() ->
     integration_tests_common:prepare_cli_service_data(),
-    check_downtime(?TIMEOUT_RESULT).
+    Service = integration_tests_common:start_cli_service(),
+    {ok, Socket} = gen_tcp:connect(?SERVICE_ENDPOINT_ADDRESS, ?SERVICE_ENDPOINT_PORT, [binary, {packet, 4}, {active, false}]),
+    ?assertEqual(?TIMEOUT_RESULT, gen_tcp:recv(Socket, 0, 0)),
+    timer:sleep(?SLEEP),
+    ?assertEqual(?TIMEOUT_RESULT, gen_tcp:recv(Socket, 0, 0)),
+    integration_tests_common:stop_cli_service(Service).
 
 cli_service_without_downtime_test() ->
     {ok, _} = file:copy("service_data/authentication_data", "/tmp/authentication_data"),
@@ -26,7 +31,7 @@ cli_service_without_downtime_test() ->
     {ok, _} = file:copy("service_data/cli_fsm_data", "/tmp/cli_fsm_data"),
     {ok, _} = file:copy("service_data/command_data", "/tmp/command_data"),
     {ok, _} = file:copy("service_data/cli_service_without_downtime.conf", "/tmp/cli_service.conf"),
-    check_downtime(?CLOSED_RESULT).
+    check_downtime().
 
 cli_service_with_small_downtime_test() ->
     {ok, _} = file:copy("service_data/authentication_data", "/tmp/authentication_data"),
@@ -34,7 +39,7 @@ cli_service_with_small_downtime_test() ->
     {ok, _} = file:copy("service_data/cli_fsm_data", "/tmp/cli_fsm_data"),
     {ok, _} = file:copy("service_data/command_data", "/tmp/command_data"),
     {ok, _} = file:copy("service_data/cli_service_with_small_downtime.conf", "/tmp/cli_service.conf"),
-    check_downtime(?CLOSED_RESULT).
+    check_downtime().
 
 integration_test_() ->
     integration_tests_common:prepare_cli_service_data(),
@@ -45,12 +50,14 @@ integration_test_() ->
 %% Internal functions
 %% ====================================================================
 
-check_downtime(AfterSleepResult) ->
+check_downtime() ->
     Service = integration_tests_common:start_cli_service(),
     {ok, Socket} = gen_tcp:connect(?SERVICE_ENDPOINT_ADDRESS, ?SERVICE_ENDPOINT_PORT, [binary, {packet, 4}, {active, false}]),
     ?assertEqual(?TIMEOUT_RESULT, gen_tcp:recv(Socket, 0, 0)),
     timer:sleep(?SLEEP),
-    ?assertEqual(AfterSleepResult, gen_tcp:recv(Socket, 0, 0)),
+    {ok, NotificationBinary} = gen_tcp:recv(Socket, 0, 0),
+    ?assertMatch({exit, _Message}, binary_to_term(NotificationBinary)),
+    ?assertEqual(?CLOSED_RESULT, gen_tcp:recv(Socket, 0, 0)),
     integration_tests_common:stop_cli_service(Service),
     ok.
 
