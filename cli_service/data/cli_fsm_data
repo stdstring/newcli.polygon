@@ -1,5 +1,5 @@
 [
-%% {'states', [{Statename :: atom(), Representation :: string(), [AllowedCommands :: atom()]}]}
+%% {'states', [{Statename :: atom(), Representation :: string(), AllowedCommands :: [atom()]}]}
 {states, [{nonauth_mode, "", [login]},
           {fundamental_mode, "", [config_terminal, ping, show_vlan, logout]},
           {global_config_mode, "config", [interface, interface_range, vlan, novlan, 'end', exit, show_vlan, logout]},

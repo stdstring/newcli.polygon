@@ -1,4 +1,4 @@
-%% [{command_name, access_level}]
+%% [{CommandName :: atom(), AccessLevel :: non_neg_integer()}]
 [
 {login, undefined},
 {logout, 0},
