@@ -1,19 +1,9 @@
 # ignoring:
-cli_backend/ebin/
-cli_backend_tests/ebin/
-cli_frontend/ebin/
-cli_frontend_tests/ebin/
 cli_common/ebin/
 cli_common_tests/ebin/
 cli_integration_tests/ebin/
 cli_integration_tests/service_ebin/
 cli_integration_tests/cli_terminal_bin/
-cli_integration_tests_old/ebin/
-cli_integration_tests_old/backend_ebin/
-cli_integration_tests_old/backend_commands_ebin/
-cli_integration_tests_old/common_ebin/
-cli_integration_tests_old/frontend_ebin/
-cli_integration_tests_old/cli_terminal_bin/
 cli_terminal/bin/
 cli_terminal_prototype/bin/
 cli_terminal_tests/bin/
