@@ -18,7 +18,7 @@ read_all_messages() ->
 
 -spec read_all_messages_impl(Messages :: [Message :: term()]) -> [Message :: term()].
 read_all_messages_impl(Messages) ->
-	receive
+    receive
         Message -> read_all_messages_impl([Message] ++ Messages)
     after 0 -> lists:reverse(Messages)
     end.
