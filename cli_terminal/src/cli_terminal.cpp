@@ -64,19 +64,8 @@ void initialize()
     default_terminate_handler = std::set_terminate(process_uncaught_exception);
 }
 
-int main_impl(int argc, char *argv[])
+void execute_main_loop(int socketd, std::array<struct pollfd, fd_count> &fdarray)
 {
-    cli_terminal_config config = create_config(argc, argv);
-    initialize();
-    resource_holder<int> volatile socket_holder(create_socket(), [](int socketd){ close(socketd); });
-    int socketd = socket_holder.get();
-    connect(socketd, config.get_port_number());
-    std::string init_prompt = retrieve_current_state(socketd);
-    cstate.set_prompt(init_prompt);
-    cstate.set_socketd(socketd);
-    cstate.set_execution_state(EX_CONTINUE);
-    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
-    std::array<struct pollfd, fd_count> fdarray = create_fdarray(socketd);
     while(EX_CONTINUE == cstate.get_execution_state())
     {
         clear_fdarray(fdarray);
@@ -100,6 +89,22 @@ int main_impl(int argc, char *argv[])
         if (POLLERR == (fdarray[socketd_index].revents & POLLERR))
             throw poll_error();
     }
+}
+
+int main_impl(int argc, char *argv[])
+{
+    cli_terminal_config config = create_config(argc, argv);
+    initialize();
+    resource_holder<int> volatile socket_holder(create_socket(), [](int socketd){ close(socketd); });
+    int socketd = socket_holder.get();
+    connect(socketd, config.get_port_number());
+    std::string init_prompt = retrieve_current_state(socketd);
+    cstate.set_prompt(init_prompt);
+    cstate.set_socketd(socketd);
+    cstate.set_execution_state(EX_CONTINUE);
+    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
+    std::array<struct pollfd, fd_count> fdarray = create_fdarray(socketd);
+    execute_main_loop(socketd, fdarray);
     cleanup();
     end_execution(socketd, create_signal_mask());
     return 0;
