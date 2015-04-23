@@ -15,10 +15,12 @@ public:
 
     std::vector<config_entry> get_config() const { return _config; }
     int get_port_number() const { return _port_number; }
+    int get_login_attempt_count() const { return _login_attempt_count; }
 
 private:
     std::vector<config_entry> _config;
     int _port_number;
+    int _login_attempt_count;
 };
 
 cli_terminal_config create_config(int argc, char *argv[]);

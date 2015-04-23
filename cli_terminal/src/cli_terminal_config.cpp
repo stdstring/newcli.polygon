@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iterator>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -12,9 +13,20 @@
 namespace cli_terminal
 {
 
+const int port_number_min = 0;
+const int port_number_max = 65535;
+const int login_attempt_count_min = 0;
+
 cli_terminal_config::cli_terminal_config(std::vector<config_entry> const &config) : _config(config)
 {
-    _port_number = std::stoi(find_value(config, port_number_key));
+    int port_number = std::stoi(find_value(config, port_number_key));
+    if ((port_number < port_number_min) || (port_number > port_number_max))
+        throw std::out_of_range(port_number_key);
+    _port_number = port_number;
+    int login_attempt_count = std::stoi(find_value(config, login_attempt_count_key));
+    if (login_attempt_count < login_attempt_count_min)
+        throw std::out_of_range(login_attempt_count_key);
+    _login_attempt_count = login_attempt_count;
 }
 
 cli_terminal_config create_config(int argc, char *argv[])
