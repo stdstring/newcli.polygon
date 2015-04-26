@@ -4,9 +4,11 @@
 #include <readline.h>
 #include "signal.h"
 
+#include "cli_io_helper.h"
 #include "client_state.h"
 #include "command_terminal_behavior.h"
 #include "execution_state.h"
+#include "input_terminal_behavior.h"
 #include "message.h"
 #include "server_interaction_helper.h"
 #include "signal_utils.h"
@@ -58,6 +60,24 @@ void install_signal_handlers()
     setup_signal_handlers(handlers);
 }
 
+response_handlers_def_t get_response_handlers()
+{
+    response_handler_t end_handler = [](message_response const &response, client_state &state)
+        {
+            state.set_prompt(response.data);
+            set_behavior(state, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
+            return EX_CONTINUE;
+        };
+    return {
+        {command_out_tag, [](message_response const &response, client_state &state){ std::cout << response.data; return EX_CONTINUE; }},
+        {command_err_tag, [](message_response const &response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
+        {command_end_tag, end_handler},
+        {error_tag, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
+        // TODO (std_string) : probably add additional std::endl
+        {exit_tag, [](message_response response, client_state &state){ std::cout << response.data; return EX_FINISH; }}
+    };
+}
+
 }
 
 void command_terminal_behavior::clear_input_action()
@@ -82,7 +102,8 @@ void command_terminal_behavior::process_char()
 
 execution_state command_terminal_behavior::process_server_responses(message_responses_t const &responses)
 {
-    return EX_CONTINUE;
+    response_handlers_def_t response_handlers = command_terminal_behavior_impl::get_response_handlers();
+    return process_responses(responses, cstate, response_handlers, skip_response);
 }
 
 }

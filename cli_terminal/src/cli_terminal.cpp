@@ -84,7 +84,6 @@ void execute_main_loop(int socketd, std::array<struct pollfd, fd_count> &fdarray
         if (POLLIN == (fdarray[socketd_index].revents & POLLIN))
         {
             message_responses_t responses = receive_message_responses(socketd, create_signal_mask());
-            //execution_state result = process_responses(responses, cstate);
             execution_state result = cstate.get_behavior()->process_server_responses(responses);
             cstate.set_execution_state(result);
         }

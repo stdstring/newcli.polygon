@@ -177,6 +177,14 @@ void process_char()
     executer.execute(func);
 }
 
+response_handlers_def_t get_response_handlers()
+{
+    return {
+        // TODO (std_string) : probably add additional std::endl
+        {exit_tag, [](message_response response, client_state &state){ std::cout << response.data; return EX_FINISH; }}
+    };
+}
+
 }
 
 void input_terminal_behavior::clear_input_action()
@@ -201,7 +209,8 @@ void input_terminal_behavior::process_char()
 
 execution_state input_terminal_behavior::process_server_responses(message_responses_t const &responses)
 {
-    return EX_CONTINUE;
+    response_handlers_def_t response_handlers = input_terminal_behavior_impl::get_response_handlers();
+    return process_responses(responses, cstate, response_handlers, skip_response);
 }
 
 }
