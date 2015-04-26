@@ -7,6 +7,7 @@
 #include "cli_io_helper.h"
 #include "client_state.h"
 #include "command_terminal_behavior.h"
+#include "execution_state.h"
 #include "input_terminal_behavior.h"
 #include "login_command_terminal_behavior.h"
 #include "iterminal_behavior.h"
@@ -17,7 +18,6 @@ namespace cli_terminal
 {
 
 typedef std::function<execution_state(std::string const&, client_state&)> request_handler_t;
-typedef std::function<execution_state(message_response, client_state&)> response_handler_t;
 
 std::unordered_map<std::string, request_handler_t> get_local_request_handlers()
 {
@@ -41,8 +41,8 @@ std::unordered_map<std::string, response_handler_t> get_response_handlers()
             return EX_CONTINUE;
         };
     return {
-        {command_out_tag, [](message_response response, client_state &state){ std::cout << response.data; return EX_CONTINUE; }},
-        {command_err_tag, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
+        {command_out_tag, [](message_response const &response, client_state &state){ std::cout << response.data; return EX_CONTINUE; }},
+        {command_err_tag, [](message_response const &response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
         {command_end_tag, end_handler},
         {error_tag, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
         // TODO (std_string) : probably add additional eols
@@ -68,7 +68,7 @@ execution_state process_mode_exit(client_state &state)
     return EX_CONTINUE;
 }
 
-execution_state process_responses(message_responses_t const &responses, client_state &state)
+/*execution_state process_responses(message_responses_t const &responses, client_state &state)
 {
     execution_state ex_state = EX_CONTINUE;
     std::unordered_map<std::string, response_handler_t> response_handlers = get_response_handlers();
@@ -80,6 +80,30 @@ execution_state process_responses(message_responses_t const &responses, client_s
             ex_state = EX_FINISH;
     }
     return ex_state;
+}*/
+
+execution_state process_responses(message_responses_t const &responses,
+                                  client_state &state,
+                                  response_handlers_def_t const& response_handlers,
+                                  response_handler_t default_handler)
+{
+    execution_state ex_state = EX_CONTINUE;
+    for(message_response response : responses)
+    {
+        response_handlers_def_t::const_iterator handler = response_handlers.find(response.type);
+        if (response_handlers.end() == handler)
+            continue;
+        //response_handler_t const &handler = response_handlers.at(response.type);
+        execution_state handler_result = handler->second(response, state);
+        if (EX_FINISH == handler_result)
+            ex_state = EX_FINISH;
+    }
+    return ex_state;
+}
+
+execution_state skip_response(message_response const &response, client_state &state)
+{
+    return EX_CONTINUE;
 }
 
 }

@@ -12,6 +12,7 @@
 #include "cli_terminal_config.h"
 #include "client_state.h"
 #include "exception_def.h"
+#include "execution_state.h"
 #include "fd_helper.h"
 #include "input_terminal_behavior.h"
 #include "iterminal_behavior.h"
@@ -83,7 +84,8 @@ void execute_main_loop(int socketd, std::array<struct pollfd, fd_count> &fdarray
         if (POLLIN == (fdarray[socketd_index].revents & POLLIN))
         {
             message_responses_t responses = receive_message_responses(socketd, create_signal_mask());
-            execution_state result = process_responses(responses, cstate);
+            //execution_state result = process_responses(responses, cstate);
+            execution_state result = cstate.get_behavior()->process_server_responses(responses);
             cstate.set_execution_state(result);
         }
         if (POLLERR == (fdarray[socketd_index].revents & POLLERR))

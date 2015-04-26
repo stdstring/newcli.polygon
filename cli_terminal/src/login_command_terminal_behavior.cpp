@@ -10,17 +10,14 @@
 #include "cli_io_helper.h"
 #include "client_state.h"
 #include "cterm_ptr.h"
+#include "execution_state.h"
 #include "input_terminal_behavior.h"
 #include "iterminal_behavior.h"
 #include "login_command_terminal_behavior.h"
+#include "message.h"
 #include "signal_safe_executer.h"
 #include "signal_utils.h"
 #include "string_utils.h"
-
-#define LOGIN_KEY "login"
-#define LOGIN_PROMPT "login:"
-#define PASSWORD_PROMPT "password:"
-#define LOGIN_COMMAND_PREFIX "login"
 
 namespace cli_terminal
 {
@@ -211,6 +208,11 @@ void login_command_terminal_behavior::install_signal_action()
 void login_command_terminal_behavior::process_char()
 {
     login_command_terminal_behavior_impl::process_char();
+}
+
+execution_state login_command_terminal_behavior::process_server_responses(message_responses_t const &responses)
+{
+    return EX_CONTINUE;
 }
 
 }

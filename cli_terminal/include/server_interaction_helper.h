@@ -10,8 +10,6 @@
 namespace cli_terminal
 {
 
-typedef std::vector<message_response> message_responses_t;
-
 std::string retrieve_current_state(int socketd, sigset_t mask);
 
 std::string retrieve_current_state(int socketd);

@@ -86,6 +86,8 @@ public:
     std::string data;
 };
 
+typedef std::vector<message_response> message_responses_t;
+
 struct current_state_response
 {
 public:

@@ -5,12 +5,11 @@
 #include <string>
 #include <unordered_map>
 
+#include "execution_state.h"
 #include "iterminal_behavior.h"
 
 namespace cli_terminal
 {
-
-enum execution_state {EX_CONTINUE, EX_FINISH};
 
 typedef std::unordered_map<std::string, std::string> state_params_t;
 

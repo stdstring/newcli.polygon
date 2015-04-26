@@ -6,6 +6,8 @@
 
 #include "client_state.h"
 #include "command_terminal_behavior.h"
+#include "execution_state.h"
+#include "message.h"
 #include "server_interaction_helper.h"
 #include "signal_utils.h"
 
@@ -76,6 +78,11 @@ void command_terminal_behavior::install_signal_action()
 void command_terminal_behavior::process_char()
 {
     // do nothing now
+}
+
+execution_state command_terminal_behavior::process_server_responses(message_responses_t const &responses)
+{
+    return EX_CONTINUE;
 }
 
 }

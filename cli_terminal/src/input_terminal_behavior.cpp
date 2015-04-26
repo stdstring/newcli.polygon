@@ -12,6 +12,7 @@
 #include "cli_io_helper.h"
 #include "client_state.h"
 #include "cterm_ptr.h"
+#include "execution_state.h"
 #include "input_terminal_behavior.h"
 #include "help_processor.h"
 #include "message.h"
@@ -196,6 +197,11 @@ void input_terminal_behavior::install_signal_action()
 void input_terminal_behavior::process_char()
 {
     input_terminal_behavior_impl::process_char();
+}
+
+execution_state input_terminal_behavior::process_server_responses(message_responses_t const &responses)
+{
+    return EX_CONTINUE;
 }
 
 }

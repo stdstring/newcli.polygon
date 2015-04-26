@@ -15,6 +15,7 @@ HEADER=include/array_ptr.h \
        include/cterm_ptr.h \
        include/eterm_ptr.h \
        include/exception_def.h \
+       include/execution_state.h \
        include/fd_helper.h \
        include/help_processor.h \
        include/input_terminal_behavior.h \
