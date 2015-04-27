@@ -20,6 +20,7 @@ byte_array_ptr serialize(exit_request const &request);
 byte_array_ptr serialize(help_request const &request);
 byte_array_ptr serialize(suitable_commands_request const &request);
 byte_array_ptr serialize(mode_exit_request const &request);
+byte_array_ptr serialize(login_request const &request);
 
 template <typename T> T deserialize(byte_array_ptr const &source_data);
 template<> message_response deserialize(byte_array_ptr const & source_data);
@@ -27,6 +28,7 @@ template<> current_state_response deserialize(byte_array_ptr const & source_data
 template<> extension_response deserialize(byte_array_ptr const & source_data);
 template<> help_response deserialize(byte_array_ptr const & source_data);
 template<> suitable_commands_response deserialize(byte_array_ptr const & source_data);
+template<> login_response deserialize(byte_array_ptr const & source_data);
 
 }
 

@@ -13,6 +13,7 @@ HEADER=include/array_ptr.h \
        include/config_def.h \
        include/config_reader.h \
        include/cterm_ptr.h \
+       include/empty_terminal_behavior.h \
        include/eterm_ptr.h \
        include/exception_def.h \
        include/execution_state.h \
@@ -39,6 +40,7 @@ SOURCE=src/base64.cpp \
        src/client_state.cpp \
        src/command_terminal_behavior.cpp \
        src/config_reader.cpp \
+       src/empty_terminal_behavior.cpp \
        src/fd_helper.cpp \
        src/help_processor.cpp \
        src/input_terminal_behavior.cpp \

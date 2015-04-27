@@ -3,6 +3,7 @@
 #include <vector>
 #include <signal.h>
 
+#include "base64.h"
 #include "exception_def.h"
 #include "message.h"
 #include "server_interaction.h"
@@ -69,6 +70,13 @@ std::vector<std::string> retrieve_suitable_commands(int socketd, std::string con
 void current_mode_exit(int socketd)
 {
     write_message(socketd, mode_exit_request());
+}
+
+login_response login(int socketd, std::string const &username, std::string const &password)
+{
+    std::string password_base64 = to_base64(password);
+    login_request request(username, password_base64);
+    return sync_exchange<login_request, login_response>(socketd, request);
 }
 
 }

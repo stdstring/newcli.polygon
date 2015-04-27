@@ -82,6 +82,17 @@ byte_array_ptr serialize(mode_exit_request const &request)
     return serialize(current_mode_exit_tag);
 }
 
+byte_array_ptr serialize(login_request const &request)
+{
+    const int tuple_size = 3;
+    eterm_ptr tag_term(erl_mk_atom(login_request_tag.c_str()));
+    eterm_ptr username_term(erl_mk_string(request.username.c_str()));
+    eterm_ptr password_term(erl_mk_string(request.password.c_str()));
+    ETERM* message_data[] = {tag_term.get(), username_term.get(), password_term.get()};
+    eterm_ptr message(erl_mk_tuple(message_data, tuple_size));
+    return serialize(message);
+}
+
 std::string extract_atom(eterm_ptr &term)
 {
     if (!term)
@@ -199,6 +210,20 @@ template<> suitable_commands_response deserialize(byte_array_ptr const & source_
     eterm_ptr data_term(erl_element(commands_index, eterm.get()));
     std::vector<std::string> commands_list = extract_list<std::string>(data_term, [](ETERM *term){ return extract_string(term); });
     return suitable_commands_response(commands_list);
+}
+
+template<> login_response deserialize(byte_array_ptr const & source_data)
+{
+    const int type_index = 1;
+    const int data_index = 2;
+    eterm_ptr eterm(erl_decode(source_data.get()));
+    if (!ERL_IS_TUPLE(eterm.get()))
+        throw bad_message();
+    eterm_ptr type_term(erl_element(type_index, eterm.get()));
+    std::string type = extract_string(type_term);
+    eterm_ptr data_term(erl_element(data_index, eterm.get()));
+    std::string data = extract_string(data_term);
+    return login_response(type, data);
 }
 
 }

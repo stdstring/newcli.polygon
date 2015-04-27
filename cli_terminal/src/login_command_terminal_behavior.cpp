@@ -1,3 +1,4 @@
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -6,15 +7,15 @@
 #include <readline.h>
 #include "signal.h"
 
-#include "base64.h"
 #include "cli_io_helper.h"
 #include "client_state.h"
 #include "cterm_ptr.h"
+#include "empty_terminal_behavior.h"
 #include "execution_state.h"
-#include "input_terminal_behavior.h"
 #include "iterminal_behavior.h"
 #include "login_command_terminal_behavior.h"
 #include "message.h"
+#include "server_interaction_helper.h"
 #include "signal_safe_executer.h"
 #include "signal_utils.h"
 #include "string_utils.h"
@@ -27,7 +28,6 @@ extern client_state cstate;
 const std::string login_key = "login";
 const std::string login_prompt = "login:";
 const std::string password_prompt = "password:";
-const std::string login_command_prefix = "login";
 
 namespace login_command_terminal_behavior_impl
 {
@@ -47,8 +47,8 @@ void sigint_handler(int signo)
     // remove login parameter
     state_params_t &state_params = cstate.get_params();
     state_params.erase(login_key);
-    // input terminal behavior
-    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
+    // login terminal behavior
+    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new login_command_terminal_behavior()));
 }
 
 void sigquit_handler(int signo)
@@ -89,16 +89,34 @@ void password_redisplay(void)
     // do nothing now
 }
 
-std::string create_command(std::string const &login, std::string const &password)
+typedef std::function<void(login_response const&, client_state&)> login_response_handler_t;
+typedef std::unordered_map<std::string, login_response_handler_t> login_response_handlers_def_t;
+
+void process_login(std::string const &username, std::string const &password)
 {
-    std::string command(login_command_prefix);
-    command.push_back(' ');
-    command.append(login);
-    command.append(" \"");
-    std::string password_base64 = to_base64(password);
-    command.append(password_base64);
-    command.push_back('\"');
-    return command;
+    login_response_handler_t login_success_handler = [](login_response const &response, client_state &state){
+        std::cout << response.data;
+        set_behavior(state, std::shared_ptr<iterminal_behavior>(new empty_terminal_behavior()));
+        state.set_execution_state(EX_CONTINUE);
+    };
+    login_response_handler_t login_fail_handler = [](login_response const &response, client_state &state){
+        std::cout << response.data;
+        set_behavior(state, std::shared_ptr<iterminal_behavior>(new login_command_terminal_behavior()));
+        state.set_execution_state(EX_CONTINUE);
+    };
+    login_response_handler_t login_error_handler = [](login_response const &response, client_state &state){
+        std::cerr << response.data;
+        set_behavior(state, std::shared_ptr<iterminal_behavior>(new empty_terminal_behavior()));
+        state.set_execution_state(EX_FINISH);
+    };
+    login_response_handlers_def_t handlers = {
+        {login_success_response_tag, login_success_handler},
+        {login_fail_response_tag, login_fail_handler},
+        {login_error_response_tag, login_error_handler}
+    };
+    login_response response = login(cstate.get_socketd(), username, password);
+    login_response_handler_t handler = handlers.at(response.type);
+    handler(response, cstate);
 }
 
 void login_input_handler_impl(char *raw_data)
@@ -131,13 +149,10 @@ void password_input_handler_impl(char *raw_data)
     std::string password(raw_data_ptr.get());
     // extract and remove login from client_state parameters
     state_params_t &state_params = cstate.get_params();
-    std::string login = state_params.at(login_key);
+    std::string username = state_params.at(login_key);
     state_params.erase(login_key);
-    // form login command
-    std::string login_command = create_command(login, password);
-    // execute login command
-    execution_state ex_state = process_request(login_command, cstate);
-    cstate.set_execution_state(ex_state);
+    // process login
+    process_login(username, password);
 }
 
 void login_input_handler(char *raw_data)

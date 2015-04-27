@@ -16,6 +16,7 @@
 #include "fd_helper.h"
 #include "input_terminal_behavior.h"
 #include "iterminal_behavior.h"
+#include "login_command_terminal_behavior.h"
 #include "resource_holder.h"
 #include "server_interaction_helper.h"
 #include "signal_utils.h"
@@ -65,7 +66,7 @@ void initialize()
     default_terminate_handler = std::set_terminate(process_uncaught_exception);
 }
 
-void execute_main_loop(int socketd, std::array<struct pollfd, fd_count> &fdarray)
+void execute_event_loop(int socketd, std::array<struct pollfd, fd_count> &fdarray)
 {
     while(EX_CONTINUE == cstate.get_execution_state())
     {
@@ -99,15 +100,24 @@ int main_impl(int argc, char *argv[])
     resource_holder<int> volatile socket_holder(create_socket(), [](int socketd){ close(socketd); });
     int socketd = socket_holder.get();
     connect(socketd, config.get_port_number());
-    std::string init_prompt = retrieve_current_state(socketd);
-    cstate.set_prompt(init_prompt);
     cstate.set_socketd(socketd);
     cstate.set_execution_state(EX_CONTINUE);
-    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
     std::array<struct pollfd, fd_count> fdarray = create_fdarray(socketd);
-    execute_main_loop(socketd, fdarray);
+    // login loop
+    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new login_command_terminal_behavior()));
+    execute_event_loop(socketd, fdarray);
+    // main loop
+    if (EX_CONTINUE == cstate.get_execution_state())
+    {
+        std::string init_prompt = retrieve_current_state(socketd);
+        cstate.set_prompt(init_prompt);
+        set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
+        execute_event_loop(socketd, fdarray);
+        end_execution(socketd, create_signal_mask());
+    }
+    // cleanup
     cleanup();
-    end_execution(socketd, create_signal_mask());
+    // TODO (std_string) : set appropriate return code
     return 0;
 }
 
