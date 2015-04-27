@@ -21,7 +21,7 @@ HEADER=include/array_ptr.h \
        include/help_processor.h \
        include/input_terminal_behavior.h \
        include/iterminal_behavior.h \
-       include/login_command_terminal_behavior.h \
+       include/login_terminal_behavior.h \
        include/message.h \
        include/message_serialization.h \
        include/resource_holder.h \
@@ -44,7 +44,7 @@ SOURCE=src/base64.cpp \
        src/fd_helper.cpp \
        src/help_processor.cpp \
        src/input_terminal_behavior.cpp \
-       src/login_command_terminal_behavior.cpp \
+       src/login_terminal_behavior.cpp \
        src/message_serialization.cpp \
        src/server_interaction.cpp \
        src/server_interaction_helper.cpp \

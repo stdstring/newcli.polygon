@@ -1,5 +1,5 @@
-#ifndef H_LOGIN_COMMAND_TERMINAL_BEHAVIOR
-#define H_LOGIN_COMMAND_TERMINAL_BEHAVIOR
+#ifndef H_LOGIN_TERMINAL_BEHAVIOR
+#define H_LOGIN_TERMINAL_BEHAVIOR
 
 #include "execution_state.h"
 #include "iterminal_behavior.h"
@@ -8,7 +8,7 @@
 namespace cli_terminal
 {
 
-class login_command_terminal_behavior : public iterminal_behavior
+class login_terminal_behavior : public iterminal_behavior
 {
 public:
     void clear_input_action() override;

@@ -16,7 +16,7 @@
 #include "fd_helper.h"
 #include "input_terminal_behavior.h"
 #include "iterminal_behavior.h"
-#include "login_command_terminal_behavior.h"
+#include "login_terminal_behavior.h"
 #include "resource_holder.h"
 #include "server_interaction_helper.h"
 #include "signal_utils.h"
@@ -104,7 +104,7 @@ int main_impl(int argc, char *argv[])
     cstate.set_execution_state(EX_CONTINUE);
     std::array<struct pollfd, fd_count> fdarray = create_fdarray(socketd);
     // login loop
-    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new login_command_terminal_behavior()));
+    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new login_terminal_behavior()));
     execute_event_loop(socketd, fdarray);
     // main loop
     if (EX_CONTINUE == cstate.get_execution_state())

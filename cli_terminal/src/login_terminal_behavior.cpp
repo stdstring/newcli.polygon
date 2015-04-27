@@ -13,7 +13,7 @@
 #include "empty_terminal_behavior.h"
 #include "execution_state.h"
 #include "iterminal_behavior.h"
-#include "login_command_terminal_behavior.h"
+#include "login_terminal_behavior.h"
 #include "message.h"
 #include "server_interaction_helper.h"
 #include "signal_safe_executer.h"
@@ -29,7 +29,7 @@ const std::string login_key = "login";
 const std::string login_prompt = "login:";
 const std::string password_prompt = "password:";
 
-namespace login_command_terminal_behavior_impl
+namespace login_terminal_behavior_impl
 {
 
 void install_signal_handlers();
@@ -48,7 +48,7 @@ void sigint_handler(int signo)
     state_params_t &state_params = cstate.get_params();
     state_params.erase(login_key);
     // login terminal behavior
-    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new login_command_terminal_behavior()));
+    set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new login_terminal_behavior()));
 }
 
 void sigquit_handler(int signo)
@@ -101,7 +101,7 @@ void process_login(std::string const &username, std::string const &password)
     };
     login_response_handler_t login_fail_handler = [](login_response const &response, client_state &state){
         std::cout << response.data;
-        set_behavior(state, std::shared_ptr<iterminal_behavior>(new login_command_terminal_behavior()));
+        set_behavior(state, std::shared_ptr<iterminal_behavior>(new login_terminal_behavior()));
         state.set_execution_state(EX_CONTINUE);
     };
     login_response_handler_t login_error_handler = [](login_response const &response, client_state &state){
@@ -213,29 +213,29 @@ response_handlers_def_t get_response_handlers()
 
 }
 
-void login_command_terminal_behavior::clear_input_action()
+void login_terminal_behavior::clear_input_action()
 {
-    login_command_terminal_behavior_impl::clear_input_handler();
+    login_terminal_behavior_impl::clear_input_handler();
 }
 
-void login_command_terminal_behavior::install_input_action()
+void login_terminal_behavior::install_input_action()
 {
-    login_command_terminal_behavior_impl::install_input_handler();
+    login_terminal_behavior_impl::install_input_handler();
 }
 
-void login_command_terminal_behavior::install_signal_action()
+void login_terminal_behavior::install_signal_action()
 {
-    login_command_terminal_behavior_impl::install_signal_handlers();
+    login_terminal_behavior_impl::install_signal_handlers();
 }
 
-void login_command_terminal_behavior::process_char()
+void login_terminal_behavior::process_char()
 {
-    login_command_terminal_behavior_impl::process_char();
+    login_terminal_behavior_impl::process_char();
 }
 
-execution_state login_command_terminal_behavior::process_server_responses(message_responses_t const &responses)
+execution_state login_terminal_behavior::process_server_responses(message_responses_t const &responses)
 {
-    response_handlers_def_t response_handlers = login_command_terminal_behavior_impl::get_response_handlers();
+    response_handlers_def_t response_handlers = login_terminal_behavior_impl::get_response_handlers();
     return process_responses(responses, cstate, response_handlers, skip_response);
 }
 

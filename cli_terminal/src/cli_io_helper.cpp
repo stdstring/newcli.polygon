@@ -9,7 +9,6 @@
 #include "command_terminal_behavior.h"
 #include "execution_state.h"
 #include "input_terminal_behavior.h"
-#include "login_command_terminal_behavior.h"
 #include "iterminal_behavior.h"
 #include "message.h"
 #include "server_interaction_helper.h"
@@ -21,13 +20,7 @@ typedef std::function<execution_state(std::string const&, client_state&)> reques
 
 std::unordered_map<std::string, request_handler_t> get_local_request_handlers()
 {
-    request_handler_t login_handler = [](std::string const &request, client_state &state)
-        {
-            set_behavior(state, std::shared_ptr<iterminal_behavior>(new login_command_terminal_behavior()));
-            return EX_CONTINUE;
-        };
     return {
-        {"login", login_handler},
         {"bye", [](std::string const &request, client_state &state){ return EX_FINISH; }}
     };
 }
