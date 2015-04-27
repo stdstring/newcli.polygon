@@ -1,7 +1,7 @@
 #ifndef H_CONFIG_READER
 #define H_CONFIG_READER
 
-//#include <istream>
+#include <istream>
 #include <string>
 #include <vector>
 

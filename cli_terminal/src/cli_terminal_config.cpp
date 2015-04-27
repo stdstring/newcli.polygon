@@ -23,10 +23,6 @@ cli_terminal_config::cli_terminal_config(std::vector<config_entry> const &config
     if ((port_number < port_number_min) || (port_number > port_number_max))
         throw std::out_of_range(port_number_key);
     _port_number = port_number;
-    /*int login_attempt_count = std::stoi(find_value(config, login_attempt_count_key));
-    if (login_attempt_count < login_attempt_count_min)
-        throw std::out_of_range(login_attempt_count_key);
-    _login_attempt_count = login_attempt_count;*/
 }
 
 cli_terminal_config create_config(int argc, char *argv[])
