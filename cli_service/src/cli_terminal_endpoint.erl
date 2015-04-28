@@ -29,6 +29,11 @@
 -define(SUITABLE_REQUEST(CommandLine), {suitable_commands_request, CommandLine}).
 -define(SUITABLE_RESPONSE(CommandsList), {suitable_commands_response, CommandsList}).
 -define(NO_RESPONSE, no_response).
+%% login
+-define(LOGIN_REQUEST(Username, Password), {login, Username, Password}).
+-define(LOGIN_SUCCESS_RESPONSE(Greeting), {login_success, Greeting}).
+-define(LOGIN_FAIL_RESPONSE(Reason), {login_fail, Reason}).
+-define(LOGIN_ERROR_RESPONSE(Reason), {login_error, Reason}).
 %% notifications
 -define(EXIT_NOTIFICATION(Message), {exit, Message}).
 %% messages
@@ -143,7 +148,10 @@ process_request(?HELP_REQUEST(CommandLine), State) ->
 process_request(?SUITABLE_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     CommandsList = client_handler:get_suitable_commands(ClientHandler, CommandLine),
-    ?SUITABLE_RESPONSE(CommandsList).
+    ?SUITABLE_RESPONSE(CommandsList);
+process_request(?LOGIN_REQUEST(Username, Password), State) ->
+    ClientHandler = State#cli_terminal_state.client_handler,
+    client_handler:login(ClientHandler, Username, Password).
 
 -spec process_response(Response :: term(), State :: #cli_terminal_state{}) ->
     'ok' | 'exit' | {'error', Reason :: atom()}.
@@ -164,6 +172,12 @@ process_response(?EXTENSION_RESPONSE(_Prefix, _CommandsList) = Response, State) 
 process_response(?HELP_RESPONSE(_Help) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?SUITABLE_RESPONSE(_Data) = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
+process_response(?LOGIN_SUCCESS_RESPONSE(_Greeting) = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
+process_response(?LOGIN_FAIL_RESPONSE(_Reason) = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
+process_response(?LOGIN_ERROR_RESPONSE(_Reason) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)).
 
 -spec process_notification(Notification :: term(), State :: #cli_terminal_state{}) ->
