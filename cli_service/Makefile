@@ -2,7 +2,11 @@ EBIN=ebin
 
 COMMON_EBIN = ../cli_common/ebin
 
-SOURCE=src/command/code_generator.erl \
+SOURCE=src/client_handler/client_downtime_timer.erl \
+       src/client_handler/client_handler.erl \
+       src/client_handler/client_handler_helper.erl \
+       src/client_handler/command_executor.erl \
+       src/command/code_generator.erl \
        src/command/code_generator_helper.erl \
        src/command/command_execution_checker.erl \
        src/command/command_factory.erl \
@@ -34,10 +38,6 @@ SOURCE=src/command/code_generator.erl \
        src/cli_terminal_listen_endpoint.erl \
        src/cli_terminal_listen_supervisor.erl \
        src/cli_terminal_supervisor.erl \
-       src/client_downtime_timer.erl \
-       src/client_handler.erl \
-       src/client_handler_helper.erl \
-       src/command_executor.erl \
        src/config_reader.erl \
        src/prompt_factory.erl
 
