@@ -32,7 +32,7 @@ init({GlobalConfig, Endpoint, SocketInfo}) ->
     State = client_downtime_timer:start(InitState),
     {ok, State}.
 
-handle_call({?LOGIN, Username, Password}, _From, State) ->
+handle_call({?LOGIN, Username, Password}, From, State) ->
     StateStage1 = client_downtime_timer:stop(State),
     GlobalConfig = StateStage1#client_handler_unauth_state.config,
     TerminalConfig = GlobalConfig#global_config.cli_terminal,
@@ -41,7 +41,7 @@ handle_call({?LOGIN, Username, Password}, _From, State) ->
     LoginResult = process_login(Username, Password, LoginCount, MaxLoginCount),
     case LoginResult of
         #login_success{} ->
-            process_login_success(LoginResult, StateStage1);
+            process_login_success(LoginResult, From, StateStage1);
         #login_fail{} ->
             StateStage2 = client_downtime_timer:start(StateStage1),
             {reply, LoginResult, StateStage2#client_handler_unauth_state{login_attempt_count = LoginCount}};
@@ -87,13 +87,14 @@ process_login(Username, Password, LoginCount, MaxLoginCount) when LoginCount =< 
         {authentication_fail, _Reason} -> #login_fail{reason = ?LOGIN_FAILED_MESSAGE}
     end.
 
-process_login_success(#login_success{user = User} = LoginResult, State) ->
+%%-spec ...
+process_login_success(#login_success{user = User} = LoginResult, From, State) ->
     GlobalConfig = State#client_handler_unauth_state.config,
     Endpoint = State#client_handler_unauth_state.endpoint,
     CommandModule = State#client_handler_unauth_state.command_module,
     case cli_fsm:start(GlobalConfig#global_config.cli_fsm) of
         {ok, CliFsm} ->
-            gen_server:reply(Endpoint, LoginResult),
+            gen_server:reply(From, LoginResult),
             StateStage1 = #client_handler_state{config = GlobalConfig,
                                                 endpoint = Endpoint,
                                                 command_module = CommandModule,

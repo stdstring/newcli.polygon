@@ -4,7 +4,7 @@
 namespace cli_terminal
 {
 
-enum execution_state {EX_CONTINUE, EX_FINISH};
+enum execution_state {EX_CONTINUE, EX_SKIP, EX_FINISH};
 
 }
 

@@ -1,5 +1,6 @@
 //#include <cstring>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <erl_interface.h>
 
@@ -220,7 +221,7 @@ template<> login_response deserialize(byte_array_ptr const & source_data)
     if (!ERL_IS_TUPLE(eterm.get()))
         throw bad_message();
     eterm_ptr type_term(erl_element(type_index, eterm.get()));
-    std::string type = extract_string(type_term);
+    std::string type = extract_atom(type_term);
     eterm_ptr data_term(erl_element(data_index, eterm.get()));
     std::string data = extract_string(data_term);
     return login_response(type, data);

@@ -152,7 +152,12 @@ process_request(?SUITABLE_REQUEST(CommandLine), State) ->
     ?SUITABLE_RESPONSE(CommandsList);
 process_request(?LOGIN_REQUEST(Username, Password), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
-    client_handler:login(ClientHandler, Username, Password).
+    LoginResult = client_handler:login(ClientHandler, Username, Password),
+    case LoginResult of
+        #login_success{greeting = Greeting} -> ?LOGIN_SUCCESS_RESPONSE(Greeting);
+        #login_fail{reason = Reason} -> ?LOGIN_FAIL_RESPONSE(Reason);
+        #login_error{reason = Reason} -> ?LOGIN_ERROR_RESPONSE(Reason)
+    end.
 
 -spec process_response(Response :: term(), State :: #cli_terminal_state{}) ->
     'ok' | 'exit' | {'error', Reason :: atom()}.

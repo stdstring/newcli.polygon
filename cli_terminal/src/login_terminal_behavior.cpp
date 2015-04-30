@@ -97,7 +97,7 @@ void process_login(std::string const &username, std::string const &password)
     login_response_handler_t login_success_handler = [](login_response const &response, client_state &state){
         std::cout << response.data;
         set_behavior(state, std::shared_ptr<iterminal_behavior>(new empty_terminal_behavior()));
-        state.set_execution_state(EX_CONTINUE);
+        state.set_execution_state(EX_SKIP);
     };
     login_response_handler_t login_fail_handler = [](login_response const &response, client_state &state){
         std::cout << response.data;

@@ -107,8 +107,9 @@ int main_impl(int argc, char *argv[])
     set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new login_terminal_behavior()));
     execute_event_loop(socketd, fdarray);
     // main loop
-    if (EX_CONTINUE == cstate.get_execution_state())
+    if (EX_SKIP == cstate.get_execution_state())
     {
+        cstate.set_execution_state(EX_CONTINUE);
         std::string init_prompt = retrieve_current_state(socketd);
         cstate.set_prompt(init_prompt);
         set_behavior(cstate, std::shared_ptr<iterminal_behavior>(new input_terminal_behavior()));
