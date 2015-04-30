@@ -1,7 +1,5 @@
 %% [{CommandName :: atom(), CommandModule :: atom()}]
 [
-%% login
-{login, login_command},
 %% logout
 {logout, logout_command},
 %% configure terminal
