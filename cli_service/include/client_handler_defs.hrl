@@ -11,3 +11,4 @@
 -define(FINISH_EXEC, finish_exec).
 -define(HELP, help).
 -define(SUITABLE_COMMANDS, suitable_commands).
+-define(LOGIN, login).

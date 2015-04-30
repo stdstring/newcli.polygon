@@ -5,6 +5,8 @@ COMMON_EBIN = ../cli_common/ebin
 SOURCE=src/client_handler/client_downtime_timer.erl \
        src/client_handler/client_handler.erl \
        src/client_handler/client_handler_helper.erl \
+       src/client_handler/client_handler_impl.erl \
+       src/client_handler/client_handler_unauth_impl.erl \
        src/client_handler/command_executor.erl \
        src/command/code_generator.erl \
        src/command/code_generator_helper.erl \
