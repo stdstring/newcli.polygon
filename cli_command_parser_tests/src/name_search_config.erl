@@ -15,8 +15,7 @@
 create() ->
     [{[{"ping", 1}], ?PING_COMMAND},
      {[{"configure", 1}, {"terminal", 1}], ?CONF_TERM_COMMAND},
-     {[{"login", 4}], ?LOGIN_COMMAND},
-     {[{"logout", 4}], ?LOGOUT_COMMAND},
+     {[{"logout", 1}], ?LOGOUT_COMMAND},
      {[{"interface", 1}], ?INTERFACE_COMMAND},
      {[{"interface", 1}, {"range", 1}], ?IFRANGE_COMMAND},
      {[{"vlan", 1}], ?VLAN_COMMAND},

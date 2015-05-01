@@ -2,7 +2,6 @@
 
 -define(PING_COMMAND, ping).
 -define(CONF_TERM_COMMAND, configure_terminal).
--define(LOGIN_COMMAND, login).
 -define(LOGOUT_COMMAND, logout).
 -define(INTERFACE_COMMAND, interface).
 -define(IFRANGE_COMMAND, interface_range).
@@ -18,7 +17,6 @@
 
 -define(ALL_COMMANDS, [?PING_COMMAND,
                        ?CONF_TERM_COMMAND,
-                       ?LOGIN_COMMAND,
                        ?LOGOUT_COMMAND,
                        ?INTERFACE_COMMAND,
                        ?IFRANGE_COMMAND,
