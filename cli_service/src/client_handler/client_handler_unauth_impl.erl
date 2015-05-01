@@ -45,7 +45,9 @@ handle_call({?LOGIN, Username, Password}, From, State) ->
         #login_fail{} ->
             StateStage2 = client_downtime_timer:start(StateStage1),
             {reply, LoginResult, StateStage2#client_handler_unauth_state{login_attempt_count = LoginCount}};
-        #login_error{} -> {stop, eauth, LoginResult, StateStage1}
+        #login_error{} ->
+            {reply, LoginResult, StateStage1}
+            %%{stop, eauth, LoginResult, StateStage1}
     end.
 
 handle_cast(_Request, State) -> {stop, enotsup, State}.
@@ -74,18 +76,38 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 -spec process_login(Username :: string(), Password :: string(), LoginCount :: non_neg_integer(), MaxLoginCount :: non_neg_integer()) ->
     #login_success{} | #login_fail{} | #login_error{}.
-process_login(_Username, _Password, LoginCount, MaxLoginCount) when LoginCount > MaxLoginCount ->
-    #login_error{reason = ?LOGIN_COUNT_EXCEED};
-process_login(Username, Password, LoginCount, MaxLoginCount) when LoginCount =< MaxLoginCount ->
-    PasswordStr = base64:decode_to_string(Password),
-    PasswordHash = crypto_utils:hash(?HASH_TYPE, PasswordStr, ?HASH_SALT),
-    AuthResult = authentication_service:authenticate(Username, PasswordHash),
+%%process_login(Username, Password, _LoginCount, 0) ->
+%%    AuthResult = process_authenticate(Username, Password),
+%%    case AuthResult of
+%%        {authentication_complete, User} -> #login_success{user = User, greeting = ?DEFAULT_GREETING};
+%%        {authentication_fail, unknown_username} -> #login_fail{reason = ?UNKNOWN_USER_MESSAGE};
+%%        {authentication_fail, bad_password} -> #login_fail{reason = ?BAD_PASSWORD_MESSAGE};
+%%        {authentication_fail, _Reason} -> #login_error{reason = ?LOGIN_FAILED_MESSAGE}
+%%    end;
+%%process_login(_Username, _Password, LoginCount, MaxLoginCount) when LoginCount > MaxLoginCount and MaxLoginCount /= 0 ->
+%%    #login_error{reason = ?LOGIN_COUNT_EXCEED};
+process_login(Username, Password, LoginCount, LoginCount) ->
+    AuthResult = process_authenticate(Username, Password),
+    case AuthResult of
+        {authentication_complete, User} -> #login_success{user = User, greeting = ?DEFAULT_GREETING};
+        {authentication_fail, unknown_username} -> #login_error{reason = ?UNKNOWN_USER_MESSAGE ++ ?LOGIN_COUNT_EXCEED};
+        {authentication_fail, bad_password} -> #login_error{reason = ?BAD_PASSWORD_MESSAGE ++ ?LOGIN_COUNT_EXCEED};
+        {authentication_fail, _Reason} -> #login_error{reason = ?LOGIN_FAILED_MESSAGE}
+    end;
+process_login(Username, Password, _LoginCount, _MaxLoginCount) ->
+    AuthResult = process_authenticate(Username, Password),
     case AuthResult of
         {authentication_complete, User} -> #login_success{user = User, greeting = ?DEFAULT_GREETING};
         {authentication_fail, unknown_username} -> #login_fail{reason = ?UNKNOWN_USER_MESSAGE};
         {authentication_fail, bad_password} -> #login_fail{reason = ?BAD_PASSWORD_MESSAGE};
         {authentication_fail, _Reason} -> #login_fail{reason = ?LOGIN_FAILED_MESSAGE}
     end.
+
+%%-spec ...
+process_authenticate(Username, Password) ->
+    PasswordStr = base64:decode_to_string(Password),
+    PasswordHash = crypto_utils:hash(?HASH_TYPE, PasswordStr, ?HASH_SALT),
+    authentication_service:authenticate(Username, PasswordHash).
 
 %%-spec ...
 process_login_success(#login_success{user = User} = LoginResult, From, State) ->
@@ -102,5 +124,8 @@ process_login_success(#login_success{user = User} = LoginResult, From, State) ->
                                                 user = User},
             StateStage2 = client_downtime_timer:start(StateStage1),
             gen_server:enter_loop(client_handler_impl, [], StateStage2);
-        {error, _Reason} -> {stop, einit, #login_error{reason = ?CLI_FSM_CREATION_ERROR_MESSAGE}, State}
+        {error, _Reason} ->
+            Reply = #login_error{reason = ?CLI_FSM_CREATION_ERROR_MESSAGE},
+            {reply, Reply, State}
+            %%{stop, einit, #login_error{reason = ?CLI_FSM_CREATION_ERROR_MESSAGE}, State}
     end.

@@ -105,8 +105,7 @@ handle_info({tcp_closed, _Socket}, State)->
 handle_info(_Other, State) ->
     {noreply, State}.
 
-terminate(_Reason, _State) ->
-    ok.
+terminate(_Reason, _State) -> ok.
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
@@ -184,7 +183,8 @@ process_response(?LOGIN_SUCCESS_RESPONSE(_Greeting) = Response, State) ->
 process_response(?LOGIN_FAIL_RESPONSE(_Reason) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?LOGIN_ERROR_RESPONSE(_Reason) = Response, State) ->
-    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)).
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)),
+    exit.
 
 -spec process_notification(Notification :: term(), State :: #cli_terminal_state{}) ->
      'ok' | {'error', Reason :: atom()}.
