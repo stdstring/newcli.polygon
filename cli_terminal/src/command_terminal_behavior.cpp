@@ -72,6 +72,7 @@ response_handlers_def_t get_response_handlers()
         {command_out_tag, [](message_response const &response, client_state &state){ std::cout << response.data; return EX_CONTINUE; }},
         {command_err_tag, [](message_response const &response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
         {command_end_tag, end_handler},
+        {command_stop_tag, [](message_response const &response, client_state &state){ return EX_FINISH; }},
         {error_tag, [](message_response response, client_state &state){ std::cerr << response.data; return EX_CONTINUE; }},
         // TODO (std_string) : probably add additional std::endl
         {exit_tag, [](message_response response, client_state &state){ std::cout << response.data; return EX_FINISH; }}

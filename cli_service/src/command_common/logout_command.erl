@@ -46,7 +46,8 @@ process_command(Stdout, Stderr, ExecContext) ->
     case lists:keyfind(?USER_KEY, 1, ExecContext) of
         false -> command_utils:process_error(Stderr, ?MISSING_USER_MESSAGE, ?MISSING_USER_CODE, ExecContext);
         {?USER_KEY, User} ->
-            NewExecContext = lists:keydelete(?USER_KEY, 1, ExecContext),
+            IntermediateExecContext = lists:keydelete(?USER_KEY, 1, ExecContext),
+            NewExecContext = lists:keystore(?EX_STATE_KEY, 1, IntermediateExecContext, {?EX_STATE_KEY, ?EX_STOP}),
             Message = string_utils:format(?LOGOUT_TEMPLATE, [User#user.username]),
             command_utils:send_output(Stdout, Message),
             {0, NewExecContext}

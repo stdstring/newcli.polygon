@@ -6,8 +6,9 @@
 
 -include("authentication_defs.hrl").
 -include("common_defs.hrl").
+-include("command_defs.hrl").
 
--export([start/2, handle_output/2, handle_error/2, handle_end/2, stop/2]).
+-export([start/2, handle_output/2, handle_error/2, handle_end/3, stop/2]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -15,6 +16,8 @@
 -define(COMMAND_OUTPUT(Output), {command_out, Output}).
 -define(COMMAND_ERROR(Error), {command_err, Error}).
 -define(COMMAND_END(Prompt), {'end', Prompt}).
+-define(COMMAND_STOP, {stop, ""}).
+-define(COMMAND_END_RESPONSE(Prompt, ExecutionState), {'end', Prompt, ExecutionState}).
 -define(COMMAND_INT, {interrupt}).
 -define(CURRENT_MODE_EXIT, {current_mode_exit}).
 -define(CURRENT_STATE_REQUEST, {current_state_request}).
@@ -55,9 +58,9 @@ handle_output(Endpoint, Output) ->
 handle_error(Endpoint, Error) ->
     gen_server:cast(Endpoint, ?COMMAND_ERROR(Error)).
 
--spec handle_end(Endpoint :: pid(), Prompt :: string()) -> 'ok'.
-handle_end(Endpoint, Prompt) ->
-    gen_server:cast(Endpoint, ?COMMAND_END(Prompt)).
+-spec handle_end(Endpoint :: pid(), Prompt :: string(), ExecutionState :: 'ex_stop' | 'ex_continue') -> 'ok'.
+handle_end(Endpoint, Prompt, ExecutionState) ->
+    gen_server:cast(Endpoint, ?COMMAND_END_RESPONSE(Prompt, ExecutionState)).
 
 -spec stop(Endpoint :: pid(), Reason :: atom()) -> 'ok'.
 stop(Endpoint, Reason) ->
@@ -75,9 +78,8 @@ init([GlobalConfig, Socket]) ->
     end.    
 
 handle_call({stop, Reason}, _From, State) ->
-    io:format("close socket and shutdown cli_termianl_enpoint~n", []),
     process_notification(?EXIT_NOTIFICATION(?DOWNTIME), State),
-    gen_tcp:close(State#cli_terminal_state.socket),
+    cleanup(State),
     {stop, {shutdown, Reason}, ok, State};
 handle_call(_Request, _From, State) -> {stop, enotsup, ok, State}.
 
@@ -96,6 +98,7 @@ handle_info({tcp, Socket, Data}, State) ->
             inet:setopts(Socket, [{active, once}]),
             {noreply, State};
         exit ->
+            cleanup(State),
             {stop, shutdown, State};
         {error, Reason} ->
             {stop, {socket_error, Reason}, State}
@@ -166,8 +169,13 @@ process_response(?COMMAND_OUTPUT(_Out) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?COMMAND_ERROR(_Err) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
-process_response(?COMMAND_END(_Prompt) = Response, State) ->
+process_response(?COMMAND_END_RESPONSE(Prompt, ?EX_CONTINUE), State) ->
+    Response = ?COMMAND_END(Prompt),
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
+process_response(?COMMAND_END_RESPONSE(_Prompt, ?EX_STOP), State) ->
+    Response = ?COMMAND_STOP,
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)),
+    exit;
 process_response(?ERROR = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?CURRENT_STATE_RESPONSE(_Data) = Response, State) ->
@@ -190,3 +198,7 @@ process_response(?LOGIN_ERROR_RESPONSE(_Reason) = Response, State) ->
      'ok' | {'error', Reason :: atom()}.
 process_notification(?EXIT_NOTIFICATION(_Message) = Notification, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Notification)).
+
+-spec cleanup(State :: #cli_terminal_state{}) -> 'ok'.
+cleanup(State) ->
+    gen_tcp:close(State#cli_terminal_state.socket).

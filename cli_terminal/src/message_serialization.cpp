@@ -50,7 +50,7 @@ byte_array_ptr serialize(command_request const &request)
 
 byte_array_ptr serialize(interrupt_request const &request)
 {
-    return serialize(command_stop_tag);
+    return serialize(command_int_tag);
 }
 
 byte_array_ptr serialize(current_state_request const &request)

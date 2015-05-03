@@ -11,8 +11,9 @@ const std::string command_start_tag = "command";
 const std::string command_out_tag = "command_out";
 const std::string command_err_tag = "command_err";
 const std::string command_end_tag = "end";
+const std::string command_stop_tag = "stop";
 const std::string error_tag = "error";
-const std::string command_stop_tag = "interrupt";
+const std::string command_int_tag = "interrupt";
 const std::string current_state_request_tag = "current_state_request";
 const std::string current_state_response_tag = "current_state_response";
 const std::string extension_request_tag = "extension_request";
@@ -101,7 +102,7 @@ public:
     message_response(std::string const &type_value, std::string const &data_value) : type(type_value), data(data_value)
     {}
 
-    // type in (command_out, command_err, end)
+    // type in (command_out, command_err, end, stop)
     std::string type;
     std::string data;
 };

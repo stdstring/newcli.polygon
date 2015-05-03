@@ -123,8 +123,9 @@ process_start_command(State, CommandFun) ->
 process_command_creation_error(State, Reason) ->
     Error = string_utils:format(?COMMAND_CREATION_ERROR, [Reason]),
     command_helper:send_error(State, Error),
-    command_helper:send_end(State),
+    command_helper:send_end(State, ?EX_CONTINUE),
     client_downtime_timer:start(State).
 
 -spec create_exec_context(State :: #client_handler_state{}) -> [{Key :: atom(), Balue :: term()}].
-create_exec_context(#client_handler_state{user = User}) -> [{?USER_KEY, User}].
+create_exec_context(#client_handler_state{user = User}) ->
+    [{?USER_KEY, User}, {?EX_STATE_KEY, ?EX_CONTINUE}].
