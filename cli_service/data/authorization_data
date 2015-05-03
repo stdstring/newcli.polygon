@@ -1,6 +1,5 @@
 %% [{CommandName :: atom(), AccessLevel :: non_neg_integer()}]
 [
-{login, undefined},
 {logout, 0},
 {config_terminal, 15},
 {interface, 15},
