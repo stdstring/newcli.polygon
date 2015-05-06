@@ -23,6 +23,9 @@ SOURCE=src/client_handler/client_downtime_timer.erl \
        src/command_config/syntax_analyzer_config.erl \
        src/fsm/cli_fsm_behaviour.erl \
        src/fsm/cli_fsm.erl \
+       src/io/io_buffer.erl \
+       src/io/io_buffer_impl.erl \
+       src/io/null_io_buffer_impl.erl \
        src/services/authentication_service_behaviour.erl \
        src/services/authentication_service.erl \
        src/services/authorization_service_behaviour.erl \
