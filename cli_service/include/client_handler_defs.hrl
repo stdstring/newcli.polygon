@@ -5,6 +5,7 @@
 -define(CURRENT_STATE, get_current_state).
 -define(EXTENSIONS, get_extensions).
 -define(EXIT, client_exit).
+-define(CURRENT_MODE_EXIT, current_mode_exit).
 -define(COMMAND_OUTPUT, command_output).
 -define(COMMAND_ERROR, command_error).
 -define(FINISH_COMMAND, finish_command).

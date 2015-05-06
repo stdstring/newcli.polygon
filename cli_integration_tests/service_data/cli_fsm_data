@@ -1,10 +1,10 @@
 [
-%% {'states', [{Statename :: atom(), Representation :: string(), AllowedCommands :: [atom()]}]}
-{states, [{fundamental_mode, "", [config_terminal, ping, show_vlan, logout]},
-          {global_config_mode, "config", [interface, interface_range, vlan, novlan, 'end', exit, show_vlan]},
-          {interface_config_mode, "config-if", [switchport_vlan, noswitchport_vlan, 'end', exit, show_vlan]},
-          {interface_range_config_mode, "config-if-range", [switchport_vlan, noswitchport_vlan, 'end', exit, show_vlan]},
-          {vlan_config_mode, "config-vlan", [name, noname, vlan, novlan, 'end', exit, show_vlan]}]},
+%% {'states', [{Statename :: atom(), Representation :: string(), AllowedCommands :: [atom()], ExitCommand :: atom()}]}]}
+{states, [{fundamental_mode, "", [config_terminal, ping, show_vlan, logout], logout},
+          {global_config_mode, "config", [interface, interface_range, vlan, novlan, 'end', exit, show_vlan], exit},
+          {interface_config_mode, "config-if", [switchport_vlan, noswitchport_vlan, 'end', exit, show_vlan], exit},
+          {interface_range_config_mode, "config-if-range", [switchport_vlan, noswitchport_vlan, 'end', exit, show_vlan], exit},
+          {vlan_config_mode, "config-vlan", [name, noname, vlan, novlan, 'end', exit, show_vlan], exit}]},
 %% {'transitions', [{FromState :: atom(), ToState :: atom(), CommandName :: atom()}]}
 {transitions, [{fundamental_mode, global_config_mode, config_terminal},
                {global_config_mode, interface_config_mode, interface},

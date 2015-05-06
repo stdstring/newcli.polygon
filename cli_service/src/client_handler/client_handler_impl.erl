@@ -19,21 +19,6 @@
 %% API functions
 %% ====================================================================
 
-%%init([GlobalConfig, Endpoint, SocketOtherSide]) ->
-%%    process_flag(trap_exit, true),
-%%    CommandModule = module_name_generator:generate(?ENTRY_MODULE_PREFIX, SocketOtherSide),
-%%    case cli_fsm:start(GlobalConfig#global_config.cli_fsm) of
-%%        {ok, CliFsm} ->
-%%            InitState = #client_handler_state{config = GlobalConfig,
-%%                                              endpoint = Endpoint,
-%%                                              command_module = CommandModule,
-%%                                              cli_fsm =CliFsm},
-%%            State = client_downtime_timer:start(InitState),
-%%            {ok, State};
-%%        {error, Reason} ->
-%%            {stop, Reason}
-%%    end.
-
 init(_Args) -> {stop, enotsup}.
 
 handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_command = undefined} = State) ->

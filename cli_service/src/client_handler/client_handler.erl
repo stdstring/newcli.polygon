@@ -7,7 +7,15 @@
 -include("common_defs.hrl").
 
 -export([start/3]).
--export([login/3, process_command/2, interrupt_command/1, get_current_state/1, get_extensions/2, exit/1, get_help/2, get_suitable_commands/2]).
+-export([login/3,
+         process_command/2,
+         interrupt_command/1,
+         get_current_state/1,
+         get_extensions/2,
+         get_help/2,
+         get_suitable_commands/2,
+         exit/1,
+         current_mode_exit/1]).
 %% TODO (std_string) : may be move these into another place
 -export([send_output/2, send_error/2, finish_command/3, finish_exec/3]).
 
@@ -45,6 +53,11 @@ get_extensions(Handler, CommandLine) ->
 -spec exit(Handler :: pid()) -> 'ok'.
 exit(Handler) ->
     gen_server:cast(Handler, ?EXIT).
+
+%% TODO (std_string) : improve this
+-spec current_mode_exit(Handler :: pid()) -> term().
+current_mode_exit(Handler) ->
+    gen_server:call(Handler, ?CURRENT_MODE_EXIT).
 
 -spec get_help(Handler :: pid(), CommandLine :: string()) -> string().
 get_help(Handler, CommandLine) ->
