@@ -1,7 +1,7 @@
 %% @author std-string
 
 %% TODO (std_string) : think about more robust solution
--module(io_buffer).
+-module(null_io_buffer).
 
 -behaviour(gen_server).
 
@@ -11,7 +11,7 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--record(io_buffer_state, {data = [] :: [#output{} | #error{}]}).
+-record(null_io_buffer_state, {}).
 
 %% ====================================================================
 %% API functions
@@ -38,22 +38,16 @@ get_data(Buffer, DataType) ->
 reset(Buffer) ->
     gen_server:call(Buffer, #reset{}).
 
-init(_Args) -> {ok, #io_buffer_state{}}.
+init(_Args) -> {ok, #null_io_buffer_state{}}.
 
-handle_call(#output{} = Message, _From, #io_buffer_state{data = Data}) ->
-    {reply, ok, #io_buffer_state{data = [Message] ++ Data}};
-handle_call(#error{} = Message, _From, #io_buffer_state{data = Data}) ->
-    {reply, ok, #io_buffer_state{data = [Message] ++ Data}};
-handle_call(#get_data{data_type = DataType}, _From, #io_buffer_state{data = Data} = State) ->
-    case DataType of
-        output ->
-            {reply, lists:reverse(lists:filter(fun(Message) -> is_record(Message, output) end, Data)), State};
-        error ->
-            {reply, lists:reverse(lists:filter(fun(Message) -> is_record(Message, error) end, Data)), State};
-        both -> {reply, lists:reverse(Data), State}
-    end;
-handle_call(#reset{}, _From, _State) ->
-    {reply, ok, #io_buffer_state{}};
+handle_call(#output{}, _From, #null_io_buffer_state{}) ->
+    {reply, ok, #null_io_buffer_state{}};
+handle_call(#error{}, _From, #null_io_buffer_state{}) ->
+    {reply, ok, #null_io_buffer_state{}};
+handle_call(#get_data{}, _From, #null_io_buffer_state{}) ->
+    {reply, [], #null_io_buffer_state{}};
+handle_call(#reset{}, _From, #null_io_buffer_state{}) ->
+    {reply, ok, #null_io_buffer_state{}};
 handle_call(_Request, _From, State) ->
     {stop, enotsup, State}.
 
