@@ -6,11 +6,11 @@
 -include("command_defs.hrl").
 -include("common_defs.hrl").
 
+-export([send_output/2, send_error/2, send_end/2]).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
-
--export([send_output/2, send_error/2, send_end/2]).
 
 -spec send_output(State :: #client_handler_state{}, Output :: string()) -> 'ok'.
 send_output(State, Output) when is_record(State, client_handler_state) ->
