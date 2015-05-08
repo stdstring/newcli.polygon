@@ -22,7 +22,6 @@ get_help(CommandLine, State) ->
     SuitableConfig = filter_name_search(NameConfig, CliFsm, User),
     Words = commandline_parser:parse(CommandLine),
     case name_search_helper:search_exact(Words, SuitableConfig) of
-        %%{true, CommandModule} -> CommandModule:get_help();
         {true, CommandName} -> get_command_help(CommandName, GlobalConfig);
         false -> ""
     end.
@@ -30,7 +29,6 @@ get_help(CommandLine, State) ->
 -spec get_suitable_commands(CommandLine :: string(), State :: #client_handler_state{}) ->
     {CommonPrefix :: string(), Commands :: [string()]}.
 get_suitable_commands(CommandLine, State) ->
-    %%Words = commandline_parser:parse(CommandLine),
     GlobalConfig = State#client_handler_state.config,
     Words = get_words(CommandLine),
     {CommonPrefix, SuitableCommands} = get_commands(Words, State),
@@ -62,7 +60,6 @@ get_commands(Words, State) ->
     name_search_table().
 filter_name_search(NameConfig, CliFsm, User) ->
     SuitableCommands = command_execution_checker:select_suitable_commands(CliFsm, User),
-    %% TODO (std_string) : change name_search_table() - use command name instead of command module
     FilterFun = fun({_SearchItems, CommandName}) ->
         lists:any(fun(Name) -> Name == CommandName end, SuitableCommands)
     end,
