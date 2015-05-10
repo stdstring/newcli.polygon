@@ -31,7 +31,8 @@ send_end(State, ?EX_CONTINUE) when is_record(State, client_handler_state) ->
 send_end(State, ?EX_STOP) when is_record(State, client_handler_state) ->
     %%ExecutionState = State#client_handler_state.execution_state,
     Endpoint = State#client_handler_state.endpoint,
-    Prompt = prompt_factory:generate_prompt(State),
+    %%Prompt = prompt_factory:generate_prompt(State),
+    Prompt = "",
     cli_terminal_endpoint:handle_end(Endpoint, Prompt, ?EX_STOP).
 
 %% ====================================================================

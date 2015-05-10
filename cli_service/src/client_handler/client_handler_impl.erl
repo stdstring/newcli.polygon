@@ -5,6 +5,7 @@
 -behaviour(gen_server).
 
 -include("authentication_defs.hrl").
+-include("cli_fsm_defs.hrl").
 -include("client_handler_defs.hrl").
 -include("command_defs.hrl").
 -include("common_defs.hrl").
@@ -55,7 +56,11 @@ handle_call({?HELP, CommandLine}, _From, State) ->
 handle_call({?SUITABLE_COMMANDS, CommandLine}, _From, State) ->
     {_Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
     NewState = client_downtime_timer:restart(State),
-    {reply, Commands, NewState}.
+    {reply, Commands, NewState};
+handle_call(?CURRENT_MODE_EXIT, _From, State) ->
+    {ExecutionState, Prompt, IntermediateState} = process_current_mode_exit(State),
+    NewState = client_downtime_timer:restart(IntermediateState),
+    {reply, {ExecutionState, Prompt}, NewState}.
 
 handle_cast(?EXIT, State) ->
     NewState = client_downtime_timer:stop(State),
@@ -97,7 +102,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
                             CommandFun :: fun((CliFsm :: pid(), ClientHandler :: pid(), Context :: [{atom(), term()}]) -> 'ok')) ->
     #client_handler_state{}.
 process_start_command(State, CommandFun) ->
-    ExecutionContext = create_exec_context(State),
+    ExecutionContext = execution_context_factory:create(State),
     CliFsm = State#client_handler_state.cli_fsm,
     ClientHandler = self(),
     Command = spawn_link(fun() -> CommandFun(CliFsm, ClientHandler, ExecutionContext) end),
@@ -111,6 +116,15 @@ process_command_creation_error(State, Reason) ->
     command_helper:send_end(State, ?EX_CONTINUE),
     client_downtime_timer:start(State).
 
--spec create_exec_context(State :: #client_handler_state{}) -> [{Key :: atom(), Balue :: term()}].
-create_exec_context(#client_handler_state{user = User}) ->
-    [{?USER_KEY, User}, {?EX_STATE_KEY, ?EX_CONTINUE}].
+process_current_mode_exit(State) ->
+    %%StateStage1 = client_downtime_timer:stop(State),
+    CliFsm = State#client_handler_state.cli_fsm,
+    CliFsmInfo = cli_fsm:get_current_state(CliFsm),
+    ExitCommand = CliFsmInfo#cli_fsm_state_info.exit_command,
+    IoBuffer = null_io_buffer:start(),
+    {ExecutionState, NewStateStage} = command_sync_executer:execute(ExitCommand, [], State, IoBuffer, null_io_buffer),
+    case ExecutionState of
+        ?EX_STOP -> {ExecutionState, "", NewStateStage};
+        ?EX_CONTINUE -> {ExecutionState, prompt_factory:generate_prompt(State), NewStateStage}
+    end.
+    %%client_downtime_timer:start(StateStage2).

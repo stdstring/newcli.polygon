@@ -54,7 +54,6 @@ get_extensions(Handler, CommandLine) ->
 exit(Handler) ->
     gen_server:cast(Handler, ?EXIT).
 
-%% TODO (std_string) : improve this
 -spec current_mode_exit(Handler :: pid()) -> term().
 current_mode_exit(Handler) ->
     gen_server:call(Handler, ?CURRENT_MODE_EXIT).

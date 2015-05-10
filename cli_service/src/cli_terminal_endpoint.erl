@@ -19,7 +19,9 @@
 -define(COMMAND_STOP, {stop, ""}).
 -define(COMMAND_END_RESPONSE(Prompt, ExecutionState), {'end', Prompt, ExecutionState}).
 -define(COMMAND_INT, {interrupt}).
--define(CURRENT_MODE_EXIT, {current_mode_exit}).
+-define(CURRENT_MODE_EXIT_REQUEST, {current_mode_exit}).
+-define(CURRENT_MODE_EXIT_RESPONSE(Prompt), {current_mode_exit, Prompt}).
+-define(CURRENT_MODE_STOP_RESPONSE, {exit, ""}).
 -define(CURRENT_STATE_REQUEST, {current_state_request}).
 -define(CURRENT_STATE_RESPONSE(Prompt), {current_state_response, Prompt}).
 -define(EXTENSION_REQUEST(CommandLine), {extension_request, CommandLine}).
@@ -121,11 +123,13 @@ process_request(?COMMAND_START(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     client_handler:process_command(ClientHandler, CommandLine),
     ?NO_RESPONSE;
-process_request(?CURRENT_MODE_EXIT, State) ->
+process_request(?CURRENT_MODE_EXIT_REQUEST, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
-    %% TODO (std_string) : need additional knowledge about command for exiting from current mode
-    client_handler:process_command(ClientHandler, "exit"),
-    ?NO_RESPONSE;
+    {ExecutionState, Prompt} = client_handler:current_mode_exit(ClientHandler),
+    case ExecutionState of
+        ?EX_CONTINUE -> ?CURRENT_MODE_EXIT_RESPONSE(Prompt);
+        ?EX_STOP -> ?CURRENT_MODE_STOP_RESPONSE
+    end;
 process_request(?COMMAND_INT, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     client_handler:interrupt_command(ClientHandler),

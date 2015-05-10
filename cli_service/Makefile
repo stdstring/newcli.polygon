@@ -15,8 +15,9 @@ SOURCE=src/client_handler/client_downtime_timer.erl \
        src/command/command_helper.erl \
        src/command/command_search.erl \
        src/command/command_sync_executer.erl \
-       src/command_common/logout_command.erl \
+       src/command/execution_context_factory.erl \
        src/command/module_name_generator.erl \
+       src/command_common/logout_command.erl \
        src/command_config/lex_analyzer_config.erl \
        src/command_config/name_search_config.erl \
        src/command_config/name_search_factory.erl \
