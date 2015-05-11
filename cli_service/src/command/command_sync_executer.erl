@@ -41,6 +41,8 @@ execute_impl(CommandName, CommandArgs, State, IoBuffer) ->
             {ReturnCode, NewExecContext} = CommandModule:execute(CommandArgs, IoBuffer, IoBuffer, ExecContext),
             if
                 ReturnCode == 0 ->
+                    CliFsm = State#client_handler_state.cli_fsm,
+                    cli_fsm:process_command(CliFsm, CommandName),
                     ExecutionState = get_execution_state(NewExecContext),
                     {ExecutionState, State};
                 ReturnCode /= 0 ->
