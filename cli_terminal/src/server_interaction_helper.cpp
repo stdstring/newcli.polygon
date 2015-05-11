@@ -67,9 +67,9 @@ std::vector<std::string> retrieve_suitable_commands(int socketd, std::string con
     return response.commands;
 }
 
-void current_mode_exit(int socketd)
+mode_exit_response current_mode_exit(int socketd)
 {
-    write_message(socketd, mode_exit_request());
+    return sync_exchange<mode_exit_request, mode_exit_response>(socketd, mode_exit_request());
 }
 
 login_response login(int socketd, std::string const &username, std::string const &password)

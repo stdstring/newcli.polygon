@@ -23,11 +23,13 @@ const std::string help_request_tag = "help_request";
 const std::string help_response_tag = "help_response";
 const std::string suitable_commands_request_tag = "suitable_commands_request";
 const std::string suitable_commands_response_tag = "suitable_commands_response";
-const std::string current_mode_exit_tag = "current_mode_exit";
 const std::string login_request_tag = "login";
 const std::string login_success_response_tag = "login_success";
 const std::string login_fail_response_tag = "login_fail";
 const std::string login_error_response_tag = "login_error";
+const std::string mode_exit_request_tag = "current_mode_exit";
+const std::string mode_exit_response_tag = "current_mode_exit";
+const std::string mode_stop_response_tag = "exit";
 
 // requests
 
@@ -155,6 +157,17 @@ public:
     {}
 
     // type in (login_success, login_fail, login_error)
+    std::string type;
+    std::string data;
+};
+
+struct mode_exit_response
+{
+public:
+    mode_exit_response(std::string const &type_value, std::string const &data_value) : type(type_value), data(data_value)
+    {}
+
+    // type in (current_mode_exit, exit)
     std::string type;
     std::string data;
 };

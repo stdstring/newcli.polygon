@@ -29,6 +29,7 @@ template<> extension_response deserialize(byte_array_ptr const & source_data);
 template<> help_response deserialize(byte_array_ptr const & source_data);
 template<> suitable_commands_response deserialize(byte_array_ptr const & source_data);
 template<> login_response deserialize(byte_array_ptr const & source_data);
+template<> mode_exit_response deserialize(byte_array_ptr const & source_data);
 
 }
 

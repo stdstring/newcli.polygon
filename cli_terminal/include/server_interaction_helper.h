@@ -28,7 +28,7 @@ std::string retrieve_help(int socketd, std::string const &line);
 
 std::vector<std::string> retrieve_suitable_commands(int socketd, std::string const &line);
 
-void current_mode_exit(int socketd);
+mode_exit_response current_mode_exit(int socketd);
 
 login_response login(int socketd, std::string const &username, std::string const &password);
 

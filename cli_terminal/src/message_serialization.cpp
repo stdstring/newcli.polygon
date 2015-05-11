@@ -80,7 +80,7 @@ byte_array_ptr serialize(suitable_commands_request const &request)
 
 byte_array_ptr serialize(mode_exit_request const &request)
 {
-    return serialize(current_mode_exit_tag);
+    return serialize(mode_exit_request_tag);
 }
 
 byte_array_ptr serialize(login_request const &request)
@@ -225,6 +225,20 @@ template<> login_response deserialize(byte_array_ptr const & source_data)
     eterm_ptr data_term(erl_element(data_index, eterm.get()));
     std::string data = extract_string(data_term);
     return login_response(type, data);
+}
+
+template<> mode_exit_response deserialize(byte_array_ptr const &source_data)
+{
+    const int type_index = 1;
+    const int data_index = 2;
+    eterm_ptr eterm(erl_decode(source_data.get()));
+    if (!ERL_IS_TUPLE(eterm.get()))
+        throw bad_message();
+    eterm_ptr type_term(erl_element(type_index, eterm.get()));
+    std::string type = extract_atom(type_term);
+    eterm_ptr data_term(erl_element(data_index, eterm.get()));
+    std::string data = extract_string(data_term);
+    return mode_exit_response(type, data);
 }
 
 }
