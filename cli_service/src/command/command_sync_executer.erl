@@ -56,7 +56,7 @@ search_command(CommandName, Config) ->
     Commands = Config#global_config.commands,
     case list_utils:get_value_by_key_with_default(Commands, CommandName, 1, false) of
         false -> false;
-        {CommandName, CommandModule} -> {true, CommandName, CommandModule}
+        CommandModule -> {true, CommandName, CommandModule}
     end.
 
 -spec process_search_error(CommandName :: atom(), IoBuffer :: pid()) -> 'ok'.
@@ -74,7 +74,7 @@ process_command_error(ReturnCode, IoBuffer) ->
 -spec process_buffer_content(State :: #client_handler_state{}, IoBuffer :: pid(), IoBufferModule :: atom()) -> 'ok'.
 process_buffer_content(State, IoBuffer, IoBufferModule) ->
     Endpoint = State#client_handler_state.endpoint,
-    Messages = IoBufferModule:get_data(both),
+    Messages = IoBufferModule:get_data(IoBuffer, both),
     ProcessFun = fun(#output{message = Message}) -> cli_terminal_endpoint:handle_output(Endpoint, Message);
                     (#error{message = Message}) -> cli_terminal_endpoint:handle_error(Endpoint, Message) end,
     lists:foreach(ProcessFun, Messages),

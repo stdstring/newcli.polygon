@@ -196,6 +196,11 @@ process_response(?LOGIN_FAIL_RESPONSE(_Reason) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?LOGIN_ERROR_RESPONSE(_Reason) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)),
+    exit;
+process_response(?CURRENT_MODE_EXIT_RESPONSE(_Prompt) = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
+process_response(?CURRENT_MODE_STOP_RESPONSE = Response, State) ->
+    gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)),
     exit.
 
 -spec process_notification(Notification :: term(), State :: #cli_terminal_state{}) ->

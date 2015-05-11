@@ -121,7 +121,8 @@ process_current_mode_exit(State) ->
     CliFsm = State#client_handler_state.cli_fsm,
     CliFsmInfo = cli_fsm:get_current_state(CliFsm),
     ExitCommand = CliFsmInfo#cli_fsm_state_info.exit_command,
-    IoBuffer = null_io_buffer:start(),
+    %% TODO (std_string) : process failure case
+    {ok, IoBuffer} = null_io_buffer:start(),
     {ExecutionState, NewStateStage} = command_sync_executer:execute(ExitCommand, [], State, IoBuffer, null_io_buffer),
     case ExecutionState of
         ?EX_STOP -> {ExecutionState, "", NewStateStage};

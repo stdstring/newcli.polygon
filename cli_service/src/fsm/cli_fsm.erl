@@ -76,5 +76,5 @@ create_state(SourceData) ->
 -spec create_state_info(CurrentState :: atom(), FsmConfig :: #cli_fsm_config{}) -> #cli_fsm_state_info{}.
 create_state_info(CurrentState, FsmConfig) ->
     States = FsmConfig#cli_fsm_config.states,
-    {CurrentState, Representation, Commands, ExitCommand} = list_utils:get_value_by_key(States, CurrentState, 1, {?MODULE, unknown_state}),
+    {Representation, Commands, ExitCommand} = list_utils:get_value_by_key(States, CurrentState, 1, {?MODULE, unknown_state}),
     #cli_fsm_state_info{current_state = CurrentState, current_state_representation = Representation, commands = Commands, exit_command = ExitCommand}.
