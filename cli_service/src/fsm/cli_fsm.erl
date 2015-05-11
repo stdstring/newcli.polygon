@@ -42,13 +42,12 @@ processing(current_state, _From, StateData) ->
 processing({command, CommandName}, _From, StateData) ->
     CurrentState = StateData#cli_fsm_state.current_state,
     FsmConfig = StateData#cli_fsm_state.config,
-    Transitions = FsmConfig#cli_fsm_config.transitions,
-    case lists:keyfind({CurrentState, CommandName}, 1, Transitions) of
-        {{CurrentState, CommandName}, NewState} ->
-            NewStateData = StateData#cli_fsm_state{current_state = NewState},
-            {reply, create_state_info(NewState, FsmConfig), processing, NewStateData};
-        false ->
-            {reply, create_state_info(CurrentState, FsmConfig), processing, StateData}
+    FinalState = FsmConfig#cli_fsm_config.final_state,
+    if
+        CurrentState == FinalState -> {stop, final_state, #cli_fsm_state_info{}, StateData};
+        CurrentState /= FinalState ->
+            {StateInfo, NewStateData} = process_command_impl(CommandName, StateData),
+            {reply, StateInfo, processing, NewStateData}
     end.
 
 handle_event(_Event, _StateName, StateData) -> {stop, enotsup, StateData}.
@@ -65,12 +64,27 @@ code_change(_OldVsn, StateName, StateData, _Extra) -> {ok, StateName, StateData}
 %% Internal functions
 %% ====================================================================
 
+-spec process_command_impl(CommandName :: atom(), StateData :: #cli_fsm_state{}) ->
+    {StateInfo :: #cli_fsm_state_info{}, StateData :: #cli_fsm_state{}}.
+process_command_impl(CommandName, StateData) ->
+    CurrentState = StateData#cli_fsm_state.current_state,
+    FsmConfig = StateData#cli_fsm_state.config,
+    Transitions = FsmConfig#cli_fsm_config.transitions,
+    case lists:keyfind({CurrentState, CommandName}, 1, Transitions) of
+        {{CurrentState, CommandName}, NewState} ->
+            NewStateData = StateData#cli_fsm_state{current_state = NewState},
+            {create_state_info(NewState, FsmConfig), NewStateData};
+        false ->
+            {create_state_info(CurrentState, FsmConfig), StateData}
+    end.
+
 create_state(SourceData) ->
     InitialState = list_utils:get_value_by_key(SourceData, ?CLI_FSM_INIT_STATE_KEY, 1, {?MODULE, missing_initial_state}),
     States = list_utils:get_value_by_key(SourceData, ?CLI_FSM_STATES_KEY, 1, {?MODULE, missing_states}),
     TransitionSource = list_utils:get_value_by_key(SourceData, ?CLI_FSM_TRANSITIONS_KEY, 1, {?MODULE, missing_transitions}),
     TransitionTable = lists:map(fun({FromState, ToState, CommandName}) -> {{FromState, CommandName}, ToState} end, TransitionSource),
-    FsmConfig = #cli_fsm_config{states = States, transitions = TransitionTable},
+    FinalState = list_utils:get_value_by_key(SourceData, ?CLI_FSM_FINAL_STATE_KEY, 1, {?MODULE, missing_final_state}),
+    FsmConfig = #cli_fsm_config{states = States, transitions = TransitionTable, final_state = FinalState},
     #cli_fsm_state{config = FsmConfig, current_state = InitialState}.
 
 -spec create_state_info(CurrentState :: atom(), FsmConfig :: #cli_fsm_config{}) -> #cli_fsm_state_info{}.
