@@ -12,6 +12,8 @@
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
+-define(NO_RESPONSE, no_response).
+%% command interaction
 -define(COMMAND_START(CommandLine), {command, CommandLine}).
 -define(COMMAND_OUTPUT(Output), {command_out, Output}).
 -define(COMMAND_ERROR(Error), {command_err, Error}).
@@ -19,28 +21,36 @@
 -define(COMMAND_STOP, {stop, ""}).
 -define(COMMAND_END_RESPONSE(Prompt, ExecutionState), {'end', Prompt, ExecutionState}).
 -define(COMMAND_INT, {interrupt}).
+%% exit
+-define(EXIT_REQUEST, {exit}).
+-define(EXIT_RESPONSE, {exit}).
+%% error
+-define(ERROR, {error}).
+%% current mode exit
 -define(CURRENT_MODE_EXIT_REQUEST, {current_mode_exit}).
 -define(CURRENT_MODE_EXIT_RESPONSE(Prompt), {current_mode_exit, Prompt}).
 -define(CURRENT_MODE_STOP_RESPONSE, {exit, ""}).
+%% current state
 -define(CURRENT_STATE_REQUEST, {current_state_request}).
 -define(CURRENT_STATE_RESPONSE(Prompt), {current_state_response, Prompt}).
+%% extensions
 -define(EXTENSION_REQUEST(CommandLine), {extension_request, CommandLine}).
 -define(EXTENSION_RESPONSE(CommonPrefix, ExtensionList), {extension_response, CommonPrefix, ExtensionList}).
--define(EXIT_REQUEST, {exit}).
--define(EXIT_RESPONSE, {exit}).
--define(ERROR, {error}).
+%% help
 -define(HELP_REQUEST(CommandLine), {help_request, CommandLine}).
 -define(HELP_RESPONSE(Help), {help_response, Help}).
+%% suitable commands
 -define(SUITABLE_REQUEST(CommandLine), {suitable_commands_request, CommandLine}).
 -define(SUITABLE_RESPONSE(CommandsList), {suitable_commands_response, CommandsList}).
--define(NO_RESPONSE, no_response).
 %% login
 -define(LOGIN_REQUEST(Username, Password), {login, Username, Password}).
 -define(LOGIN_SUCCESS_RESPONSE(Greeting), {login_success, Greeting}).
 -define(LOGIN_FAIL_RESPONSE(Reason), {login_fail, Reason}).
 -define(LOGIN_ERROR_RESPONSE(Reason), {login_error, Reason}).
+
 %% notifications
 -define(EXIT_NOTIFICATION(Message), {exit, Message}).
+
 %% messages
 -define(DOWNTIME, "Exit due to downtime\n").
 
