@@ -84,7 +84,6 @@ handle_info({timeout, TimerRef, downtime}, State) ->
             Endpoint = NewState#client_handler_state.endpoint,
             cli_terminal_endpoint:stop(Endpoint, downtime),
             {noreply, NewState};
-            %%{stop, {shutdown, downtime}, State};
         _Other -> {noreply, State}
     end;
 %% other info
@@ -117,7 +116,6 @@ process_command_creation_error(State, Reason) ->
     client_downtime_timer:start(State).
 
 process_current_mode_exit(State) ->
-    %%StateStage1 = client_downtime_timer:stop(State),
     CliFsm = State#client_handler_state.cli_fsm,
     CliFsmInfo = cli_fsm:get_current_state(CliFsm),
     ExitCommand = CliFsmInfo#cli_fsm_state_info.exit_command,
@@ -128,4 +126,3 @@ process_current_mode_exit(State) ->
         ?EX_STOP -> {ExecutionState, "", NewStateStage};
         ?EX_CONTINUE -> {ExecutionState, prompt_factory:generate_prompt(State), NewStateStage}
     end.
-    %%client_downtime_timer:start(StateStage2).

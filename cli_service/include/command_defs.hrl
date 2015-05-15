@@ -8,5 +8,3 @@
 -define(EX_STATE_KEY, execution_state).
 -define(EX_CONTINUE, ex_continue).
 -define(EX_STOP, ex_stop).
-%%-define(SETTINGS_KEY, settings).
-%%-define(GREETING_MESSAGE_KEY, greeting_message).

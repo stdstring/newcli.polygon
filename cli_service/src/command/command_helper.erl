@@ -24,16 +24,12 @@ send_error(State, Error) when is_record(State, client_handler_state) ->
 
 -spec send_end(State :: #client_handler_state{}, ExecutionState :: 'ex_stop' | 'ex_continue') -> 'ok'.
 send_end(State, ?EX_CONTINUE) when is_record(State, client_handler_state) ->
-    %%ExecutionState = State#client_handler_state.execution_state,
     Endpoint = State#client_handler_state.endpoint,
     Prompt = prompt_factory:generate_prompt(State),
     cli_terminal_endpoint:handle_end(Endpoint, Prompt, ?EX_CONTINUE);
 send_end(State, ?EX_STOP) when is_record(State, client_handler_state) ->
-    %%ExecutionState = State#client_handler_state.execution_state,
     Endpoint = State#client_handler_state.endpoint,
-    %%Prompt = prompt_factory:generate_prompt(State),
-    Prompt = "",
-    cli_terminal_endpoint:handle_end(Endpoint, Prompt, ?EX_STOP).
+    cli_terminal_endpoint:handle_end(Endpoint, "", ?EX_STOP).
 
 %% ====================================================================
 %% Internal functions

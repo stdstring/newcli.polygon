@@ -30,7 +30,6 @@ process({?FINISH_EXEC, _ReturnCode, ExecutionContext}, State) ->
     command_helper:send_end(IntermediateState, ExecutionState),
     client_downtime_timer:start(IntermediateState);
 process(?INTERRUPT, #client_handler_state{current_command = undefined} = State) ->
-    %%State;
     client_downtime_timer:restart(State);
 process(?INTERRUPT, State) ->
     Command = State#client_handler_state.current_command,

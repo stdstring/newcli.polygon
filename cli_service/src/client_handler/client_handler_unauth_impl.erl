@@ -47,7 +47,6 @@ handle_call({?LOGIN, Username, Password}, From, State) ->
             {reply, LoginResult, StateStage2#client_handler_unauth_state{login_attempt_count = LoginCount}};
         #login_error{} ->
             {reply, LoginResult, StateStage1}
-            %%{stop, eauth, LoginResult, StateStage1}
     end.
 
 handle_cast(_Request, State) -> {stop, enotsup, State}.
@@ -60,7 +59,6 @@ handle_info({timeout, TimerRef, downtime}, State) ->
             Endpoint = NewState#client_handler_unauth_state.endpoint,
             cli_terminal_endpoint:stop(Endpoint, downtime),
             {noreply, NewState};
-            %%{stop, {shutdown, downtime}, State};
         _Other -> {noreply, State}
     end;
 %% other info
@@ -103,13 +101,15 @@ process_login(Username, Password, _LoginCount, _MaxLoginCount) ->
         {authentication_fail, _Reason} -> #login_fail{reason = ?LOGIN_FAILED_MESSAGE}
     end.
 
-%%-spec ...
+-spec process_authenticate(Username :: string(), Password :: string()) ->
+    {'authentication_complete', #user{}} | {'authentication_fail', Reason :: atom()}.
 process_authenticate(Username, Password) ->
     PasswordStr = base64:decode_to_string(Password),
     PasswordHash = crypto_utils:hash(?HASH_TYPE, PasswordStr, ?HASH_SALT),
     authentication_service:authenticate(Username, PasswordHash).
 
-%%-spec ...
+-spec process_login_success(LoginResult :: #login_success{}, From :: tuple(), State :: #client_handler_unauth_state{}) ->
+    no_return() | {'reply', Reply :: #login_error{}, State :: #client_handler_unauth_state{}}.
 process_login_success(#login_success{user = User} = LoginResult, From, State) ->
     GlobalConfig = State#client_handler_unauth_state.config,
     Endpoint = State#client_handler_unauth_state.endpoint,
@@ -127,5 +127,4 @@ process_login_success(#login_success{user = User} = LoginResult, From, State) ->
         {error, _Reason} ->
             Reply = #login_error{reason = ?CLI_FSM_CREATION_ERROR_MESSAGE},
             {reply, Reply, State}
-            %%{stop, einit, #login_error{reason = ?CLI_FSM_CREATION_ERROR_MESSAGE}, State}
     end.

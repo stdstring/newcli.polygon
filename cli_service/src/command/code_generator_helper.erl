@@ -13,13 +13,6 @@
 -include("code_generator_defs.hrl").
 -include("code_generator_impl_defs.hrl").
 
-%%-define(SEND_OUTPUT_FUN, send_output).
-
-%%-define(BUFFER_VAR, {var, 0, 'Buffer'}).
-%%-define(CLIENT_HANDLER_VAR, {var, 0, 'ClientHandler'}).
-%%-define(CONTEXT_VAR, {var, 0, 'Context'}).
-%%-define(MESSAGE_VAR, {var, 0, 'Message'}).
-
 %% ====================================================================
 %% API functions
 %% ====================================================================
