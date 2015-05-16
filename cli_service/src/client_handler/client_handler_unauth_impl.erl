@@ -10,13 +10,6 @@
 -include("common_defs.hrl").
 -include("crypto_defs.hrl").
 
--define(LOGIN_COUNT_EXCEED, "Count of login attempts is exceeded\n").
--define(DEFAULT_GREETING, "Default greeting message\n").
--define(UNKNOWN_USER_MESSAGE, "Login's attempt is failed due to the following: unknown user\n").
--define(BAD_PASSWORD_MESSAGE, "Login's attempt is failed due to the following: bad password\n").
--define(LOGIN_FAILED_MESSAGE, "Login's attempt is failed\n").
--define(CLI_FSM_CREATION_ERROR_MESSAGE, "Creation error of client handler\n").
-
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -74,28 +67,18 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 -spec process_login(Username :: string(), Password :: string(), LoginCount :: non_neg_integer(), MaxLoginCount :: non_neg_integer()) ->
     #login_success{} | #login_fail{} | #login_error{}.
-%%process_login(Username, Password, _LoginCount, 0) ->
-%%    AuthResult = process_authenticate(Username, Password),
-%%    case AuthResult of
-%%        {authentication_complete, User} -> #login_success{user = User, greeting = ?DEFAULT_GREETING};
-%%        {authentication_fail, unknown_username} -> #login_fail{reason = ?UNKNOWN_USER_MESSAGE};
-%%        {authentication_fail, bad_password} -> #login_fail{reason = ?BAD_PASSWORD_MESSAGE};
-%%        {authentication_fail, _Reason} -> #login_error{reason = ?LOGIN_FAILED_MESSAGE}
-%%    end;
-%%process_login(_Username, _Password, LoginCount, MaxLoginCount) when LoginCount > MaxLoginCount and MaxLoginCount /= 0 ->
-%%    #login_error{reason = ?LOGIN_COUNT_EXCEED};
 process_login(Username, Password, LoginCount, LoginCount) ->
     AuthResult = process_authenticate(Username, Password),
     case AuthResult of
-        {authentication_complete, User} -> #login_success{user = User, greeting = ?DEFAULT_GREETING};
-        {authentication_fail, unknown_username} -> #login_error{reason = ?UNKNOWN_USER_MESSAGE ++ ?LOGIN_COUNT_EXCEED};
-        {authentication_fail, bad_password} -> #login_error{reason = ?BAD_PASSWORD_MESSAGE ++ ?LOGIN_COUNT_EXCEED};
+        {authentication_complete, User} -> #login_success{user = User, greeting = ?DEFAULT_GREETING_MESSAGE};
+        {authentication_fail, unknown_username} -> #login_error{reason = ?UNKNOWN_USER_MESSAGE ++ ?LOGIN_COUNT_EXCEED_MESSAGE};
+        {authentication_fail, bad_password} -> #login_error{reason = ?BAD_PASSWORD_MESSAGE ++ ?LOGIN_COUNT_EXCEED_MESSAGE};
         {authentication_fail, _Reason} -> #login_error{reason = ?LOGIN_FAILED_MESSAGE}
     end;
 process_login(Username, Password, _LoginCount, _MaxLoginCount) ->
     AuthResult = process_authenticate(Username, Password),
     case AuthResult of
-        {authentication_complete, User} -> #login_success{user = User, greeting = ?DEFAULT_GREETING};
+        {authentication_complete, User} -> #login_success{user = User, greeting = ?DEFAULT_GREETING_MESSAGE};
         {authentication_fail, unknown_username} -> #login_fail{reason = ?UNKNOWN_USER_MESSAGE};
         {authentication_fail, bad_password} -> #login_fail{reason = ?BAD_PASSWORD_MESSAGE};
         {authentication_fail, _Reason} -> #login_fail{reason = ?LOGIN_FAILED_MESSAGE}

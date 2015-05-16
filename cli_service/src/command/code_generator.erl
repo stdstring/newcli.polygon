@@ -5,10 +5,8 @@
 -export([generate/4]).
 
 -include("code_generator_defs.hrl").
--include("code_generator_impl_defs.hrl").
--include("frame_defs.hrl").
 -include("command_defs.hrl").
-
+-include("frame_defs.hrl").
 
 %% ====================================================================
 %% API functions

@@ -3,15 +3,11 @@
 -module(command_sync_executer).
 
 -include("authentication_defs.hrl").
--include("code_generator_defs.hrl").
 -include("command_defs.hrl").
 -include("common_defs.hrl").
 -include("io_buffer_defs.hrl").
 
 -export([execute/5]).
-
-%% TODO (std_string) : move into appropriate place
--define(COMMAND_NOTFOUND_TEMPLATE, "Command \"~p\" does not found\n").
 
 %% ====================================================================
 %% API functions

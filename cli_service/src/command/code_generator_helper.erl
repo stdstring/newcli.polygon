@@ -11,7 +11,7 @@
          generate_command_fail_message/1]).
 
 -include("code_generator_defs.hrl").
--include("code_generator_impl_defs.hrl").
+-include("command_defs.hrl").
 
 %% ====================================================================
 %% API functions

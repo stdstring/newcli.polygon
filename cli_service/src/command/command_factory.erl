@@ -7,7 +7,6 @@
 -include("frame_defs.hrl").
 -include("lexical_defs.hrl").
 -include("syntax_defs.hrl").
--include("code_generator_defs.hrl").
 -include("authentication_defs.hrl").
 -include("command_defs.hrl").
 -include("common_defs.hrl").

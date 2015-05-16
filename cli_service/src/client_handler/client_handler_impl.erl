@@ -10,9 +10,6 @@
 -include("command_defs.hrl").
 -include("common_defs.hrl").
 
--define(COMMAND_CREATION_ERROR, "Command's creation is failed due to the following reason: ~w\n").
--define(COMMAND_ALREADY_RUN, "There is running the other command, now\n").
-
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -39,7 +36,7 @@ handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_comman
             {reply, false, FinishState}
     end;
 handle_call({?PROCESS, _CommandLine}, _From, State) ->
-    command_helper:send_error(State, ?COMMAND_ALREADY_RUN),
+    command_helper:send_error(State, ?COMMAND_ALREADY_RUN_MESSAGE),
     {reply, false, State};
 handle_call(?CURRENT_STATE, _From, State) ->
     Prompt = prompt_factory:generate_prompt(State),
@@ -109,7 +106,7 @@ process_start_command(State, CommandFun) ->
 -spec process_command_creation_error(State ::  #client_handler_state{}, Reason :: term()) ->
     #client_handler_state{}.
 process_command_creation_error(State, Reason) ->
-    Error = string_utils:format(?COMMAND_CREATION_ERROR, [Reason]),
+    Error = string_utils:format(?COMMAND_CREATION_ERROR_TEMPLATE, [Reason]),
     command_helper:send_error(State, Error),
     command_helper:send_end(State, ?EX_CONTINUE),
     client_downtime_timer:start(State).
