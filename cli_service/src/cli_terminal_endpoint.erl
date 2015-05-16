@@ -80,7 +80,6 @@ stop(Endpoint, Reason) ->
 
 init([GlobalConfig, Socket]) ->
     %% TODO (std_string) : process error case
-    %%{ok, SocketThisSide} = inet:sockname(Socket),
     {ok, SocketOtherSide} = inet:peername(Socket),
     case client_handler:start(GlobalConfig, self(), SocketOtherSide) of
         {ok, ClientHandler} ->

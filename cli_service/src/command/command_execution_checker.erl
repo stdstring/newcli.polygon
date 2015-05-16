@@ -11,7 +11,7 @@
 %% API functions
 %% ====================================================================
 
--spec execution_precheck(CommandName :: atom(), CliFsm :: pid(), User :: #user{} | 'undefined') ->
+-spec execution_precheck(CommandName :: atom(), CliFsm :: pid(), User :: #user{}) ->
     'true' | {'false', 'access_denied'} | {'false', 'authorization_bad_config'} | {'false', 'unsuitable_command'}.
 execution_precheck(CommandName, CliFsm, User) ->
     case authorization_service:authorize_command(User, CommandName) of
@@ -20,7 +20,7 @@ execution_precheck(CommandName, CliFsm, User) ->
         {authorization_fail, unknown_command} -> {false, authorization_bad_config}
     end.
 
--spec select_suitable_commands(CliFsm :: pid(), User :: #user{} | 'undefined') -> [CommandName :: atom()].
+-spec select_suitable_commands(CliFsm :: pid(), User :: #user{}) -> [CommandName :: atom()].
 select_suitable_commands(CliFsm, User) ->
     #cli_fsm_state_info{commands = Commands} = cli_fsm:get_current_state(CliFsm),
     authorization_service:authorize_commands(User, Commands).

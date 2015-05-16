@@ -1,6 +1,6 @@
 %% command definitions
 
--define(ENTRY_MODULE_PREFIX, command_module_).
+-define(ENTRY_MODULE_PREFIX, command_module).
 -define(ENTRY_FUNC, execute).
 
 %% for execution state

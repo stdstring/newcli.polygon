@@ -16,7 +16,6 @@
 read(MainConfigFile) ->
     MainConfigDir = filename:dirname(MainConfigFile),
     MainConfig = erlang_term_utils:read_from_file(MainConfigFile),
-    %%Acc0 = #global_config{main_config_dir = MainConfigDir},
     Acc0 = #global_config{},
     lists:foldl(fun(ConfigItem, Config) -> process(ConfigItem, Config, MainConfigDir) end, Acc0, MainConfig).
 
