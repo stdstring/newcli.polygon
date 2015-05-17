@@ -14,6 +14,7 @@ SOURCE=src/code_generator/cli_fsm_mock.erl \
 TEST_SOURCE=src/code_generator/code_generator_tests.erl \
             src/code_generator/dynamic_code_generation_tests.erl \
             src/command_config/name_search_factory_tests.erl \
+            src/fsm/cli_fsm_tests.erl\
             src/utils/commandline_parser_tests.erl\
             src/utils/crypto_utils_tests.erl \
             src/utils/erlang_term_utils_tests.erl \
@@ -35,7 +36,7 @@ $(EBIN)/%.beam: %.erl
 all: pre_build $(TARGETS) $(TEST_TARGETS)
 
 test: all
-	for TEST_NAME in $(TESTS_LIST); do erl -noshell -pa $(EBIN) $(COMMAND_PARSER_EBIN) $(SRC_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
+	for TEST_NAME in $(TESTS_LIST); do erl -noshell -pa $(EBIN) $(COMMON_EBIN) $(COMMAND_PARSER_EBIN) $(SRC_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
 
 pre_build: clean
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
