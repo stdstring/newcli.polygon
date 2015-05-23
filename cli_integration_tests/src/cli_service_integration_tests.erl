@@ -10,7 +10,7 @@
 -define(TIMEOUT_RESULT, {error, timeout}).
 -define(CLOSED_RESULT, {error, closed}).
 %% TODO (std_string) : try use include files from cli_service
--define(COMMAND, {command, "?"}).
+-define(COMMAND, {command, "ping XXX"}).
 
 %% ====================================================================
 %% Test functions
@@ -50,6 +50,7 @@ integration_test_() ->
 %% Internal functions
 %% ====================================================================
 
+-spec check_downtime() -> 'ok'.
 check_downtime() ->
     Service = integration_tests_common:start_cli_service(),
     {ok, Socket} = gen_tcp:connect(?SERVICE_ENDPOINT_ADDRESS, ?SERVICE_ENDPOINT_PORT, [binary, {packet, 4}, {active, false}]),
@@ -63,18 +64,17 @@ check_downtime() ->
 
 -spec check_service() -> 'ok'.
 check_service() ->
-    {OutputResponse, EndResponse} = interact_with_service(),
-    ?assertEqual({command_err, ?UNSUITABLE_CHAR ++ "\n"}, OutputResponse),
-    ?assertEqual({'end',"@CliDemo>"}, EndResponse),
+    Messages = interact_with_service(),
+    Expected = [{command_out, "ping line 1\n"}, {command_out, "ping line 2\n"}, {command_out, "ping line 3\n"}, {'end', "guest@CliDemo>"}],
+    ?assertEqual(Expected, Messages),
     ok.
 
--spec interact_with_service() -> {OutputResponse :: {'command_out', CommandOut :: string()}, EndResponse :: {'end', Prompt :: string()}}.
+%% TODO (std_string) : try use include files from cli_service
+-spec interact_with_service() -> [tuple()].
 interact_with_service() ->
-    %% {ok, Socket} = gen_tcp:connect({127, 0, 0, 1}, 6666, [binary, {packet, 4}, {active, false}]),
     {ok, Socket} = gen_tcp:connect(?SERVICE_ENDPOINT_ADDRESS, ?SERVICE_ENDPOINT_PORT, [binary, {packet, 4}, {active, false}]),
-    gen_tcp:send(Socket, term_to_binary(?COMMAND)),
-    {ok, OutputPacket} = gen_tcp:recv(Socket, 0),
-    OutputResponse = binary_to_term(OutputPacket),
-    {ok, EndPacket} = gen_tcp:recv(Socket, 0),
-    EndResponse = binary_to_term(EndPacket),
-    {OutputResponse, EndResponse}.
+    LoginRequest = {login, "guest", base64:encode_to_string("idclip")},
+    {login_success, _Greeting} = cli_service_interaction_helper:sync_exchange_single_response(Socket, LoginRequest),
+    Messages = cli_service_interaction_helper:sync_exchange_multiple_response(Socket, ?COMMAND, 'end'),
+    cli_service_interaction_helper:simple_logout(Socket),
+    Messages.

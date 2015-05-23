@@ -15,16 +15,23 @@
 -define(CRASH_DUMP_FILE, "erl_crash.dump").
 
 %% common output
--define(BYE_OUTPUT, ["@CliDemo>bye", "@CliDemo>"]).
--define(LOGIN(Username), ["@CliDemo>login", "login:" ++ Username, "password:"]).
+-define(LOGIN(Username), ["login:" ++ Username, "password:"]).
 -define(ADMIN_LOGIN, ?LOGIN("root")).
 -define(GUEST_LOGIN, ?LOGIN("guest")).
 -define(GREETING, "Default greeting message").
--define(LOGOUT_RESULT(Username), ["User \"" ++ Username ++ "\" is logged out"] ++ ?BYE_OUTPUT).
+
+-define(LOGOUT_RESULT(Username), ["User \"" ++ Username ++ "\" is logged out"]).
 -define(ADMIN_LOGOUT_RESULT, ?LOGOUT_RESULT("root")).
 -define(GUEST_LOGOUT_RESULT, ?LOGOUT_RESULT("guest")).
 -define(ADMIN_LOGOUT, ["root@CliDemo#logout"] ++ ?ADMIN_LOGOUT_RESULT).
+-define(ADMIN_LOGOUT_SHORTCUT, ["root@CliDemo#l"] ++ ?ADMIN_LOGOUT_RESULT).
 -define(GUEST_LOGOUT, ["guest@CliDemo>logout"] ++ ?GUEST_LOGOUT_RESULT).
+-define(GUEST_LOGOUT_SHORTCUT, ["guest@CliDemo>l"] ++ ?GUEST_LOGOUT_RESULT).
+-define(CONFIG_LOGOUT, ["root@CliDemo (config)#end", "root@CliDemo#logout"] ++ ?ADMIN_LOGOUT_RESULT).
+-define(INTERFACE_LOGOUT, ["root@CliDemo (config-if)#end", "root@CliDemo#logout"] ++ ?ADMIN_LOGOUT_RESULT).
+-define(IRANGE_LOGOUT, ["root@CliDemo (config-if-range)#end", "root@CliDemo#logout"] ++ ?ADMIN_LOGOUT_RESULT).
+-define(VLAN_LOGOUT, ["root@CliDemo (config-vlan)#end", "root@CliDemo#logout"] ++ ?ADMIN_LOGOUT_RESULT).
+
 -define(COMMAND_FAIL, "Command execution failed. Return code is 255").
 -define(PING_OUTPUT, ["ping line 1", "ping line 2", "ping line 3"]).
 -define(BAD_ARGS, "Bad arguments").
@@ -33,6 +40,7 @@
 -define(UNSUITABLE_CHAR, "Command's creation is failed due to the following reason: unsuitable_char").
 -define(UNSUITABLE_COMMAND, "Unsuitable command").
 -define(CONFIG_TERM, "root@CliDemo#configure terminal").
+-define(CONFIG_TERM_SHORTCUT, "root@CliDemo#c t").
 -define(INTERFACE, "root@CliDemo (config)#interface someinterface 0/1").
 -define(INTERFACE_RANGE, "root@CliDemo (config)#interface range someinterface 0/1,3-5").
 -define(VLAN, "root@CliDemo (config)#vlan 666").

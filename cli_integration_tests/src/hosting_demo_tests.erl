@@ -4,14 +4,18 @@
 
 -include("integration_tests_defs.hrl").
 
+%% ====================================================================
+%% Test functions
+%% ====================================================================
+
 separate_services_test() ->
     {ok, CurrentDir} = file:get_cwd(),
     TerminalCmd = filename:join([CurrentDir, ?CLI_TERMINAL_BIN, ?CLI_TERMINAL_EXEC]) ++ ?CLI_TERMINAL_ARGS,
     start_cli_service(),
-    execute(TerminalCmd, ["login", "root", "iddqd", "ping XXX", "logout", "bye"]),
+    execute(TerminalCmd, ["root", "iddqd", "ping XXX", "logout"]),
     stop_cli_service(),
     start_cli_service(),
-    execute(TerminalCmd, ["login", "guest", "idclip", "ping XXX", "logout", "bye"]),
+    execute(TerminalCmd, ["guest", "idclip", "ping XXX", "logout"]),
     stop_cli_service(),
     ok.
 
@@ -19,10 +23,14 @@ one_service_test() ->
     {ok, CurrentDir} = file:get_cwd(),
     TerminalCmd = filename:join([CurrentDir, ?CLI_TERMINAL_BIN, ?CLI_TERMINAL_EXEC]) ++ ?CLI_TERMINAL_ARGS,
     start_cli_service(),
-    execute(TerminalCmd, ["login", "root", "iddqd", "ping XXX", "logout", "bye"]),
-    execute(TerminalCmd, ["login", "guest", "idclip", "ping XXX", "logout", "bye"]),
+    execute(TerminalCmd, ["root", "iddqd", "ping XXX", "logout"]),
+    execute(TerminalCmd, ["guest", "idclip", "ping XXX", "logout"]),
     stop_cli_service(),
     ok.
+
+%% ====================================================================
+%% Internal functions
+%% ====================================================================
 
 execute(TerminalCmd, Input) ->
     InputData = string:join(Input, "\n") ++ "\n",

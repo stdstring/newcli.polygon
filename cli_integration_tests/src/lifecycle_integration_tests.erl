@@ -9,15 +9,15 @@
 integration_test_() ->
     [create_integration_test(
         "lifecycle: login and logout by user",
-        ["login", "guest", "idclip", "logout", "bye"],
+        ["guest", "idclip", "logout"],
         ?GUEST_LOGIN ++ [?GREETING] ++ ?GUEST_LOGOUT),
      create_integration_test(
         "lifecycle: login and logout by admin",
-        ["login", "root", "iddqd", "logout", "bye"],
+        ["root", "iddqd", "logout"],
         ?ADMIN_LOGIN ++ [?GREETING] ++ ?ADMIN_LOGOUT),
      create_integration_test(
         "lifecycle: big example for user",
-        ["login", "guest", "idclip", "ping", "ping 192.168.0.1", "configure terminal", "logout", "bye"],
+        ["guest", "idclip", "ping", "ping 192.168.0.1", "configure terminal", "logout"],
         create_big_example_user_output()),
      create_integration_test(
         "lifecycle: big example for admin",
@@ -40,8 +40,7 @@ create_big_example_user_output() ->
 
 -spec create_big_example_admin_input() -> [string()].
 create_big_example_admin_input() ->
-    ["login",
-     "root",
+    ["root",
      "iddqd",
      "vlan 666",
      "configure terminal",
@@ -51,8 +50,8 @@ create_big_example_admin_input() ->
      "interface someinterface 0/1",
      "show vlan",
      "no switchport access vlan",
-     "logout",
-     "bye"].
+     "end",
+     "logout"].
 
 -spec create_big_example_admin_output() -> [string()].
 create_big_example_admin_output() ->
@@ -69,8 +68,7 @@ create_big_example_admin_output() ->
     ["root@CliDemo (config-if)#show vlan"] ++
     ?SHOW_VLAN_OUTPUT ++
     ["root@CliDemo (config-if)#no switchport access vlan"] ++
-    ["root@CliDemo (config-if)#logout"] ++
-    ?ADMIN_LOGOUT_RESULT.
+    ?INTERFACE_LOGOUT.
 
 -spec create_integration_test(Description :: string(), Input :: [string()], Output :: [string()]) ->
     {Description :: string(), fun(() -> 'ok')}.

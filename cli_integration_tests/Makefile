@@ -17,7 +17,8 @@ COMMANDS_SOURCE=src/test_commands/config_terminal_command.erl \
                 src/test_commands/show_vlan_command.erl \
                 src/test_commands/switchport_vlan_command.erl \
                 src/test_commands/vlan_command.erl
-SOURCE=src/integration_tests_common.erl \
+SOURCE=src/utils/cli_service_interaction_helper.erl \
+       src/integration_tests_common.erl \
        src/integration_tests_manager.erl
 TEST_SOURCE=src/cli_service_integration_tests.erl \
             src/command_integration_tests.erl \
@@ -45,7 +46,6 @@ test: all
 	$(shell cp -f -t $(SERVICE_EBIN) service_prerequisites/*)
 	# tests
 	for TEST_NAME in $(TESTS_LIST); do erl -noshell -sname integration_tests_node -pa $(EBIN) $(COMMON_EBIN) $(COMMAND_PARSER_EBIN) $(SERVICE_EBIN) -eval "eunit:test([$$TEST_NAME], [verbose])" -s init stop; done
-	#erl -noshell -pa $(EBIN) $(COMMON_EBIN) $(COMMAND_PARSER_EBIN) $(SERVICE_EBIN) -eval "eunit:test([demo_integration_tests], [verbose])" -s init stop;
 
 pre_build:
 	$(shell if [ ! -d "./$(EBIN)/" ]; then mkdir $(EBIN); fi)
