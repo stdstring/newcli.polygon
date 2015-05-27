@@ -21,6 +21,7 @@ SOURCE=src/utils/cli_service_interaction_helper.erl \
        src/integration_tests_common.erl \
        src/integration_tests_manager.erl
 TEST_SOURCE=src/cli_service_integration_tests.erl \
+            src/cli_service_protocol_tests.erl \
             src/command_integration_tests.erl \
             src/help_integration_tests.erl \
             src/lifecycle_integration_tests.erl \

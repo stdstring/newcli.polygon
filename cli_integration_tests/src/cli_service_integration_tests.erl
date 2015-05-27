@@ -10,8 +10,6 @@
 -define(SLEEP, 2000).
 -define(TIMEOUT_RESULT, {error, timeout}).
 -define(CLOSED_RESULT, {error, closed}).
-%% TODO (std_string) : try use include files from cli_service
--define(COMMAND, {command, "ping XXX"}).
 
 %% ====================================================================
 %% Test functions
