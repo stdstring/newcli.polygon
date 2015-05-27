@@ -9,7 +9,7 @@ namespace cli_terminal
 
 byte_array_ptr read_message(int socketd);
 bool contains_unread_data(int socketd);
-void write_message(int socketd, byte_array_ptr const &serialized_data);
+void write_message(int socketd, byte_array_ptr const &serialized_data, bool skip_write_fault = false);
 
 template <typename T> T read_message(int socketd)
 {
@@ -25,10 +25,10 @@ template <typename T> std::vector<T> read_messages(int socketd)
     return message_buffer;
 }
 
-template <typename T> void write_message(int socketd, T const &message)
+template <typename T> void write_message(int socketd, T const &message, bool skip_write_fault = false)
 {
     byte_array_ptr serialized_data = serialize(message);
-    write_message(socketd, serialized_data);
+    write_message(socketd, serialized_data, skip_write_fault);
 }
 
 template <typename TIn, typename TOut> TOut sync_exchange(int socketd, TIn const &request)

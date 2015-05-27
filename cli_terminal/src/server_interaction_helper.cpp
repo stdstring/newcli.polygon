@@ -52,7 +52,7 @@ void process_command(int socketd, std::string const &line)
 void end_execution(int socketd, sigset_t mask)
 {
     signal_safe_executer executer(mask);
-    executer.execute([socketd](){ write_message(socketd, exit_request()); });
+    executer.execute([socketd](){ write_message(socketd, exit_request(), true); });
 }
 
 std::string retrieve_help(int socketd, std::string const &line)

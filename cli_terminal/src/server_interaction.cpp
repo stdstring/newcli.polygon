@@ -31,7 +31,7 @@ bool contains_unread_data(int socketd)
     return peek_result > 0;
 }
 
-void write_message(int socketd, byte_array_ptr const &serialized_data)
+void write_message(int socketd, byte_array_ptr const &serialized_data, bool skip_write_fault)
 {
     int length_binary = htonl(serialized_data.size());
     struct iovec messages[2];
@@ -47,7 +47,7 @@ void write_message(int socketd, byte_array_ptr const &serialized_data)
     prepared_data.msg_iov = messages;
     prepared_data.msg_iovlen = 2;
     ssize_t send_result = sendmsg(socketd, &prepared_data, 0);
-    if (-1 == send_result)
+    if (!skip_write_fault && -1 == send_result)
         throw send_error();
 }
 
