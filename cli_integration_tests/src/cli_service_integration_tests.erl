@@ -5,6 +5,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 -include("integration_tests_defs.hrl").
+-include("message_defs.hrl").
 
 -define(SLEEP, 2000).
 -define(TIMEOUT_RESULT, {error, timeout}).
@@ -65,7 +66,7 @@ check_downtime() ->
 -spec check_service() -> 'ok'.
 check_service() ->
     Messages = interact_with_service(),
-    Expected = [{command_out, "ping line 1\n"}, {command_out, "ping line 2\n"}, {command_out, "ping line 3\n"}, {'end', "guest@CliDemo>"}],
+    Expected = [?COMMAND_OUTPUT("ping line 1\n"), ?COMMAND_OUTPUT("ping line 2\n"), ?COMMAND_OUTPUT("ping line 3\n"), ?COMMAND_END("guest@CliDemo>")],
     ?assertEqual(Expected, Messages),
     ok.
 
@@ -73,8 +74,7 @@ check_service() ->
 -spec interact_with_service() -> [tuple()].
 interact_with_service() ->
     {ok, Socket} = gen_tcp:connect(?SERVICE_ENDPOINT_ADDRESS, ?SERVICE_ENDPOINT_PORT, [binary, {packet, 4}, {active, false}]),
-    LoginRequest = {login, "guest", base64:encode_to_string("idclip")},
-    {login_success, _Greeting} = cli_service_interaction_helper:sync_exchange_single_response(Socket, LoginRequest),
-    Messages = cli_service_interaction_helper:sync_exchange_multiple_response(Socket, ?COMMAND, 'end'),
+    ?LOGIN_SUCCESS_RESPONSE(_Greeting) = cli_service_interaction_helper:login(Socket, "guest", "idclip"),
+    Messages = cli_service_interaction_helper:sync_exchange_multiple_response(Socket, ?COMMAND_START("ping XXX"), ?COMMAND_END_TAG),
     cli_service_interaction_helper:simple_logout(Socket),
     Messages.

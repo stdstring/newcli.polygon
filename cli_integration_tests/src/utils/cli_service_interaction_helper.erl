@@ -5,10 +5,9 @@
 -export([sync_exchange_single_response/2, sync_exchange_multiple_response/3]).
 -export([login/3, simple_logout/1]).
 
+-include("message_defs.hrl").
+
 -define(RESPONSE_TAG_INDEX, 1).
-%% TODO (std_string) : try use include files from cli_service
--define(SIMPLE_LOGOUT, {command, "logout"}).
--define(LOGOUT_END_TAG, 'stop').
 
 %% ====================================================================
 %% API functions
@@ -16,13 +15,12 @@
 
 -spec login(Socket :: gen_tcp:socket(), Username :: string(), Password :: string()) -> tuple().
 login(Socket, Username, Password) ->
-    %% TODO (std_string) : try use include files from cli_service
-    LoginRequest = {login, Username, base64:encode_to_string(Password)},
+    LoginRequest = ?LOGIN_REQUEST(Username, base64:encode_to_string(Password)),
     cli_service_interaction_helper:sync_exchange_single_response(Socket, LoginRequest).
 
 -spec simple_logout(Socket :: gen_tcp:socket()) -> 'ok'.
 simple_logout(Socket) ->
-    cli_service_interaction_helper:sync_exchange_multiple_response(Socket, ?SIMPLE_LOGOUT, ?LOGOUT_END_TAG),
+    cli_service_interaction_helper:sync_exchange_multiple_response(Socket, ?COMMAND_START("logout"), ?COMMAND_STOP_TAG),
     ok.
 
 -spec sync_exchange_single_response(Socket :: gen_tcp:socket(), Request :: tuple()) -> tuple().

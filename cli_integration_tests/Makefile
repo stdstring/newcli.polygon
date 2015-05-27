@@ -28,7 +28,7 @@ TEST_SOURCE=src/cli_service_integration_tests.erl \
             src/transition_integration_tests.erl \
             src/hosting_demo_tests.erl
 
-INCLUDE_FLAGS=-I include
+INCLUDE_FLAGS=-I include -I ../cli_service/include
 
 COMMANDS_TARGETS=$(COMMANDS_SOURCE:%.erl=$(EBIN)/%.beam)
 TARGETS=$(SOURCE:%.erl=$(EBIN)/%.beam)

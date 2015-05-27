@@ -7,49 +7,14 @@
 -include("authentication_defs.hrl").
 -include("common_defs.hrl").
 -include("command_defs.hrl").
+-include("message_defs.hrl").
 
 -export([start/2, handle_output/2, handle_error/2, handle_end/3, stop/2]).
 %% gen_server export
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -define(NO_RESPONSE, no_response).
-%% command interaction
--define(COMMAND_START(CommandLine), {command, CommandLine}).
--define(COMMAND_OUTPUT(Output), {command_out, Output}).
--define(COMMAND_ERROR(Error), {command_err, Error}).
--define(COMMAND_END(Prompt), {'end', Prompt}).
--define(COMMAND_STOP, {stop, ""}).
 -define(COMMAND_END_RESPONSE(Prompt, ExecutionState), {'end', Prompt, ExecutionState}).
--define(COMMAND_INT, {interrupt}).
-%% exit
--define(EXIT_REQUEST, {exit}).
--define(EXIT_RESPONSE, {exit}).
-%% error
--define(ERROR, {error}).
-%% current mode exit
--define(CURRENT_MODE_EXIT_REQUEST, {current_mode_exit}).
--define(CURRENT_MODE_EXIT_RESPONSE(Prompt), {current_mode_exit, Prompt}).
--define(CURRENT_MODE_STOP_RESPONSE, {exit, ""}).
-%% current state
--define(CURRENT_STATE_REQUEST, {current_state_request}).
--define(CURRENT_STATE_RESPONSE(Prompt), {current_state_response, Prompt}).
-%% extensions
--define(EXTENSION_REQUEST(CommandLine), {extension_request, CommandLine}).
--define(EXTENSION_RESPONSE(CommonPrefix, ExtensionList), {extension_response, CommonPrefix, ExtensionList}).
-%% help
--define(HELP_REQUEST(CommandLine), {help_request, CommandLine}).
--define(HELP_RESPONSE(Help), {help_response, Help}).
-%% suitable commands
--define(SUITABLE_REQUEST(CommandLine), {suitable_commands_request, CommandLine}).
--define(SUITABLE_RESPONSE(CommandsList), {suitable_commands_response, CommandsList}).
-%% login
--define(LOGIN_REQUEST(Username, Password), {login, Username, Password}).
--define(LOGIN_SUCCESS_RESPONSE(Greeting), {login_success, Greeting}).
--define(LOGIN_FAIL_RESPONSE(Reason), {login_fail, Reason}).
--define(LOGIN_ERROR_RESPONSE(Reason), {login_error, Reason}).
-
-%% notifications
--define(EXIT_NOTIFICATION(Message), {exit, Message}).
 
 %% messages
 -define(DOWNTIME, "Exit due to downtime\n").
@@ -151,12 +116,12 @@ process_request(?EXTENSION_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     {CommonPrefix, ExtensionList} = client_handler:get_extensions(ClientHandler, CommandLine),
     ?EXTENSION_RESPONSE(CommonPrefix, ExtensionList);
-process_request(?EXIT_REQUEST, State) ->
+process_request(?EXIT, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     client_handler:exit(ClientHandler),
     Socket = State#cli_terminal_state.socket,
     gen_tcp:close(Socket),
-    ?EXIT_RESPONSE;
+    ?EXIT;
 process_request(?HELP_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     Help = client_handler:get_help(ClientHandler, CommandLine),
@@ -177,7 +142,7 @@ process_request(?LOGIN_REQUEST(Username, Password), State) ->
 -spec process_response(Response :: term(), State :: #cli_terminal_state{}) ->
     'ok' | 'exit' | {'error', Reason :: atom()}.
 process_response(?NO_RESPONSE, _State) -> ok;
-process_response(?EXIT_RESPONSE, _State) -> exit;
+process_response(?EXIT, _State) -> exit;
 process_response(?COMMAND_OUTPUT(_Out) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?COMMAND_ERROR(_Err) = Response, State) ->
