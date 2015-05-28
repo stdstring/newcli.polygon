@@ -32,11 +32,11 @@ start(GlobalConfig, Endpoint, SocketInfo) ->
 -spec login(Handler :: pid(), Username :: string(), Password :: string()) ->
     #login_success{} | #login_fail{} | #login_error{}.
 login(Handler, Username, Password) ->
-    gen_server:call(Handler, {?LOGIN, Username, Password}).
+    gen_server:call(Handler, ?LOGIN(Username, Password)).
 
 -spec process_command(Handler :: pid(), CommandLine :: string()) -> boolean().
 process_command(Handler, CommandLine) ->
-    gen_server:call(Handler, {?PROCESS, CommandLine}).
+    gen_server:call(Handler, ?PROCESS(CommandLine)).
 
 -spec interrupt_command(Handler :: pid()) -> 'ok'.
 interrupt_command(Handler) ->
@@ -48,7 +48,7 @@ get_current_state(Handler) ->
 
 -spec get_extensions(Handler :: pid(), CommandLine :: string()) -> [string()].
 get_extensions(Handler, CommandLine) ->
-    gen_server:call(Handler, {?EXTENSIONS, CommandLine}).
+    gen_server:call(Handler, ?EXTENSIONS(CommandLine)).
 
 -spec exit(Handler :: pid()) -> 'ok'.
 exit(Handler) ->
@@ -60,28 +60,28 @@ current_mode_exit(Handler) ->
 
 -spec get_help(Handler :: pid(), CommandLine :: string()) -> string().
 get_help(Handler, CommandLine) ->
-    gen_server:call(Handler, {?HELP, CommandLine}).
+    gen_server:call(Handler, ?HELP(CommandLine)).
 
 -spec get_suitable_commands(Handler :: pid(), CommandLine :: string()) -> [string()].
 get_suitable_commands(Handler, CommandLine) ->
-    gen_server:call(Handler, {?SUITABLE_COMMANDS, CommandLine}).
+    gen_server:call(Handler, ?SUITABLE_COMMANDS(CommandLine)).
 
 %% TODO (std_string) : may be move these into another place
 -spec send_output(Handler :: pid(), Output :: string()) -> 'ok'.
 send_output(Handler, Output) ->
-    gen_server:cast(Handler, {?COMMAND_OUTPUT, Output}).
+    gen_server:cast(Handler, ?COMMAND_OUTPUT(Output)).
 
 -spec send_error(Handler :: pid(), Error :: string()) -> 'ok'.
 send_error(Handler, Error) ->
-    gen_server:cast(Handler, {?COMMAND_ERROR, Error}).
+    gen_server:cast(Handler, ?COMMAND_ERROR(Error)).
 
 -spec finish_command(Handler :: pid(), ReturnCode :: integer(), ExecutionState :: [{Key :: atom(), Value :: term()}]) -> 'ok'.
 finish_command(Handler, ReturnCode, ExecutionState) ->
-    gen_server:cast(Handler, {?FINISH_COMMAND, ReturnCode, ExecutionState}).
+    gen_server:cast(Handler, ?FINISH_COMMAND(ReturnCode, ExecutionState)).
 
 -spec finish_exec(Handler :: pid(), ReturnCode :: integer(), ExecutionState :: [{Key :: atom(), Value :: term()}]) -> 'ok'.
 finish_exec(Handler, ReturnCode, ExecutionState) ->
-    gen_server:cast(Handler, {?FINISH_EXEC, ReturnCode, ExecutionState}).
+    gen_server:cast(Handler, ?FINISH_EXEC(ReturnCode, ExecutionState)).
 
 
 %% ====================================================================

@@ -19,7 +19,7 @@
 
 init(_Args) -> {stop, enotsup}.
 
-handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_command = undefined} = State) ->
+handle_call(?PROCESS(CommandLine), _From, #client_handler_state{current_command = undefined} = State) ->
     IntermediateState = client_downtime_timer:stop(State),
     GlobalConfig = IntermediateState#client_handler_state.config,
     %% TODO (std_string) : think about caching
@@ -35,22 +35,22 @@ handle_call({?PROCESS, CommandLine}, _From, #client_handler_state{current_comman
             FinishState = process_command_creation_error(State, Reason),
             {reply, false, FinishState}
     end;
-handle_call({?PROCESS, _CommandLine}, _From, State) ->
+handle_call(?PROCESS(_CommandLine), _From, State) ->
     command_helper:send_error(State, ?COMMAND_ALREADY_RUN_MESSAGE),
     {reply, false, State};
 handle_call(?CURRENT_STATE, _From, State) ->
     Prompt = prompt_factory:generate_prompt(State),
     NewState = client_downtime_timer:restart(State),
     {reply, Prompt, NewState};
-handle_call({?EXTENSIONS, CommandLine}, _From, State) ->
+handle_call(?EXTENSIONS(CommandLine), _From, State) ->
     {Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
     NewState = client_downtime_timer:restart(State),
     {reply, {Prefix, Commands}, NewState};
-handle_call({?HELP, CommandLine}, _From, State) ->
+handle_call(?HELP(CommandLine), _From, State) ->
     Help = client_handler_helper:get_help(CommandLine, State),
     NewState = client_downtime_timer:restart(State),
     {reply, Help, NewState};
-handle_call({?SUITABLE_COMMANDS, CommandLine}, _From, State) ->
+handle_call(?SUITABLE_COMMANDS(CommandLine), _From, State) ->
     {_Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
     NewState = client_downtime_timer:restart(State),
     {reply, Commands, NewState};

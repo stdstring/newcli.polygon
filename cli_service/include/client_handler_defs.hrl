@@ -1,15 +1,15 @@
 %% client handler definitions
 
--define(PROCESS, process_command).
+-define(PROCESS(CommandLine), {process_command, CommandLine}).
 -define(INTERRUPT, interrupt_command).
 -define(CURRENT_STATE, get_current_state).
--define(EXTENSIONS, get_extensions).
+-define(EXTENSIONS(CommandLine), {get_extensions, CommandLine}).
 -define(EXIT, client_exit).
 -define(CURRENT_MODE_EXIT, current_mode_exit).
--define(COMMAND_OUTPUT, command_output).
--define(COMMAND_ERROR, command_error).
--define(FINISH_COMMAND, finish_command).
--define(FINISH_EXEC, finish_exec).
--define(HELP, help).
--define(SUITABLE_COMMANDS, suitable_commands).
--define(LOGIN, login).
+-define(COMMAND_OUTPUT(Output), {command_output, Output}).
+-define(COMMAND_ERROR(Error), {command_error, Error}).
+-define(FINISH_COMMAND(ReturnCode, ExecutionContext), {finish_command, ReturnCode, ExecutionContext}).
+-define(FINISH_EXEC(ReturnCode, ExecutionContext), {finish_exec, ReturnCode, ExecutionContext}).
+-define(HELP(CommandLine), {help, CommandLine}).
+-define(SUITABLE_COMMANDS(CommandLine), {suitable_commands, CommandLine}).
+-define(LOGIN(Username, Password), {login, Username, Password}).

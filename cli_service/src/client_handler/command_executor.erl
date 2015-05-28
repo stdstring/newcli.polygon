@@ -14,15 +14,15 @@
 %% ====================================================================
 
 -spec process(Message :: term(), State :: #client_handler_state{}) -> #client_handler_state{}.
-process({?COMMAND_OUTPUT, Output}, State) ->
+process(?COMMAND_OUTPUT(Output), State) ->
     command_helper:send_output(State, Output),
     State;
-process({?COMMAND_ERROR, Error}, State) ->
+process(?COMMAND_ERROR(Error), State) ->
     command_helper:send_error(State, Error),
     State;
-process({?FINISH_COMMAND, _ReturnCode, _ExecutionContext}, State) ->
+process(?FINISH_COMMAND(_ReturnCode, _ExecutionContext), State) ->
     State;
-process({?FINISH_EXEC, _ReturnCode, ExecutionContext}, State) ->
+process(?FINISH_EXEC(_ReturnCode, ExecutionContext), State) ->
     User = list_utils:get_value_by_key_with_default(ExecutionContext, ?USER_KEY, 1, undefined),
     ExecutionState = list_utils:get_value_by_key_with_default(ExecutionContext, ?EX_STATE_KEY, 1, ?EX_CONTINUE),
     clear_after_command(State),
