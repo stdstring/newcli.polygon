@@ -68,7 +68,6 @@ check_service() ->
     ?assertEqual(Expected, Messages),
     ok.
 
-%% TODO (std_string) : try use include files from cli_service
 -spec interact_with_service() -> [tuple()].
 interact_with_service() ->
     {ok, Socket} = gen_tcp:connect(?SERVICE_ENDPOINT_ADDRESS, ?SERVICE_ENDPOINT_PORT, [binary, {packet, 4}, {active, false}]),
