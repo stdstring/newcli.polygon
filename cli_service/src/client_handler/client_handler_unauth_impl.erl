@@ -25,7 +25,7 @@ init({GlobalConfig, Endpoint, SocketInfo}) ->
     State = client_downtime_timer:start(InitState),
     {ok, State}.
 
-handle_call(?LOGIN(Username, Password), From, State) ->
+handle_call(#login{username = Username, password = Password}, From, State) ->
     StateStage1 = client_downtime_timer:stop(State),
     GlobalConfig = StateStage1#client_handler_unauth_state.config,
     TerminalConfig = GlobalConfig#global_config.cli_terminal,

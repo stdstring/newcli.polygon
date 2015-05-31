@@ -5,6 +5,7 @@
 -behaviour(gen_server).
 
 -include("authentication_defs.hrl").
+-include("client_handler_defs.hrl").
 -include("common_defs.hrl").
 -include("command_defs.hrl").
 -include("message_defs.hrl").

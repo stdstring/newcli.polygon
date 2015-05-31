@@ -19,7 +19,7 @@
 
 init(_Args) -> {stop, enotsup}.
 
-handle_call(?PROCESS(CommandLine), _From, #client_handler_state{current_command = undefined} = State) ->
+handle_call(#process_command{command_line = CommandLine}, _From, #client_handler_state{current_command = undefined} = State) ->
     IntermediateState = client_downtime_timer:stop(State),
     GlobalConfig = IntermediateState#client_handler_state.config,
     %% TODO (std_string) : think about caching
@@ -35,31 +35,31 @@ handle_call(?PROCESS(CommandLine), _From, #client_handler_state{current_command 
             FinishState = process_command_creation_error(State, Reason),
             {reply, false, FinishState}
     end;
-handle_call(?PROCESS(_CommandLine), _From, State) ->
+handle_call(#process_command{}, _From, State) ->
     command_helper:send_error(State, ?COMMAND_ALREADY_RUN_MESSAGE),
     {reply, false, State};
-handle_call(?CURRENT_STATE, _From, State) ->
+handle_call(#get_current_state{}, _From, State) ->
     Prompt = prompt_factory:generate_prompt(State),
     NewState = client_downtime_timer:restart(State),
     {reply, Prompt, NewState};
-handle_call(?EXTENSIONS(CommandLine), _From, State) ->
+handle_call(#get_extensions{command_line = CommandLine}, _From, State) ->
     {Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
     NewState = client_downtime_timer:restart(State),
     {reply, {Prefix, Commands}, NewState};
-handle_call(?HELP(CommandLine), _From, State) ->
+handle_call(#get_help{command_line = CommandLine}, _From, State) ->
     Help = client_handler_helper:get_help(CommandLine, State),
     NewState = client_downtime_timer:restart(State),
     {reply, Help, NewState};
-handle_call(?SUITABLE_COMMANDS(CommandLine), _From, State) ->
+handle_call(#get_suitable_commands{command_line = CommandLine}, _From, State) ->
     {_Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
     NewState = client_downtime_timer:restart(State),
     {reply, Commands, NewState};
-handle_call(?CURRENT_MODE_EXIT, _From, State) ->
+handle_call(#current_mode_exit{}, _From, State) ->
     {ExecutionState, Prompt, IntermediateState} = process_current_mode_exit(State),
     NewState = client_downtime_timer:restart(IntermediateState),
     {reply, {ExecutionState, Prompt}, NewState}.
 
-handle_cast(?EXIT, State) ->
+handle_cast(#client_exit{}, State) ->
     NewState = client_downtime_timer:stop(State),
     {noreply, NewState};
 handle_cast(Request, State) ->
@@ -94,7 +94,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% ====================================================================
 
 -spec process_start_command(State :: #client_handler_state{},
-                            CommandFun :: fun((CliFsm :: pid(), ClientHandler :: pid(), Context :: [{atom(), term()}]) -> 'ok')) ->
+                            CommandFun :: fun((CliFsm :: pid(), ClientHandler :: pid(), Context :: [{Key :: atom(), Value :: term()}]) -> 'ok')) ->
     #client_handler_state{}.
 process_start_command(State, CommandFun) ->
     ExecutionContext = execution_context_factory:create(State),

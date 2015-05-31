@@ -14,24 +14,24 @@
 %% ====================================================================
 
 -spec process(Message :: term(), State :: #client_handler_state{}) -> #client_handler_state{}.
-process(?COMMAND_OUTPUT(Output), State) ->
+process(#command_output{output = Output}, State) ->
     command_helper:send_output(State, Output),
     State;
-process(?COMMAND_ERROR(Error), State) ->
+process(#command_error{error = Error}, State) ->
     command_helper:send_error(State, Error),
     State;
-process(?FINISH_COMMAND(_ReturnCode, _ExecutionContext), State) ->
+process(#finish_command{}, State) ->
     State;
-process(?FINISH_EXEC(_ReturnCode, ExecutionContext), State) ->
+process(#finish_exec{return_code = _ReturnCode, exec_context = ExecutionContext}, State) ->
     User = list_utils:get_value_by_key_with_default(ExecutionContext, ?USER_KEY, 1, undefined),
     ExecutionState = list_utils:get_value_by_key_with_default(ExecutionContext, ?EX_STATE_KEY, 1, ?EX_CONTINUE),
     clear_after_command(State),
     IntermediateState = State#client_handler_state{user = User, current_command = undefined},
     command_helper:send_end(IntermediateState, ExecutionState),
     client_downtime_timer:start(IntermediateState);
-process(?INTERRUPT, #client_handler_state{current_command = undefined} = State) ->
+process(#interrupt_command{}, #client_handler_state{current_command = undefined} = State) ->
     client_downtime_timer:restart(State);
-process(?INTERRUPT, State) ->
+process(#interrupt_command{}, State) ->
     Command = State#client_handler_state.current_command,
     exit(Command, interrupt),
     clear_after_command(State),
