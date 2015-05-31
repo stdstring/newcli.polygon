@@ -35,7 +35,7 @@
 -define(EXIT, {?EXIT_TAG}).
 
 %% error
--define(ERROR, {?ERROR_TAG}).
+-define(ERROR(Reason), {?ERROR_TAG, Reason}).
 
 %% current mode exit
 -define(CURRENT_MODE_EXIT_REQUEST, {?CURRENT_MODE_EXIT_TAG}).

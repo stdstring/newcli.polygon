@@ -155,7 +155,7 @@ process_response(?COMMAND_END_RESPONSE(_Prompt, ?EX_STOP), State) ->
     Response = ?COMMAND_STOP,
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response)),
     exit;
-process_response(?ERROR = Response, State) ->
+process_response(?ERROR(_Reason) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
 process_response(?CURRENT_STATE_RESPONSE(_Data) = Response, State) ->
     gen_tcp:send(State#cli_terminal_state.socket, term_to_binary(Response));
