@@ -42,11 +42,12 @@ process_command(Handler, CommandLine) ->
 interrupt_command(Handler) ->
     gen_server:cast(Handler, #interrupt_command{}).
 
--spec get_current_state(Handler :: pid()) -> string().
+-spec get_current_state(Handler :: pid()) -> {'true', Prompt :: string()} | {'false', Reason :: string()}.
 get_current_state(Handler) ->
     gen_server:call(Handler, #get_current_state{}).
 
--spec get_extensions(Handler :: pid(), CommandLine :: string()) -> [string()].
+-spec get_extensions(Handler :: pid(), CommandLine :: string()) ->
+    {'true', ExtensionsInfo :: {CommonPrefix :: string(), Commands :: [string()]}} | {'false', Reason :: string()}.
 get_extensions(Handler, CommandLine) ->
     gen_server:call(Handler, #get_extensions{command_line = CommandLine}).
 
@@ -54,15 +55,17 @@ get_extensions(Handler, CommandLine) ->
 exit(Handler) ->
     gen_server:cast(Handler, #client_exit{}).
 
--spec current_mode_exit(Handler :: pid()) -> term().
+-spec current_mode_exit(Handler :: pid()) ->
+    {'true', ModeExitInfo :: {ExecutionState :: atom(), Prompt :: string()}} | {'false', Reason :: string()}.
 current_mode_exit(Handler) ->
     gen_server:call(Handler, #current_mode_exit{}).
 
--spec get_help(Handler :: pid(), CommandLine :: string()) -> string().
+-spec get_help(Handler :: pid(), CommandLine :: string()) -> {'true', Help :: string()} | {'false', Reason :: string()}.
 get_help(Handler, CommandLine) ->
     gen_server:call(Handler, #get_help{command_line = CommandLine}).
 
--spec get_suitable_commands(Handler :: pid(), CommandLine :: string()) -> [string()].
+-spec get_suitable_commands(Handler :: pid(), CommandLine :: string()) ->
+    {'true', Commands :: [string()]} | {'false', Reason :: string()}.
 get_suitable_commands(Handler, CommandLine) ->
     gen_server:call(Handler, #get_suitable_commands{command_line = CommandLine}).
 

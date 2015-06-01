@@ -16,10 +16,11 @@
 
 %% messages
 -define(LOGIN_COUNT_EXCEED_MESSAGE, "Count of login attempts is exceeded\n").
--define(DEFAULT_GREETING_MESSAGE, "Default greeting message\n").
--define(UNKNOWN_USER_MESSAGE, "Login's attempt is failed due to the following: unknown user\n").
--define(BAD_PASSWORD_MESSAGE, "Login's attempt is failed due to the following: bad password\n").
+-define(LOGIN_UNKNOWN_USER_MESSAGE, "Login's attempt is failed due to the following: unknown user\n").
+-define(LOGIN_BAD_PASSWORD_MESSAGE, "Login's attempt is failed due to the following: bad password\n").
 -define(LOGIN_FAILED_MESSAGE, "Login's attempt is failed\n").
+-define(LOGIN_ALREADY_LOGGED_MESSAGE, "User is already logged\n").
+-define(DEFAULT_GREETING_MESSAGE, "Default greeting message\n").
 -define(CLI_FSM_CREATION_ERROR_MESSAGE, "Creation error of client handler\n").
 -define(COMMAND_ALREADY_RUN_MESSAGE, "There is running the other command, now\n").
 -define(BUFFER_START_FAIL_MESSAGE, "Buffer creation fails\n").

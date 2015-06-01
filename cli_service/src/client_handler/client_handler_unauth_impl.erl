@@ -71,16 +71,16 @@ process_login(Username, Password, LoginCount, LoginCount) ->
     AuthResult = process_authenticate(Username, Password),
     case AuthResult of
         {authentication_complete, User} -> #login_success{user = User, greeting = ?DEFAULT_GREETING_MESSAGE};
-        {authentication_fail, unknown_username} -> #login_error{reason = ?UNKNOWN_USER_MESSAGE ++ ?LOGIN_COUNT_EXCEED_MESSAGE};
-        {authentication_fail, bad_password} -> #login_error{reason = ?BAD_PASSWORD_MESSAGE ++ ?LOGIN_COUNT_EXCEED_MESSAGE};
+        {authentication_fail, unknown_username} -> #login_error{reason = ?LOGIN_UNKNOWN_USER_MESSAGE ++ ?LOGIN_COUNT_EXCEED_MESSAGE};
+        {authentication_fail, bad_password} -> #login_error{reason = ?LOGIN_BAD_PASSWORD_MESSAGE ++ ?LOGIN_COUNT_EXCEED_MESSAGE};
         {authentication_fail, _Reason} -> #login_error{reason = ?LOGIN_FAILED_MESSAGE}
     end;
 process_login(Username, Password, _LoginCount, _MaxLoginCount) ->
     AuthResult = process_authenticate(Username, Password),
     case AuthResult of
         {authentication_complete, User} -> #login_success{user = User, greeting = ?DEFAULT_GREETING_MESSAGE};
-        {authentication_fail, unknown_username} -> #login_fail{reason = ?UNKNOWN_USER_MESSAGE};
-        {authentication_fail, bad_password} -> #login_fail{reason = ?BAD_PASSWORD_MESSAGE};
+        {authentication_fail, unknown_username} -> #login_fail{reason = ?LOGIN_UNKNOWN_USER_MESSAGE};
+        {authentication_fail, bad_password} -> #login_fail{reason = ?LOGIN_BAD_PASSWORD_MESSAGE};
         {authentication_fail, _Reason} -> #login_fail{reason = ?LOGIN_FAILED_MESSAGE}
     end.
 

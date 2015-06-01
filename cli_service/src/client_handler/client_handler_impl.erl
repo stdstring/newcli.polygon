@@ -19,6 +19,9 @@
 
 init(_Args) -> {stop, enotsup}.
 
+handle_call(#login{}, _From, State) ->
+    NewState = client_downtime_timer:restart(State),
+    {reply, #login_error{reason = ?LOGIN_ALREADY_LOGGED_MESSAGE}, NewState};
 handle_call(#process_command{command_line = CommandLine}, _From, #client_handler_state{current_command = undefined} = State) ->
     IntermediateState = client_downtime_timer:stop(State),
     GlobalConfig = IntermediateState#client_handler_state.config,
@@ -111,14 +114,16 @@ process_command_creation_error(State, Reason) ->
     command_helper:send_end(State, ?EX_CONTINUE),
     client_downtime_timer:start(State).
 
+-spec process_current_mode_exit(State :: #client_handler_state{}) ->
+    {ExecutionState :: atom(), Prompt :: string(), State :: #client_handler_state{}}.
 process_current_mode_exit(State) ->
     CliFsm = State#client_handler_state.cli_fsm,
     CliFsmInfo = cli_fsm:get_current_state(CliFsm),
     ExitCommand = CliFsmInfo#cli_fsm_state_info.exit_command,
     %% TODO (std_string) : process failure case
     {ok, IoBuffer} = null_io_buffer:start(),
-    {ExecutionState, NewStateStage} = command_sync_executer:execute(ExitCommand, [], State, IoBuffer, null_io_buffer),
+    {ExecutionState, NewState} = command_sync_executer:execute(ExitCommand, [], State, IoBuffer, null_io_buffer),
     case ExecutionState of
-        ?EX_STOP -> {ExecutionState, "", NewStateStage};
-        ?EX_CONTINUE -> {ExecutionState, prompt_factory:generate_prompt(State), NewStateStage}
+        ?EX_STOP -> {ExecutionState, "", NewState};
+        ?EX_CONTINUE -> {ExecutionState, prompt_factory:generate_prompt(NewState), NewState}
     end.

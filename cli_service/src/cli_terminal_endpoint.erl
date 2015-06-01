@@ -111,12 +111,16 @@ process_request(?COMMAND_INT, State) ->
     ?NO_RESPONSE;
 process_request(?CURRENT_STATE_REQUEST, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
-    Prompt = client_handler:get_current_state(ClientHandler),
-    ?CURRENT_STATE_RESPONSE(Prompt);
+    case client_handler:get_current_state(ClientHandler) of
+        {true, Prompt} -> ?CURRENT_STATE_RESPONSE(Prompt);
+        {false, Reason} -> ?ERROR(Reason)
+    end;
 process_request(?EXTENSION_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
-    {CommonPrefix, ExtensionList} = client_handler:get_extensions(ClientHandler, CommandLine),
-    ?EXTENSION_RESPONSE(CommonPrefix, ExtensionList);
+    case client_handler:get_extensions(ClientHandler, CommandLine) of
+        {true, {CommonPrefix, ExtensionList}} -> ?EXTENSION_RESPONSE(CommonPrefix, ExtensionList);
+        {false, Reason} -> ?ERROR(Reason)
+    end;
 process_request(?EXIT, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     client_handler:exit(ClientHandler),
@@ -125,12 +129,16 @@ process_request(?EXIT, State) ->
     ?EXIT;
 process_request(?HELP_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
-    Help = client_handler:get_help(ClientHandler, CommandLine),
-    ?HELP_RESPONSE(Help);
+    case client_handler:get_help(ClientHandler, CommandLine) of
+        {true, Help} -> ?HELP_RESPONSE(Help);
+        {false, Reason} -> ?ERROR(Reason)
+    end;
 process_request(?SUITABLE_REQUEST(CommandLine), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
-    CommandsList = client_handler:get_suitable_commands(ClientHandler, CommandLine),
-    ?SUITABLE_RESPONSE(CommandsList);
+    case client_handler:get_suitable_commands(ClientHandler, CommandLine) of
+        {true, CommandsList} -> ?SUITABLE_RESPONSE(CommandsList);
+        {false, Reason} -> ?ERROR(Reason)
+    end;
 process_request(?LOGIN_REQUEST(Username, Password), State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
     LoginResult = client_handler:login(ClientHandler, Username, Password),
