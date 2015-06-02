@@ -100,10 +100,10 @@ process_request(?COMMAND_START(CommandLine), State) ->
     ?NO_RESPONSE;
 process_request(?CURRENT_MODE_EXIT_REQUEST, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,
-    {ExecutionState, Prompt} = client_handler:current_mode_exit(ClientHandler),
-    case ExecutionState of
-        ?EX_CONTINUE -> ?CURRENT_MODE_EXIT_RESPONSE(Prompt);
-        ?EX_STOP -> ?CURRENT_MODE_STOP_RESPONSE
+    case client_handler:current_mode_exit(ClientHandler) of
+        {true, {?EX_STOP, _Info}} -> ?CURRENT_MODE_STOP_RESPONSE;
+        {true, {?EX_CONTINUE, Prompt}} -> ?CURRENT_MODE_EXIT_RESPONSE(Prompt);
+        {false, Reason} -> ?ERROR(Reason)
     end;
 process_request(?COMMAND_INT, State) ->
     ClientHandler = State#cli_terminal_state.client_handler,

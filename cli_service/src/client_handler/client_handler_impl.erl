@@ -23,40 +23,27 @@ handle_call(#login{}, _From, State) ->
     NewState = client_downtime_timer:restart(State),
     {reply, #login_error{reason = ?LOGIN_ALREADY_LOGGED_MESSAGE}, NewState};
 handle_call(#process_command{command_line = CommandLine}, _From, #client_handler_state{current_command = undefined} = State) ->
-    IntermediateState = client_downtime_timer:stop(State),
-    GlobalConfig = IntermediateState#client_handler_state.config,
-    %% TODO (std_string) : think about caching
-    LexConfig = lex_analyzer_config:create(true),
-    NameConfig = name_search_config:create(GlobalConfig#global_config.commands),
-    SyntaxConfig = syntax_analyzer_config:create(NameConfig),
-    CommandModule = State#client_handler_state.command_module,
-    case command_factory:process(CommandLine, LexConfig, SyntaxConfig, GlobalConfig, CommandModule) of
-        {true, CommandFun} ->
-            FinishState = process_start_command(IntermediateState, CommandFun),
-            {reply, true, FinishState};
-        {false, Reason} ->
-            FinishState = process_command_creation_error(State, Reason),
-            {reply, false, FinishState}
-    end;
+    {Result, FinishState} = process_command(CommandLine, State),
+    {reply, Result, FinishState};
 handle_call(#process_command{}, _From, State) ->
     command_helper:send_error(State, ?COMMAND_ALREADY_RUN_MESSAGE),
     {reply, false, State};
 handle_call(#get_current_state{}, _From, State) ->
     Prompt = prompt_factory:generate_prompt(State),
     NewState = client_downtime_timer:restart(State),
-    {reply, Prompt, NewState};
+    {reply, {true, Prompt}, NewState};
 handle_call(#get_extensions{command_line = CommandLine}, _From, State) ->
-    {Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
+    ExtensionsInfo = client_handler_helper:get_suitable_commands(CommandLine, State),
     NewState = client_downtime_timer:restart(State),
-    {reply, {Prefix, Commands}, NewState};
+    {reply, {true, ExtensionsInfo}, NewState};
 handle_call(#get_help{command_line = CommandLine}, _From, State) ->
     Help = client_handler_helper:get_help(CommandLine, State),
     NewState = client_downtime_timer:restart(State),
-    {reply, Help, NewState};
+    {reply, {true, Help}, NewState};
 handle_call(#get_suitable_commands{command_line = CommandLine}, _From, State) ->
     {_Prefix, Commands} = client_handler_helper:get_suitable_commands(CommandLine, State),
     NewState = client_downtime_timer:restart(State),
-    {reply, Commands, NewState};
+    {reply, {true, Commands}, NewState};
 handle_call(#current_mode_exit{}, _From, State) ->
     {ExecutionState, Prompt, IntermediateState} = process_current_mode_exit(State),
     NewState = client_downtime_timer:restart(IntermediateState),
@@ -113,6 +100,25 @@ process_command_creation_error(State, Reason) ->
     command_helper:send_error(State, Error),
     command_helper:send_end(State, ?EX_CONTINUE),
     client_downtime_timer:start(State).
+
+-spec process_command(CommandLine :: string(), State :: #client_handler_state{}) ->
+    {Result :: boolean(), State :: #client_handler_state{}}.
+process_command(CommandLine, State) ->
+    IntermediateState = client_downtime_timer:stop(State),
+    GlobalConfig = IntermediateState#client_handler_state.config,
+    %% TODO (std_string) : think about caching
+    LexConfig = lex_analyzer_config:create(true),
+    NameConfig = name_search_config:create(GlobalConfig#global_config.commands),
+    SyntaxConfig = syntax_analyzer_config:create(NameConfig),
+    CommandModule = State#client_handler_state.command_module,
+    case command_factory:process(CommandLine, LexConfig, SyntaxConfig, GlobalConfig, CommandModule) of
+        {true, CommandFun} ->
+            FinishState = process_start_command(IntermediateState, CommandFun),
+            {true, FinishState};
+        {false, Reason} ->
+            FinishState = process_command_creation_error(State, Reason),
+            {false, FinishState}
+    end.
 
 -spec process_current_mode_exit(State :: #client_handler_state{}) ->
     {ExecutionState :: atom(), Prompt :: string(), State :: #client_handler_state{}}.
